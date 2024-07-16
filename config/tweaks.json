@@ -3183,5 +3183,13 @@
     "Order": "a082_",
     "Type": "Button",
     "ButtonWidth": "300"
+  },
+  "WPFWinUtilPSProfile": {
+    "Content": "Install CTT PowerShell Profile",
+    "category": "Powershell Profile",
+    "panel": "2",
+    "Order": "a083_",
+    "Type": "Button",
+    "ButtonWidth": "300"
   }
 }
