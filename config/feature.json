@@ -283,5 +283,12 @@
     "panel": "2",
     "Type": "Button",
     "ButtonWidth": "300"
+  },
+  "WPFPanelbrowseUX": {
+    "Content": "Install security Extensions",
+    "category": "Browser UX",
+    "panel": "2",
+    "Type": "Button",
+    "ButtonWidth": "300"
   }
 }
