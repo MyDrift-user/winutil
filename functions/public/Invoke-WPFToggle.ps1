@@ -32,5 +32,6 @@ function Invoke-WPFToggle {
         "WPFToggleTaskView" {Invoke-WinUtilTaskView $(Get-WinUtilToggleStatus WPFToggleTaskView)}
         "WPFToggleHiddenFiles" {Invoke-WinUtilHiddenFiles $(Get-WinUtilToggleStatus WPFToggleHiddenFiles)}
         "WPFToggleTaskbarAlignment" {Invoke-WinUtilTaskbarAlignment $(Get-WinUtilToggleStatus WPFToggleTaskbarAlignment)}
+        "WPFToggleUltimatePerformance" {Invoke-WinUtilUltimatePerformance $(Get-WinUtilToggleStatus WPFToggleUltimatePerformance)}
     }
 }

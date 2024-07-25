@@ -154,4 +154,13 @@ Function Get-WinUtilToggleStatus {
             return $true
         }
     }
+    if ($ToggleSwitch -eq "WPFToggleUltimatePerformance") {
+        $UltimatePerformance = powercfg /getactivescheme | Select-String -Pattern "Ultimate Performance"
+        if($UltimatePerformance) {
+            return $true
+        }
+        else{
+            return $false
+        }
+    }
 }

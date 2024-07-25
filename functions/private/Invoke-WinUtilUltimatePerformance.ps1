@@ -1,8 +1,9 @@
-Function Invoke-WPFUltimatePerformance {
+
+Function Invoke-WinUtilUltimatePerformance {
     <#
 
     .SYNOPSIS
-        Creates or removes the Ultimate Performance power scheme
+        Creates & enables or removes the Ultimate Performance power scheme
 
     .PARAMETER State
         Indicates whether to enable or disable the Ultimate Performance power scheme
@@ -12,7 +13,7 @@ Function Invoke-WPFUltimatePerformance {
     Try{
         # Check if Ultimate Performance plan is installed
         $ultimatePlan = powercfg -list | Select-String -Pattern "Ultimate Performance"
-        if($state -eq "Enable"){
+        if($state){
             if ($ultimatePlan) {
                 Write-Host "Ultimate Performance plan is already installed."
             } else {
@@ -26,10 +27,8 @@ Function Invoke-WPFUltimatePerformance {
             powercfg -setactive $ultimatePlanGUID
 
             Write-Host "Ultimate Performance plan is now active."
-
-
         }
-        elseif($state -eq "Disable"){
+        else {
             if ($ultimatePlan) {
                 # Extract the GUID of the Ultimate Performance plan
                 $ultimatePlanGUID = $ultimatePlan.Line.Split()[3]

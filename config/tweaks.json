@@ -3131,6 +3131,14 @@
     "Order": "a204_",
     "Type": "Toggle"
   },
+  "WPFToggleUltimatePerformance": {
+    "Content": "Ultimate Performance",
+    "Description": "Enables Ultimate Performance Power Profile, if toggled off balanced will be selected.",
+    "category": "Customize Preferences",
+    "panel": "2",
+    "Order": "a205_",
+    "Type": "Toggle"
+  },
   "WPFOOSUbutton": {
     "Content": "Run OO Shutup 10",
     "category": "z__Advanced Tweaks - CAUTION",
@@ -3159,22 +3167,6 @@
     "panel": "1",
     "Order": "a042_",
     "Type": "Button"
-  },
-  "WPFAddUltPerf": {
-    "Content": "Add and Activate Ultimate Performance Profile",
-    "category": "Performance Plans",
-    "panel": "2",
-    "Order": "a080_",
-    "Type": "Button",
-    "ButtonWidth": "300"
-  },
-  "WPFRemoveUltPerf": {
-    "Content": "Remove Ultimate Performance Profile",
-    "category": "Performance Plans",
-    "panel": "2",
-    "Order": "a081_",
-    "Type": "Button",
-    "ButtonWidth": "300"
   },
   "WPFWinUtilShortcut": {
     "Content": "Create WinUtil Shortcut",
