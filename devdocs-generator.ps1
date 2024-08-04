@@ -144,7 +144,7 @@ function Generate-MarkdownFiles($data, $outputDir, $jsonFilePath, $lastModified,
 !!! info
      The Development Documentation is auto generated for every compilation of WinUtil, meaning a part of it will always stay up-to-date. **Developers do have the ability to add custom content, which won't be updated automatically.**`n`n"
         $description = "## Description`n`n$([string]$itemDetails.Description)`n"
-        $jsonContent = $itemDetails | ConvertTo-Json -Depth 10
+        $jsonContent = ($itemDetails | ConvertTo-Json -Depth 10).replace('\r\n',"`r`n")
         $codeBlock = "
 <details>
 <summary>Preview Code</summary>
