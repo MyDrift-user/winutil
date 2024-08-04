@@ -399,22 +399,18 @@ function Add-LinkAttributeToJson {
         $itemName = $item.Name
         $itemDetails = $item.Value
         $category = $itemDetails.category -replace '[^a-zA-Z0-9]', '-'
-        $displayName = $itemName -replace 'WPF|WinUtil|Toggle|Disable|Enable|Features|Tweaks|Panel|Fixes', ''
+        $displayName = $itemName -replace 'WPF(WinUtil|Toggle|Features?|Tweaks?|Panel|Fix(es)?)', ''
         $relativePath = "$outputDir/$category/$displayName" -replace '^docs/', ''
         $docLink = "https://christitustech.github.io/winutil/$relativePath"
 
-        # Check if the link attribute exists
-        if ($jsonText -match '"link"\s*:\s*"[^"]*"') {
-            # Update the existing link attribute
-            $jsonText = $jsonText -replace '("link"\s*:\s*")[^"]*(")', "`$1$docLink`$2"
-        } else {
-            # Insert the link attribute after the category attribute
-            $jsonText = $jsonText -replace '("category"\s*:\s*"[^"]*"\s*,)', "`$1`n    `"link`": `"$docLink`","
-        }
+        $jsonData.$itemName.link = $docLink
     }
 
+    # Convert Json Data to Text, so we could write it to `$jsonFilePath`
+    $jsonText = ($jsonData | ConvertTo-Json -Depth 10).replace('\r\n',"`r`n")
+
     # Write the modified text back to the JSON file without empty rows
-    Set-Content -Path $jsonFilePath -Value ($jsonText.Trim()) -Encoding utf8
+    Set-Content -Path $jsonFilePath -Value ($jsonText) -Encoding utf8
 }
 
 # Add link attribute to tweaks and features JSON files
