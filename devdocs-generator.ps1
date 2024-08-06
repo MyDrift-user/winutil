@@ -215,7 +215,7 @@ function Generate-MarkdownFiles {
             \\$([string]$itemDetails.Description)
 "@
 
-        $jsonContent = ($itemDetails | ConvertTo-Json -Depth 10).Replace('\r\n',"`r`n")
+        $jsonContent = ($itemDetails | ConvertTo-Json -Depth 10).replace('\n',"`n").replace('\r', "`r")
         $codeBlock = Process-MultilineStrings @"
             \\<details>
             \\<summary>Preview Code</summary>
@@ -558,7 +558,7 @@ function Add-LinkAttributeToJson {
         Update-Progress -StatusMessage "Adding documentation links to JSON" -Percent $roundedProgress
     }
 
-    $jsonText = ($jsonData | ConvertTo-Json -Depth 10).Replace('\r\n',"`r`n")
+    $jsonText = ($jsonData | ConvertTo-Json -Depth 10).replace('\n',"`n").replace('\r', "`r")
     Set-Content -Path $jsonFilePath -Value ($jsonText) -Encoding utf8
 }
 
@@ -606,7 +606,7 @@ foreach ($jsonPath in $jsonPaths) {
     Add-LinkAttribute -jsonObject $json
 
     # Convert back to JSON with the original formatting
-    $jsonString = ($json | ConvertTo-Json -Depth 100).Replace('\r\n',"`r`n")
+    $jsonString = ($json | ConvertTo-Json -Depth 100).replace('\n',"`n").replace('\r', "`r")
 
     # Save the JSON back to the file
     Set-Content -Path $jsonPath -Value $jsonString
