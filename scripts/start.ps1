@@ -11,28 +11,25 @@ param (
     [switch]$Run
 )
 
-# RunAs admin if not already
-if (
-    # if current user is not an administrator
-    -not (
-        ([Security.Principal.WindowsPrincipal](
-            [Security.Principal.WindowsIdentity]::GetCurrent()
-        )).IsInRole(
-            [Security.Principal.WindowsBuiltInRole]::Administrator
-        )
-    )
-) {
-    # elevate the script and exit current non-elevated script
+# Check if the current user is an administrator
+if (-not ([Security.Principal.WindowsPrincipal]([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    
+    # Determine which PowerShell executable to use
+    if (Get-Command "pwsh" -ErrorAction SilentlyContinue) {
+        $shell = "pwsh.exe"
+    } else {
+        $shell = "powershell.exe"
+    }
 
+    # Elevate the script and exit the current non-elevated script
     $PwshArgList = @(
-        "-NoLogo",                                  # don't print pwsh header in cli
-        "-NoProfile",                               # don't load pwsh profile
-        "-File", $MyInvocation.MyCommand.Source,    # script path
-        $args | ForEach-Object { $_ }               # script args
+        "-NoLogo",                                  # Don't print PowerShell header in CLI
+        "-NoProfile",                               # Don't load PowerShell profile
+        "-File", $MyInvocation.MyCommand.Source,    # Script path
+        $args | ForEach-Object { $_ }               # Script arguments
     ) | ForEach-Object { "`"$_`"" }
 
-    Start-Process -FilePath 'powershell.exe' -ArgumentList $PwshArgList -Verb RunAs
-
+    Start-Process -FilePath $shell -ArgumentList $PwshArgList -Verb RunAs
     exit
 }
 
