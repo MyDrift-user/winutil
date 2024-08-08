@@ -30,6 +30,12 @@ function Invoke-WPFTweakPS7{
         Write-Host "Windows Terminal not installed. Skipping Terminal preference"
         return
     }
+
+    if ($action -eq "PS7") {
+        Write-Host "Starting temp Process to update profile"
+        Start-Process powershell -WindowStyle Minimized -ArgumentList "exit"
+    }
+
     # Check if the Windows Terminal settings.json file exists and return if not (Prereqisite for the following code)
     $settingsPath = "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
     if (-not (Test-Path -Path $settingsPath)) {
