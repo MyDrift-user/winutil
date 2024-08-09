@@ -189,20 +189,23 @@ $commonKeyEvents = {
         $this.Close()
     }
     if ($_.KeyboardDevice.Modifiers -eq "Alt") {
-        if ($_.SystemKey -eq "I") {
+        if ($_.SystemKey -eq "H") {
             Invoke-WPFButton "WPFTab1BT"
         }
-        if ($_.SystemKey -eq "T") {
+        if ($_.SystemKey -eq "I") {
             Invoke-WPFButton "WPFTab2BT"
         }
-        if ($_.SystemKey -eq "C") {
+        if ($_.SystemKey -eq "T") {
             Invoke-WPFButton "WPFTab3BT"
         }
-        if ($_.SystemKey -eq "U") {
+        if ($_.SystemKey -eq "C") {
             Invoke-WPFButton "WPFTab4BT"
         }
-        if ($_.SystemKey -eq "M") {
+        if ($_.SystemKey -eq "U") {
             Invoke-WPFButton "WPFTab5BT"
+        }
+        if ($_.SystemKey -eq "M") {
+            Invoke-WPFButton "WPFTab6BT"
         }
         if ($_.SystemKey -eq "P") {
             Write-Host "Your Windows Product Key: $((Get-WmiObject -query 'select * from SoftwareLicensingService').OA3xOriginalProductKey)"
