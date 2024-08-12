@@ -1,0 +1,176 @@
+{
+    "choices": [
+      {
+        "choice": 17,
+        "version": "22631",
+        "vid": "11_23H2",
+        "cb": "22631.2861.231204-0538.23H2_ni_release_svc_refresh",
+        "ct": "2023/12/",
+        "cc": "2.0",
+        "cab": "https://download.microsoft.com/download/6/2/b/62b47bc5-1b28-4bfa-9422-e7a098d326d4/products_win11_20231208.cab",
+        "exe": "https://download.microsoft.com/download/e/c/d/ecd532eb-bed0-465a-9b7a-330066bec3ce/MediaCreationTool_Win11_23H2.exe"
+      },
+      {
+        "choice": 16,
+        "version": "22621",
+        "vid": "11_22H2",
+        "cb": "22621.1702.230505-1222.ni_release_svc_refresh",
+        "ct": "2023/05/",
+        "cc": "2.0",
+        "cab": "https://download.microsoft.com/download/b/1/9/b19bd7fd-78c4-4f88-8c40-3e52aee143c2/products_win11_20230510.cab.cab",
+        "exe": "https://software-static.download.prss.microsoft.com/dbazure/988969d5-f34g-4e03-ac9d-1f9786c66749/mediacreationtool.exe"
+      },
+      {
+        "choice": 15,
+        "version": "22000",
+        "vid": "11_21H2",
+        "cb": "22000.318.211104-1236.co_release_svc_refresh",
+        "ct": "2021/11/",
+        "cc": "2.0",
+        "cab": "https://download.microsoft.com/download/1/b/4/1b4e06e2-767a-4c9a-9899-230fe94ba530/products_Win11_20211115.cab",
+        "exe": "https://software-download.microsoft.com/download/pr/888969d5-f34g-4e03-ac9d-1f9786c69161/MediaCreationToolW11.exe"
+      },
+      {
+        "choice": 14,
+        "version": "19045",
+        "vid": "22H2",
+        "cb": "19045.2965.230505-1139.22h2_release_svc_refresh",
+        "ct": "2023/05/",
+        "cc": "1.4.1",
+        "cab": "https://download.microsoft.com/download/3/c/9/3c959fca-d288-46aa-b578-2a6c6c33137a/products_win10_20230510.cab.cab",
+        "exe": "https://download.microsoft.com/download/9/e/a/9eac306f-d134-4609-9c58-35d1638c2363/MediaCreationTool22H2.exe"
+      },
+      {
+        "choice": 13,
+        "version": "19044",
+        "vid": "21H2",
+        "cb": "19044.1288.211006-0501.21h2_release_svc_refresh",
+        "ct": "2021/11/",
+        "cc": "1.4.1",
+        "cab": "https://download.microsoft.com/download/3/9/6/396ae429-afb2-49da-81d8-c16c6782d082/products_Win10_20211115.cab",
+        "exe": "https://download.microsoft.com/download/b/0/5/b053c6bc-fc07-4785-a66a-63c5aeb715a9/MediaCreationTool21H2.exe"
+      },
+      {
+        "choice": 12,
+        "version": "19043",
+        "vid": "21H1",
+        "cb": "19043.1288.211006-0459.21h1_release_svc_refresh",
+        "ct": "2021/10/",
+        "cc": "1.4.1",
+        "cab": "https://download.microsoft.com/download/8/3/e/83e5badb-90bd-45c0-b868-28ada88230a0/products_win10_20211029.cab",
+        "exe": "https://download.microsoft.com/download/d/5/2/d528a4e0-03f3-452d-a98e-3e479226d166/MediaCreationTool21H1.exe"
+      },
+      {
+        "choice": 11,
+        "version": "19042",
+        "vid": "20H2",
+        "cb": "19042.631.201119-0144.20h2_release_svc_refresh",
+        "ct": "2020/11/",
+        "cc": "1.4.1",
+        "cab": "https://download.microsoft.com/download/4/3/0/430e9adb-cf08-4b68-9032-eafca8378d42/products_20201119.cab",
+        "exe": "https://download.microsoft.com/download/4/c/c/4cc6c15c-75a5-4d1b-a3fe-140a5e09c9ff/MediaCreationTool20H2.exe"
+      },
+      {
+        "choice": 10,
+        "version": "19041",
+        "vid": "20H1",
+        "cb": "19041.508.200907-0256.vb_release_svc_refresh",
+        "ct": "2020/09/",
+        "cc": "1.4",
+        "cab": "https://download.microsoft.com/download/7/4/4/744ccd60-3203-4eea-bfa2-4d04e18a1552/products.cab",
+        "exe": "https://software-download.microsoft.com/download/pr/8d71966f-05fd-4d64-900b-f49135257fa5/MediaCreationTool2004.exe"
+      },
+      {
+        "choice": 9,
+        "version": "18363",
+        "vid": "19H2",
+        "cb": "18363.592.200109-2016.19h2_release_svc_refresh",
+        "ct": "2020/01/",
+        "cc": "1.3",
+        "cab": "https://download.microsoft.com/download/8/2/b/82b12fa5-cab6-4d37-8167-16630c6151eb/products_20200116.cab",
+        "exe": "https://download.microsoft.com/download/c/0/b/c0b2b254-54f1-42de-bfe5-82effe499ee0/MediaCreationTool1909.exe"
+      },
+      {
+        "choice": 8,
+        "version": "18362",
+        "vid": "19H1",
+        "cb": "18362.356.190909-1636.19h1_release_svc_refresh",
+        "ct": "2019/09/",
+        "cc": "1.3",
+        "cab": "https://download.microsoft.com/download/4/e/4/4e491657-24c8-4b7d-a8c2-b7e4d28670db/products_20190912.cab",
+        "exe": "https://download.microsoft.com/download/9/8/8/9886d5ac-8d7c-4570-a3af-e887ce89cf65/MediaCreationTool1903.exe"
+      },
+      {
+        "choice": 7,
+        "version": "17763",
+        "vid": "1809",
+        "cb": "17763.379.190312-0539.rs5_release_svc_refresh",
+        "ct": "2019/03/",
+        "cc": "1.3",
+        "cab": "https://download.microsoft.com/download/8/E/8/8E852CBF-0BCC-454E-BDF5-60443569617C/products_20190314.cab",
+        "exe": "https://software-download.microsoft.com/download/pr/MediaCreationTool1809.exe"
+      },
+      {
+        "choice": 6,
+        "version": "17134",
+        "vid": "1803",
+        "cb": "17134.112.180619-1212.rs4_release_svc_refresh",
+        "ct": "2018/07/",
+        "cc": "1.2",
+        "cab": "https://download.microsoft.com/download/5/C/B/5CB83D2A-2D7E-4129-9AFE-353F8459AA8B/products_20180705.cab",
+        "exe": "https://software-download.microsoft.com/download/pr/MediaCreationTool1803.exe"
+      },
+      {
+        "choice": 5,
+        "version": "16299",
+        "vid": "1709",
+        "cb": "16299.125.171213-1220.rs3_release_svc_refresh",
+        "ct": "2018/01/",
+        "cc": "1.1",
+        "cab": "https://download.microsoft.com/download/3/2/3/323D0F94-95D2-47DE-BB83-1D4AC3331190/products_20180105.cab",
+        "exe": "https://download.microsoft.com/download/A/B/E/ABEE70FE-7DE8-472A-8893-5F69947DE0B1/MediaCreationTool.exe"
+      },
+      {
+        "choice": 4,
+        "version": "15063",
+        "vid": "1703",
+        "cb": "15063.0.170317-1834.rs2_release",
+        "ct": "2017/03/",
+        "cc": "1.0",
+        "cab": "https://download.microsoft.com/download/9/5/4/954415FD-D9D7-4E1F-8161-41B3A4E03D5E/products_20170317.cab",
+        "exe": "https://download.microsoft.com/download/1/F/E/1FE453BE-89E0-4B6D-8FF8-35B8FA35EC3F/MediaCreationTool.exe"
+      },
+      {
+        "choice": 3,
+        "version": "14393",
+        "vid": "1607",
+        "cb": "14393.0.161119-1705.rs1_refresh",
+        "ct": "2017/01/",
+        "cc": "1.0",
+        "cab": "https://wscont.apps.microsoft.com/winstore/OSUpgradeNotification/MediaCreationTool/prod/Products_20170116.cab",
+        "exe": "https://download.microsoft.com/download/C/F/9/CF9862F9-3D22-4811-99E7-68CE3327DAE6/MediaCreationTool.exe"
+      },
+      {
+        "choice": 2,
+        "version": "10586",
+        "vid": "1511",
+        "cb": "10586.0.160426-1409.th2_refresh",
+        "ct": "2016/05/",
+        "cc": "1.0",
+        "cab": "https://wscont.apps.microsoft.com/winstore/OSUpgradeNotification/MediaCreationTool/prod/Products05242016.xml",
+        "exe": "https://download.microsoft.com/download/1/C/4/1C41BC6B-F8AB-403B-B04E-C96ED6047488/MediaCreationTool.exe"
+      },
+      {
+        "choice": 1,
+        "version": "10240",
+        "vid": "1507",
+        "cb": "10240.16393.150909-1450.th1_refresh",
+        "ct": "2015/09/",
+        "cc": "1.0",
+        "cab": "https://wscont.apps.microsoft.com/winstore/OSUpgradeNotification/MediaCreationTool/prod/Products09232015_2.xml",
+        "exe": "https://download.microsoft.com/download/1/C/8/1C8BAF5C-9B7E-44FB-A90A-F58590B5DF7B/v2.0/MediaCreationToolx64.exe",
+        "exe32": "https://download.microsoft.com/download/1/C/8/1C8BAF5C-9B7E-44FB-A90A-F58590B5DF7B/v2.0/MediaCreationTool.exe"
+      }
+    ]
+  }
+
