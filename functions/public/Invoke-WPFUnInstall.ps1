@@ -6,7 +6,7 @@ function Invoke-WPFUnInstall {
 
     #>
 
-    if($sync.ProcessRunning){
+    if($sync.ProcessRunning) {
         $msg = "[Invoke-WPFUnInstall] Install process is currently running"
         [System.Windows.MessageBox]::Show($msg, "Winutil", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
         return
@@ -15,7 +15,7 @@ function Invoke-WPFUnInstall {
     $PackagesToInstall = (Get-WinUtilCheckBoxes)["Install"]
 
     if ($PackagesToInstall.Count -eq 0) {
-        $WarningMsg = "Please select the program(s) to install"
+        $WarningMsg = "Please select the program(s) to uninstall"
         [System.Windows.MessageBox]::Show($WarningMsg, $AppTitle, [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Warning)
         return
     }
@@ -27,10 +27,16 @@ function Invoke-WPFUnInstall {
 
     $confirm = [System.Windows.MessageBox]::Show($Messageboxbody, $MessageboxTitle, $ButtonType, $MessageIcon)
 
-    if($confirm -eq "No"){return}
+    if($confirm -eq "No") {return}
+
 
     Invoke-WPFRunspace -ArgumentList $PackagesToInstall -DebugPreference $DebugPreference -ScriptBlock {
         param($PackagesToInstall, $DebugPreference)
+        if ($PackagesToInstall.count -eq 1) {
+            $sync.form.Dispatcher.Invoke([action]{ Set-WinUtilTaskbaritem -state "Indeterminate" -value 0.01 -overlay "logo" })
+        } else {
+            $sync.form.Dispatcher.Invoke([action]{ Set-WinUtilTaskbaritem -state "Normal" -value 0.01 -overlay "logo" })
+        }
         $packagesWinget, $packagesChoco = {
             $packagesWinget = [System.Collections.Generic.List`1[System.Object]]::new()
             $packagesChoco = [System.Collections.Generic.List`1[System.Object]]::new()
@@ -39,39 +45,34 @@ function Invoke-WPFUnInstall {
                     $packagesChoco.add($package)
                     Write-Host "Queueing $($package.choco) for Chocolatey Uninstall"
                 } else {
-                    $packagesWinget.add($package)
+                    $packagesWinget.add($($package.winget))
                     Write-Host "Queueing $($package.winget) for Winget Uninstall"
                 }
             }
             return $packagesWinget, $packagesChoco
         }.Invoke($PackagesToInstall)
-        try{
+        try {
             $sync.ProcessRunning = $true
 
             # Install all selected programs in new window
-            if($packagesWinget.Count -gt 0){
-                Install-WinUtilProgramWinget -ProgramsToInstall $packagesWinget -Manage "Uninstalling"
+            if($packagesWinget.Count -gt 0) {
+                Invoke-WinUtilWingetProgram -Action Uninstall -Programs $packagesWinget
             }
-            if($packagesChoco.Count -gt 0){
+            if($packagesChoco.Count -gt 0) {
                 Install-WinUtilProgramChoco -ProgramsToInstall $packagesChoco -Manage "Uninstalling"
             }
-
-            $ButtonType = [System.Windows.MessageBoxButton]::OK
-            $MessageboxTitle = "Uninstalls are Finished "
-            $Messageboxbody = ("Done")
-            $MessageIcon = [System.Windows.MessageBoxImage]::Information
-
-            [System.Windows.MessageBox]::Show($Messageboxbody, $MessageboxTitle, $ButtonType, $MessageIcon)
 
             Write-Host "==========================================="
             Write-Host "--       Uninstalls have finished       ---"
             Write-Host "==========================================="
-        }
-        Catch {
+            $sync.form.Dispatcher.Invoke([action]{ Set-WinUtilTaskbaritem -state "None" -overlay "checkmark" })
+        } catch {
             Write-Host "==========================================="
             Write-Host "Error: $_"
             Write-Host "==========================================="
+            $sync.form.Dispatcher.Invoke([action]{ Set-WinUtilTaskbaritem -state "Error" -overlay "warning" })
         }
         $sync.ProcessRunning = $False
+
     }
 }

@@ -1,4 +1,3 @@
-
 function Invoke-WPFShortcut {
     <#
 
@@ -17,20 +16,20 @@ function Invoke-WPFShortcut {
         [bool]$RunAsAdmin = $false
     )
 
-    # Preper the Shortcut Fields and add an a Custom Icon if it's available at "$env:TEMP\cttlogo.png", else don't add a Custom Icon.
-    $iconPath = $null
+    # Preper the Shortcut Fields and add an a Custom Icon if it's available, else don't add a Custom Icon.
+
     Switch ($ShortcutToAdd) {
         "WinUtil" {
-            $SourceExe = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
-            $IRM = 'irm https://christitus.com/win | iex'
-            $Powershell = '-ExecutionPolicy Bypass -Command "Start-Process powershell.exe -verb runas -ArgumentList'
-            $ArgumentsToSourceExe = "$powershell '$IRM'"
-            $DestinationName = "WinUtil.lnk"
-
-            if (Test-Path -Path "$env:TEMP\cttlogo.png") {
-                $iconPath = "$env:SystempRoot\cttlogo.ico"
-                ConvertTo-Icon -bitmapPath "$env:TEMP\cttlogo.png" -iconPath $iconPath
+            # Use Powershell 7 if installed and fallback to PS5 if not
+            if (Get-Command "pwsh" -ErrorAction SilentlyContinue) {
+                $shell = "pwsh.exe"
+            } else {
+                $shell = "powershell.exe"
             }
+
+            $shellArgs = "-ExecutionPolicy Bypass -Command `"Start-Process $shell -verb runas -ArgumentList `'-Command `"irm https://github.com/ChrisTitusTech/winutil/releases/latest/download/winutil.ps1 | iex`"`'"
+
+            $DestinationName = "WinUtil.lnk"
         }
     }
 
@@ -40,20 +39,23 @@ function Invoke-WPFShortcut {
     $FileBrowser.Filter = "Shortcut Files (*.lnk)|*.lnk"
     $FileBrowser.FileName = $DestinationName
 
-    # Do an Early Return if The Save Shortcut operation was cancel by User's Input.
+    # Do an Early Return if the Save Operation was canceled by User's Input.
     $FileBrowserResult = $FileBrowser.ShowDialog()
     $DialogResultEnum = New-Object System.Windows.Forms.DialogResult
     if (-not ($FileBrowserResult -eq $DialogResultEnum::OK)) {
         return
     }
 
+    # Prepare the Shortcut paramter
     $WshShell = New-Object -comObject WScript.Shell
     $Shortcut = $WshShell.CreateShortcut($FileBrowser.FileName)
-    $Shortcut.TargetPath = $SourceExe
-    $Shortcut.Arguments = $ArgumentsToSourceExe
-    if ($null -ne $iconPath) {
-        $shortcut.IconLocation = $iconPath
+    $Shortcut.TargetPath = $shell
+    $Shortcut.Arguments = $shellArgs
+    if (Test-Path -Path $winutildir["logo.ico"]) {
+        $shortcut.IconLocation = $winutildir["logo.ico"]
     }
+
+    # Save the Shortcut to disk
     $Shortcut.Save()
 
     if ($RunAsAdmin -eq $true) {

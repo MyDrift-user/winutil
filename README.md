@@ -1,147 +1,64 @@
 # Chris Titus Tech's Windows Utility
 
-This utility is a compilation of Windows tasks I perform on each Windows system I use. It is meant to streamline *installs*, debloat with *tweaks*, troubleshoot with *config*, and fix Windows *updates*. I am extremely picky about any contributions to keep this project clean and efficient. 
+[![Version](https://img.shields.io/github/v/release/ChrisTitusTech/winutil?color=%230567ff&label=Latest%20Release&style=for-the-badge)](https://github.com/ChrisTitusTech/winutil/releases/latest)
+![GitHub Downloads (specific asset, all releases)](https://img.shields.io/github/downloads/ChrisTitusTech/winutil/winutil.ps1?label=Total%20Downloads&style=for-the-badge)
+[![](https://dcbadge.limes.pink/api/server/https://discord.gg/RUbZUZyByQ?theme=default-inverted&style=for-the-badge)](https://discord.gg/RUbZUZyByQ)
 
-![screen-install](screen-install.png)
+This utility is a compilation of Windows tasks I perform on each Windows system I use. It is meant to streamline *installs*, debloat with *tweaks*, troubleshoot with *config*, and fix Windows *updates*. I am extremely picky about any contributions to keep this project clean and efficient.
 
-## Usage
+![screen-install](./docs/assets/Title-Screen.png)
 
-Winutil must be run in Admin mode because it performs system-wide tweaks. To achieve this, open PowerShell or Windows Terminal as an administrator. Here are a few ways to do it:
+## 💡 Usage
 
-1. **Right-Click Method:**
+Winutil must be run in Admin mode because it performs system-wide tweaks. To achieve this, run PowerShell as an administrator. Here are a few ways to do it:
+
+1. **Start menu Method:**
    - Right-click on the start menu.
    - Choose "Windows PowerShell (Admin)" (for Windows 10) or "Terminal (Admin)" (for Windows 11).
 
 2. **Search and Launch Method:**
    - Press the Windows key.
    - Type "PowerShell" or "Terminal" (for Windows 11).
-   - Press `Ctrl + Shift + Enter` to launch it with administrator privileges.
-
+   - Press `Ctrl + Shift + Enter` or Right-click and choose "Run as administrator" to launch it with administrator privileges.
 
 ### Launch Command
 
-#### Simple way
+#### Stable Branch (Recommended)
 
+```ps1
+irm "https://christitus.com/win" | iex
 ```
-irm https://christitus.com/win | iex
-```
-Courtesy of the issue raised at: [#144](/../../issues/144)
+#### Dev Branch
 
-or by executing: 
-```
-iwr -useb https://christitus.com/win | iex
-```
-
-if for some reason this site is not reachable from your country please try running it directly from github (replace `RELEASE_TAG` with current release that you are interested in, for example `v2024.06.05`)
-```
-irm "https://github.com/ChrisTitusTech/winutil/releases/download/RELEASE_TAG/winutil.ps1" | iex
+```ps1
+irm "https://christitus.com/windev" | iex
 ```
 
-#### Automation
+If you have Issues, refer to [Known Issues](https://christitustech.github.io/winutil/KnownIssues/)
 
-Some features are avaliable through automation. This allows you to save your config file pass it to Winutil walk away and come back to a finished system. Here is how you can set it up currently with Winutil >24.01.15
+## 🎓 Documentation
 
-1. On the Install Tab, click "Get Installed", this will get all installed apps **supported by Winutil** on the system
-  ![GetInstalled](/wiki/Get-Installed.png)
-2. Click on the Settings cog in the upper right corner and chose Export, chose file file and location, this will export the setting file.
-  ![SettingsExport](/wiki/Settings-Export.png)
-3. Copy this file to a USB or somewhere you can use after Windows installation.
-4. Use Microwin tab to create a custom Windows image.
-5. Install the Windows image.
-6. In the new Windows, Open PowerShell in the admin mode and run command to automatically apply tweaks and install apps from the config file.
-```
-iex "& { $(irm christitus.com/win) } -Config [path-to-your-config] -Run"
-```
-7. Have a cup of coffee! Come back when it's done.
+### [WinUtil Official Documentation](https://christitustech.github.io/winutil/)
 
+### [YouTube Tutorial](https://www.youtube.com/watch?v=6UQZ5oQg8XA)
 
-## Issues:
+### [ChrisTitus.com Article](https://christitus.com/windows-tool/)
 
-- If you are unable to resolve christitus.com/win and are getting  errors launching the tool, it might be due to India blocking GitHub's content domain and preventing downloads. You may use a VPN or change your DNS provider to Google/Cloudflare/etc.
-
-Source: <https://timesofindia.indiatimes.com/gadgets-news/github-content-domain-blocked-for-these-indian-users-reports/articleshow/96687992.cms>
-
-- Windows Security (formerly Defender) and other anti-virus software are known to block the script. The script gets flagged due to the fact that it requires administrator privileges & makes drastic system changes.
-
-- If you are having TLS 1.2 issues, or are having trouble resolving `christitus.com/win` then run with the following command:
-
-```
-[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;iex(New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/ChrisTitusTech/winutil/main/winutil.ps1')
-```
-
-If you are still having issues try changing your DNS provider to 1.1.1.1 || 1.0.0.1 or 8.8.8.8 || 8.8.4.4
-
-## Support
+## 💖 Support
 - To morally and mentally support the project, make sure to leave a ⭐️!
 - EXE Wrapper for $10 @ https://www.cttstore.com/windows-toolbox
 
-## Tutorial
+## 💖 Sponsors
 
-[![Watch the video](https://img.youtube.com/vi/6UQZ5oQg8XA/hqdefault.jpg)](https://www.youtube.com/watch?v=6UQZ5oQg8XA)
+These are the sponsors that help keep this project alive with monthly contributions.
 
-## Overview
+<!-- sponsors --><a href="https://github.com/ysaito8015"><img src="https://github.com/ysaito8015.png" width="60px" alt="Yusuke Saito" /></a><a href="https://github.com/TriHydera"><img src="https://github.com/TriHydera.png" width="60px" alt="TriHydera" /></a><a href="https://github.com/jozozovko"><img src="https://github.com/jozozovko.png" width="60px" alt="" /></a><a href="https://github.com/DelDongo"><img src="https://github.com/DelDongo.png" width="60px" alt="" /></a><a href="https://github.com/markamos"><img src="https://github.com/markamos.png" width="60px" alt="Mark Amos" /></a><a href="https://github.com/dwelfusius"><img src="https://github.com/dwelfusius.png" width="60px" alt="" /></a><a href="https://github.com/mews-se"><img src="https://github.com/mews-se.png" width="60px" alt="" /></a><a href="https://github.com/jdiegmueller"><img src="https://github.com/jdiegmueller.png" width="60px" alt="Jason A. Diegmueller" /></a><a href="https://github.com/AlanTristar"><img src="https://github.com/AlanTristar.png" width="60px" alt="" /></a><a href="https://github.com/JennJones89"><img src="https://github.com/JennJones89.png" width="60px" alt="" /></a><a href="https://github.com/zepled112"><img src="https://github.com/zepled112.png" width="60px" alt="wyatt" /></a><a href="https://github.com/altugtekiner"><img src="https://github.com/altugtekiner.png" width="60px" alt="" /></a><a href="https://github.com/robertsandrock"><img src="https://github.com/robertsandrock.png" width="60px" alt="" /></a><a href="https://github.com/jeffnesbit"><img src="https://github.com/jeffnesbit.png" width="60px" alt="" /></a><a href="https://github.com/mmomega"><img src="https://github.com/mmomega.png" width="60px" alt="" /></a><a href="https://github.com/KenichiQaz"><img src="https://github.com/KenichiQaz.png" width="60px" alt="Stefan" /></a><a href="https://github.com/thaddl"><img src="https://github.com/thaddl.png" width="60px" alt="thaddl" /></a><a href="https://github.com/paulsheets"><img src="https://github.com/paulsheets.png" width="60px" alt="Paul" /></a><a href="https://github.com/djones369"><img src="https://github.com/djones369.png" width="60px" alt="Dave Jones" /></a><a href="https://github.com/anthonymendez"><img src="https://github.com/anthonymendez.png" width="60px" alt="Anthony Mendez" /></a><a href="https://github.com/woobe-studio"><img src="https://github.com/woobe-studio.png" width="60px" alt="Michael Wozniak" /></a><a href="https://github.com/xBandaku"><img src="https://github.com/xBandaku.png" width="60px" alt="xPandaku" /></a><a href="https://github.com/claudemods"><img src="https://github.com/claudemods.png" width="60px" alt="Claudemods" /></a><!-- sponsors -->
 
-- Install
-  - Install Selection: Organize programs by category and facilitate installation by enabling users to select programs and initiate the installation process with a single click.
-  
-  - Upgrade All: Upgrade all existing programs to their latest versions, ensuring users have the most up-to-date and feature-rich software. 
-  
-  - Uninstall Selection: Effortlessly uninstall selected programs, providing users with a streamlined way to remove unwanted software from their system.
-  
-  - Get Installed: Retrieve a comprehensive list of installed programs on the system, offering users visibility into the software currently installed on their computer.
-  
-  - Import / Export: Enable users to import or export the selection list of programs, allowing them to save their preferred program configurations or share them with others. This feature promotes convenience and flexibility in managing program selections across different systems.
- 
-- Tweaks
-  - Recommended Selection: Provides pre-defined templates tailored for desktop, laptop, and minimal configurations, allowing users to select recommended settings and optimizations specific to their system type.
-
-  - Essential Tweaks: Offers a collection of essential tweaks aimed at improving system performance, privacy, and resource utilization. These tweaks include creating a system restore point, disabling telemetry, Wi-Fi Sense, setting services to manual, disabling location tracking, and HomeGroup, among others.
-
-  - Advanced Tweaks: Encompasses a range of various advanced power user tweaks to further optimize the system. These tweaks include removing OneDrive and Edge, disabling User Account Control (UAC), notification panel, among others.
-
-  - Toggles: Adds easy to use, one click shortcuts for toggling dark mode, NumLock on startup, file extensions, sticky keys, among others.
-
-  - Additional Tweaks: Introduces various other tweaks such as enabling dark mode, changing DNS settings, adding an Ultimate Performance mode, and creating shortcuts for WinUtil tools. These tweaks provide users with additional customization options to tailor their system to their preferences.
-
-- Config
-  - Features: Allows users to easily install various essential components and features to enhance their Windows experience. These features include installing .NET Frameworks, enabling Hyper-V virtualization, enabling legacy media support for Windows Media Player and DirectPlay, enabling NFS (Network File System) for network file sharing, and enabling Windows Subsystem for Linux (WSL) for running Linux applications on Windows.
-
-  - Fixes: Provides a range of helpful fixes to address common issues and improve system stability. This includes setting up autologon for seamless login experiences, resetting Windows updates to resolve update-related problems, performing a system corruption scan to detect and repair corrupted files, and resetting network settings to troubleshoot network connectivity issues.
-
-  - Legacy Windows Panels: Includes access to legacy Windows panels from Windows 7, allowing users to access familiar and powerful tools. These panels include Control Panel for managing system settings, Network Connections for configuring network adapters and connections, Power Panel for adjusting power and sleep settings, Sound Settings for managing audio devices and settings, System Properties for viewing and modifying system information, and User Accounts for managing user profiles and account settings.
-
-
-- Updates:
-  - Default (Out of Box) Settings: Provides the default settings that come with Windows for updates.
-  
-  - Security (Recommended) Settings: Offers recommended settings, including a slight delay of feature updates by 2 years and installation of security updates 4 days after release.
-
-  - Disable All Updates (Not Recommended!): Allows users to disable all Windows updates, but it's not recommended due to potential security risks.
-
-
-Video and Written Article walkthrough @ <https://christitus.com/windows-tool/>
-
-## Issues
-
-If you encounter any challenges or problems with the script, I kindly request that you submit them via the "Issues" tab on the GitHub repository. By filling out the provided template, you can provide specific details about the issue, allowing me to promptly address any bugs or consider feature requests.
-
-## Contribute Code
-
-Pull Requests are now handled directly on the MAIN branch. This was done since we can now select specific releases to launch via releases in GitHub. 
-
-If doing a code change and you can submit a PR to main branch, but I am very selective about these. Do not use a code formatter, massive amounts of line changes, and make multiple feature changes. EACH FEATURE CHANGE SHOULD BE IT'S OWN Pull Request!
-
-When creating pull requests, it is essential to thoroughly document all changes made. This includes documenting any additions made to the tweaks section and ensuring that corresponding undo measures are in place to remove the newly added tweaks if necessary. Failure to adhere to this format may result in denial of the pull request. Additionally, comprehensive documentation is required for all code changes. Any code lacking sufficient documentation may also be denied.
-
-By following these guidelines, we can maintain a high standard of quality and ensure that the codebase remains organized and well-documented.
-
-NOTE: When creating a function please include "WPF" or "WinUtil" in the name so that it can be loaded into the runspace.
-
-## Thanks to all Contributors
+## 🏅 Thanks to all Contributors
 Thanks a lot for spending your time helping Winutil grow. Thanks a lot! Keep rocking 🍻.
 
 [![Contributors](https://contrib.rocks/image?repo=ChrisTitusTech/winutil)](https://github.com/ChrisTitusTech/winutil/graphs/contributors)
 
-## GitHub Stats
+## 📊 GitHub Stats
 
 ![Alt](https://repobeats.axiom.co/api/embed/aad37eec9114c507f109d34ff8d38a59adc9503f.svg "Repobeats analytics image")
