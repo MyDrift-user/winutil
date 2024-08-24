@@ -64,22 +64,14 @@ Get-ChildItem "$workingdir\functions" -Recurse -File | ForEach-Object {
     }
 Update-Progress "Adding: Config *.json" 40
 Get-ChildItem "$workingdir\config" | Where-Object {$psitem.extension -eq ".json"} | ForEach-Object {
-
     $json = (Get-Content $psitem.FullName).replace("'","''")
-
-    # Make an Array List containing every name at first level of Json File
     $jsonAsObject = $json | convertfrom-json
-    $firstLevelJsonList = [System.Collections.ArrayList]::new()
-    $jsonAsObject.PSObject.Properties.Name | ForEach-Object {$null = $firstLevelJsonList.Add($_)}
 
     # Add 'WPFInstall' as a prefix to every entry-name in 'applications.json' file
     if ($psitem.Name -eq "applications.json") {
-        for ($i = 0; $i -lt $firstLevelJsonList.Count; $i += 1) {
-            $appEntryName = $firstLevelJsonList[$i]
+        foreach ($appEntryName in $jsonAsObject.PSObject.Properties.Name) {
             $appEntryContent = $jsonAsObject.$appEntryName
-            # Remove the entire app entry, so we could add it later with a different name
             $jsonAsObject.PSObject.Properties.Remove($appEntryName)
-            # Add the app entry, but with a different name (WPFInstall + The App Entry Name)
             $jsonAsObject | Add-Member -MemberType NoteProperty -Name "WPFInstall$appEntryName" -Value $appEntryContent
         }
     }
