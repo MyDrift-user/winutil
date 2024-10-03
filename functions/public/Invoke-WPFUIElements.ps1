@@ -155,6 +155,19 @@ function Invoke-WPFUIElements {
             $wrapPanelTop.Children.Add($uninstallButton) | Out-Null
             $sync["WPFUninstall"] = $uninstallButton
 
+            $selectedLabel = New-Object Windows.Controls.Label
+            $selectedLabel.Name = "WPFSelectedLabel"
+            $selectedLabel.Content = "Selected Apps: 0"
+            $selectedLabel.ToolTip = "Nothing Selected"
+            $selectedLabel.SetResourceReference([Windows.Controls.Control]::FontSizeProperty, "FontSizeHeading")
+            $selectedLabel.SetResourceReference([Windows.Controls.Control]::MarginProperty, "TabContentMargin")
+            $selectedLabel.SetResourceReference([Windows.Controls.Control]::ForegroundProperty, "MainForegroundColor")
+            $selectedLabel.HorizontalAlignment = "Center"
+            $selectedLabel.VerticalAlignment = "Center"
+
+            $wrapPanelTop.Children.Add($selectedLabel) | Out-null
+            $sync.$($selectedLabel.Name) = $selectedLabel
+
             # Dock the WrapPanel at the top of the DockPanel
             [Windows.Controls.DockPanel]::SetDock($wrapPanelTop, [Windows.Controls.Dock]::Top)
             $dockPanelContainer.Children.Add($wrapPanelTop) | Out-Null
@@ -231,9 +244,13 @@ function Invoke-WPFUIElements {
                     $checkBox.HorizontalAlignment = "Left"
                     $checkBox.VerticalAlignment = "Center"
                     $checkBox.Margin = New-Object Windows.Thickness(5, 0, 10, 0)
-                    [Windows.Controls.DockPanel]::SetDock($checkBox, [Windows.Controls.Dock]::Left)
-                    $dockPanel.Children.Add($checkBox) | Out-Null
-
+                    $checkbox.Add_Checked({
+                        Invoke-WPFSelectedLabelUpdate -type "Add" -checkbox $this
+                    })
+                
+                    $checkbox.Add_Unchecked({
+                        Invoke-WPFSelectedLabelUpdate -type "Remove" -checkbox $this
+                    })
                     # Create a StackPanel for the image and name
                     $imageAndNamePanel = New-Object Windows.Controls.StackPanel
                     $imageAndNamePanel.Orientation = "Horizontal"
@@ -264,10 +281,13 @@ function Invoke-WPFUIElements {
                     $appName.Margin = New-Object Windows.Thickness(5, 0, 0, 0)
                     $imageAndNamePanel.Children.Add($appName) | Out-Null
 
-                    # Add the image and name panel to the dock panel
-                    [Windows.Controls.DockPanel]::SetDock($imageAndNamePanel, [Windows.Controls.Dock]::Left)
-                    $dockPanel.Children.Add($imageAndNamePanel) | Out-Null
-
+                    # Add the image and name panel to the Checkbox
+                    $checkBox.Content = $imageAndNamePanel
+                    
+                    # Add the checkbox to the DockPanel
+                    [Windows.Controls.DockPanel]::SetDock($checkBox, [Windows.Controls.Dock]::Left)
+                    $dockPanel.Children.Add($checkBox) | Out-Null
+                    
                     # Create the StackPanel for the buttons and dock it to the right
                     $buttonPanel = New-Object Windows.Controls.StackPanel
                     $buttonPanel.Orientation = "Horizontal"
