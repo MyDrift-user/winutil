@@ -232,7 +232,17 @@ function Invoke-WPFUIElements {
                     $border.HorizontalAlignment = "Stretch"
                     $border.VerticalAlignment = "Top"
                     $border.Margin = New-Object Windows.Thickness(0, 10, 0, 0)
-
+                    $border.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, "AppInstallUnselectedColor")
+                    $border.Add_MouseUp({
+                        $childCheckbox = ($this.Child.Children | Where-Object {$_.Template.TargetType -eq [System.Windows.Controls.Checkbox]})[0]
+                        $childCheckBox.isChecked = -not $childCheckbox.IsChecked
+                        if ($childCheckbox.isChecked){
+                            $this.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, "AppInstallSelectedColor")
+                        }
+                        else{
+                            $this.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, "AppInstallUnselectedColor")
+                        }
+                    })
                     # Create a DockPanel inside the Border
                     $dockPanel = New-Object Windows.Controls.DockPanel
                     $dockPanel.LastChildFill = $true
@@ -241,6 +251,7 @@ function Invoke-WPFUIElements {
                     # Create the CheckBox, vertically centered
                     $checkBox = New-Object Windows.Controls.CheckBox
                     $checkBox.Name = $entryInfo.Name
+                    $checkBox.Background = "Transparent"
                     $checkBox.HorizontalAlignment = "Left"
                     $checkBox.VerticalAlignment = "Center"
                     $checkBox.Margin = New-Object Windows.Thickness(5, 0, 10, 0)
@@ -279,15 +290,16 @@ function Invoke-WPFUIElements {
                     $appName.FontWeight = [Windows.FontWeights]::Bold
                     $appName.VerticalAlignment = "Center"
                     $appName.Margin = New-Object Windows.Thickness(5, 0, 0, 0)
+                    $appName.Background = "Transparent"
                     $imageAndNamePanel.Children.Add($appName) | Out-Null
 
                     # Add the image and name panel to the Checkbox
                     $checkBox.Content = $imageAndNamePanel
-                    
+
                     # Add the checkbox to the DockPanel
                     [Windows.Controls.DockPanel]::SetDock($checkBox, [Windows.Controls.Dock]::Left)
                     $dockPanel.Children.Add($checkBox) | Out-Null
-                    
+
                     # Create the StackPanel for the buttons and dock it to the right
                     $buttonPanel = New-Object Windows.Controls.StackPanel
                     $buttonPanel.Orientation = "Horizontal"
