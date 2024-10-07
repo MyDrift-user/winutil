@@ -31,7 +31,14 @@ function Invoke-WPFSelectedLabelUpdate {
     elseif ($type -eq "Remove") {
         $sync.SelectedApps.Remove($app_name)
         $SelectedLabel.Content = "Selected Apps: $($sync.SelectedApps.Count)"
-        $SelectedLabel.ToolTip = $sync.SelectedApps -join "`n"
+        $selected = $sync.selectedApps -join "`n"
+
+        if ($selected -ne ""){
+        	$SelectedLabel.ToolTip = $sync.SelectedApps -join "`n"
+        } else {
+            $SelectedLabel.ToolTip = $Null
+        }
+        
     }
     else{
         Write-Error "Type: $type not implemented"
