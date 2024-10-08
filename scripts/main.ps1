@@ -645,5 +645,8 @@ $sync["SponsorMenuItem"].Add_Click({
     Show-CustomDialog -Message $authorInfo -EnableScroll $true
 })
 
+#Initialize List to store the Names of the selected Apps on the Install Tab
+$sync.selectedApps = [System.Collections.Generic.List[string]]::new()
+
 $sync["Form"].ShowDialog() | out-null
 Stop-Transcript
