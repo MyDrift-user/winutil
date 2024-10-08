@@ -9,9 +9,9 @@ function Invoke-WPFSelectedLabelUpdate {
             should contain the current instance of the checkbox that triggered the Event.
             Most of the time will be the automatic variable $this
         .EXAMPLE
-            $checkbox.Add_Unchecked({Invoke-WPFSelectedLabelUpdate -type "Remove" -checkbox $this})    
+            $checkbox.Add_Unchecked({Invoke-WPFSelectedLabelUpdate -type "Remove" -checkbox $this})
             OR
-            Invoke-WPFSelectedLabelUpdate -type "Add" -checkbox $specificCheckbox    
+            Invoke-WPFSelectedLabelUpdate -type "Add" -checkbox $specificCheckbox
     #>
     param (
         $type,
@@ -33,12 +33,12 @@ function Invoke-WPFSelectedLabelUpdate {
         $SelectedLabel.Content = "Selected Apps: $($sync.SelectedApps.Count)"
         $selected = $sync.selectedApps -join "`n"
 
-        if ($selected -ne ""){
-        	$SelectedLabel.ToolTip = $sync.SelectedApps -join "`n"
+        if ($selected -ne "") {
+            $SelectedLabel.ToolTip = $sync.SelectedApps -join "`n"
         } else {
             $SelectedLabel.ToolTip = $Null
         }
-        
+
     }
     else{
         Write-Error "Type: $type not implemented"

@@ -234,12 +234,6 @@ function Invoke-WPFUIElements {
                     $border.Add_MouseUp({
                         $childCheckbox = ($this.Child.Children | Where-Object {$_.Template.TargetType -eq [System.Windows.Controls.Checkbox]})[0]
                         $childCheckBox.isChecked = -not $childCheckbox.IsChecked
-                        if ($childCheckbox.isChecked){
-                            $this.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, "AppInstallSelectedColor")
-                        }
-                        else{
-                            $this.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, "AppInstallUnselectedColor")
-                        }
                     })
                     # Create a DockPanel inside the Border
                     $dockPanel = New-Object Windows.Controls.DockPanel
@@ -255,10 +249,14 @@ function Invoke-WPFUIElements {
                     $checkBox.Margin = New-Object Windows.Thickness(5, 0, 10, 0)
                     $checkbox.Add_Checked({
                         Invoke-WPFSelectedLabelUpdate -type "Add" -checkbox $this
+                        $borderElement = $this.Parent.Parent
+                        $borderElement.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, "AppInstallSelectedColor")
                     })
-                
+
                     $checkbox.Add_Unchecked({
                         Invoke-WPFSelectedLabelUpdate -type "Remove" -checkbox $this
+                        $borderElement = $this.Parent.Parent
+                        $borderElement.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, "AppInstallUnselectedColor")
                     })
                     # Create a StackPanel for the image and name
                     $imageAndNamePanel = New-Object Windows.Controls.StackPanel
