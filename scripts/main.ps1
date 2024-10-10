@@ -134,12 +134,29 @@ foreach ($category in $uniqueCategories) {
     $sync.configs.appnavigation | Add-Member -MemberType NoteProperty -Name $sanitizedCategoryName -Value $categoryConfig[$sanitizedCategoryName] -Force
 }
 
+$sync.configs.applications = $sync.configs.applications | Sort-Object -Property Name
 # Now call the function with the final merged config
 Invoke-WPFUIElements -configVariable $sync.configs.appnavigation -targetGridName "appscategory" -columncount 1
-Invoke-WPFUIElements -configVariable $sync.configs.applications -targetGridName "appspanel" -columncount 1
+Invoke-WPFUIApps -Objects $sync.configs.applications -targetGridName "appspanel"
+
 
 Invoke-WPFUIElements -configVariable $sync.configs.tweaks -targetGridName "tweakspanel" -columncount 2
 Invoke-WPFUIElements -configVariable $sync.configs.feature -targetGridName "featurespanel" -columncount 2
+
+$sync.SortbyCategory.Add_Checked({
+    Write-Host "Sort By Category"
+    $start = Get-Date
+    Invoke-WPFUIApps -Objects $sync.configs.applications -targetGridName "appspanel"
+    $end = Get-Date
+    Write-Host "Took: $(($end-$start).Milliseconds)"
+})
+$sync.SortbyAlphabet.Add_Checked({
+    Write-Host "Sort By Alphabet"
+    $start = Get-Date
+    Invoke-WPFUIApps -Objects $sync.configs.applications -targetGridName "appspanel" -alphabetical $true
+    $end = Get-Date
+    Write-Host "Took: $(($end-$start).Milliseconds)"
+})
 
 #===========================================================================
 # Store Form Objects In PowerShell
@@ -452,17 +469,6 @@ if ($sync["ISOLanguage"].Items.Count -eq 1) {
 }
 $sync["ISOLanguage"].SelectedIndex = 0
 
-
-# Load Checkboxes and Labels outside of the Filter function only once on startup for performance reasons
-$filter = Get-WinUtilVariables -Type CheckBox
-$CheckBoxes = ($sync.GetEnumerator()).where{ $psitem.Key -in $filter }
-
-$filter = Get-WinUtilVariables -Type Label
-$labels = @{}
-($sync.GetEnumerator()).where{$PSItem.Key -in $filter} | ForEach-Object {$labels[$_.Key] = $_.Value}
-
-$allCategories = $checkBoxes.Name | ForEach-Object {$sync.configs.applications.$_} | Select-Object  -Unique -ExpandProperty category
-
 $sync["SearchBar"].Add_TextChanged({
     if ($sync.SearchBar.Text -ne "") {
         $sync.SearchBarClearButton.Visibility = "Visible"
@@ -470,51 +476,7 @@ $sync["SearchBar"].Add_TextChanged({
         $sync.SearchBarClearButton.Visibility = "Collapsed"
     }
 
-    $activeApplications = @()
-
-    $textToSearch = $sync.SearchBar.Text.ToLower()
-
-    foreach ($CheckBox in $CheckBoxes) {
-        # Skip if the checkbox is null, it doesn't have content or it is the prefer Choco checkbox
-        if ($CheckBox -eq $null -or $CheckBox.Value -eq $null -or $CheckBox.Value.Content -eq $null -or $CheckBox.Name -eq "WPFpreferChocolatey") {
-            continue
-        }
-
-        $checkBoxName = $CheckBox.Key
-        $textBlockName = $checkBoxName + "Link"
-
-        # Retrieve the corresponding text block based on the generated name
-        $textBlock = $sync[$textBlockName]
-
-        if ($CheckBox.Value.Content.ToString().ToLower().Contains($textToSearch)) {
-            $CheckBox.Value.Visibility = "Visible"
-            $activeApplications += $sync.configs.applications.$checkboxName
-            # Set the corresponding text block visibility
-            if ($textBlock -ne $null -and $textBlock -is [System.Windows.Controls.TextBlock]) {
-                $textBlock.Visibility = "Visible"
-            }
-        } else {
-            $CheckBox.Value.Visibility = "Collapsed"
-            # Set the corresponding text block visibility
-            if ($textBlock -ne $null -and $textBlock -is [System.Windows.Controls.TextBlock]) {
-                $textBlock.Visibility = "Collapsed"
-            }
-        }
-    }
-
-    $activeCategories = $activeApplications | Select-Object -ExpandProperty category -Unique
-
-    foreach ($category in $activeCategories) {
-        $sync[$category].Visibility = "Visible"
-    }
-    if ($activeCategories) {
-        $inactiveCategories = Compare-Object -ReferenceObject $allCategories -DifferenceObject $activeCategories -PassThru
-    } else {
-        $inactiveCategories = $allCategories
-    }
-    foreach ($category in $inactiveCategories) {
-        $sync[$category].Visibility = "Collapsed"
-    }
+    Write-Host "#TODO Search not implemented"
 })
 
 $sync["Form"].Add_Loaded({
