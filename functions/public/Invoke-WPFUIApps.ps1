@@ -6,24 +6,24 @@ function Invoke-WPFUIApps {
         [Parameter(Mandatory, Position = 1)]
         [string]$targetGridName,
         [System.Boolean]$alphabetical = $False
-        
+
 
     )
     function setup-StackPanel{
         $targetGrid = $window.FindName($targetGridName)
         $borderstyle = $window.FindResource("BorderStyle")
-        
+
         # Clear existing Children
         $targetGrid.Children.Clear() | Out-Null
-        
-        # Create a Border 
+
+        # Create a Border
         $border = New-Object Windows.Controls.Border
         $border.VerticalAlignment = "Stretch" # Ensure the border stretches vertically
         $border.style = $borderstyle
-        
+
         $targetGrid.Children.Add($border) | Out-Null
         return $targetGrid
-        
+
     }
     function setup-Header {
         param(
@@ -32,6 +32,21 @@ function Invoke-WPFUIApps {
         $border = $targetGrid.Children[0]
         $dockPanelContainer = New-Object Windows.Controls.DockPanel
         $border.Child = $dockPanelContainer
+
+        # Helper function to create buttons
+        function New-WPFButton {
+            param (
+                [string]$Name,
+                [string]$Content
+            )
+            $button = New-Object Windows.Controls.Button
+            $button.Name = $Name
+            $button.Content = $Content
+            $button.Margin = New-Object Windows.Thickness(2)
+            $button.HorizontalAlignment = "Stretch"
+            return $button
+        }
+
         # Create a WrapPanel to hold buttons at the top
         $wrapPanelTop = New-Object Windows.Controls.WrapPanel
         $wrapPanelTop.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, "MainBackgroundColor")
@@ -41,29 +56,17 @@ function Invoke-WPFUIApps {
         $wrapPanelTop.Margin = $window.FindResource("TabContentMargin")
 
         # Create buttons and add them to the WrapPanel with dynamic widths
-        $installButton = New-Object Windows.Controls.Button
-        $installButton.Name = "WPFInstall"
-        $installButton.Content = "Install/Upgrade Selected"
-        $installButton.Margin = New-Object Windows.Thickness(2)
-        $installButton.HorizontalAlignment = "Stretch"
-        $wrapPanelTop.Children.Add($installButton) | Out-Null
-        $sync["WPFInstall"] = $installButton
+        $buttonConfigs = @(
+            @{Name="WPFInstall"; Content="Install/Upgrade Selected"},
+            @{Name="WPFInstallUpgrade"; Content="Upgrade All"},
+            @{Name="WPFUninstall"; Content="Uninstall Selected"}
+        )
 
-        $upgradeButton = New-Object Windows.Controls.Button
-        $upgradeButton.Name = "WPFInstallUpgrade"
-        $upgradeButton.Content = "Upgrade All"
-        $upgradeButton.Margin = New-Object Windows.Thickness(2)
-        $upgradeButton.HorizontalAlignment = "Stretch"
-        $wrapPanelTop.Children.Add($upgradeButton) | Out-Null
-        $sync["WPFInstallUpgrade"] = $upgradeButton
-
-        $uninstallButton = New-Object Windows.Controls.Button
-        $uninstallButton.Name = "WPFUninstall"
-        $uninstallButton.Content = "Uninstall Selected"
-        $uninstallButton.Margin = New-Object Windows.Thickness(2)
-        $uninstallButton.HorizontalAlignment = "Stretch"
-        $wrapPanelTop.Children.Add($uninstallButton) | Out-Null
-        $sync["WPFUninstall"] = $uninstallButton
+        foreach ($config in $buttonConfigs) {
+            $button = New-WPFButton -Name $config.Name -Content $config.Content
+            $wrapPanelTop.Children.Add($button) | Out-Null
+            $sync[$config.Name] = $button
+        }
 
         $selectedLabel = New-Object Windows.Controls.Label
         $selectedLabel.Name = "WPFSelectedLabel"
@@ -98,7 +101,7 @@ function Invoke-WPFUIApps {
         $itemsControl = New-Object Windows.Controls.ItemsControl
         $itemsControl.HorizontalAlignment = 'Stretch'
         $itemsControl.VerticalAlignment = 'Stretch'
-        
+
 
         # Set the ItemsPanel to a VirtualizingStackPanel
         $itemsPanelTemplate = New-Object Windows.Controls.ItemsPanelTemplate
@@ -118,41 +121,105 @@ function Invoke-WPFUIApps {
         $targetGrid.Children.Add($scrollViewer) | Out-Null
         return $itemsControl
     }
+    function AddCategoryLabel {
+        param(
+            [string]$category,
+            $itemsControl
+        )
+
+        $stackPanel = New-Object Windows.Controls.StackPanel
+        $stackPanel.Orientation = [Windows.Controls.Orientation]::Horizontal
+
+        $textBlock = New-Object Windows.Controls.TextBlock
+        $textBlock.Text = "[+] "
+        $textBlock.SetResourceReference([Windows.Controls.Control]::FontSizeProperty, "FontSizeHeading")
+        $textBlock.SetResourceReference([Windows.Controls.Control]::FontFamilyProperty, "HeaderFontFamily")
+        $textBlock.VerticalAlignment = "Center"
+        $stackPanel.Children.Add($textBlock)
+
+        $categoryTextBlock = New-Object Windows.Controls.TextBlock
+        $categoryTextBlock.Text = $category
+        $categoryTextBlock.SetResourceReference([Windows.Controls.Control]::FontSizeProperty, "FontSizeHeading")
+        $categoryTextBlock.SetResourceReference([Windows.Controls.Control]::FontFamilyProperty, "HeaderFontFamily")
+        $categoryTextBlock.VerticalAlignment = "Center"
+        $stackPanel.Children.Add($categoryTextBlock)
+        $stackPanel.Cursor = [System.Windows.Input.Cursors]::Hand
+
+        # Add click event to toggle visibility
+        $stackPanel.Add_MouseUp({
+            $itemsControl = $this.Parent
+            $appsInCategory = $itemsControl.Items | Where-Object { $_.Tag.category -eq $this.Children[1].Text }
+            $isCollapsed = $appsInCategory[0].Visibility -eq [Windows.Visibility]::Visible
+            foreach ($appEntry in $appsInCategory) {
+                $appEntry.Visibility = if ($isCollapsed) {
+                    [Windows.Visibility]::Collapsed
+                } else {
+                    [Windows.Visibility]::Visible
+                }
+            }
+            # Update the indicator
+            $this.Children[0].Text = if ($isCollapsed) { "[+] " } else { "[-] " }
+        })
+        $itemsControl.Items.Add($stackPanel) | Out-Null
+    }
     function createCategoryAppList {
         param(
             $targetGrid,
             $Apps,
             [System.Boolean]$alphabetical
         )
-        $categories = $Apps | Select-Object -ExpandProperty category -Unique | Sort-Object
-        
-        if (-not ($alphabetical)){
-            foreach ($category in $categories){
-                $label = New-Object Windows.Controls.Label
-                $label.Content = $category
-                $label.SetResourceReference([Windows.Controls.Control]::FontSizeProperty, "FontSizeHeading")
-                $label.SetResourceReference([Windows.Controls.Control]::FontFamilyProperty, "HeaderFontFamily")
-                $itemsControl.Items.Add($label) | Out-Null
-                foreach ($App in $Apps | Where-Object {$_.category -eq $category}){
-                    createAppEntry -itemsControl $itemsControl -app $app
+
+        # Create a loading message
+        $loadingLabel = New-Object Windows.Controls.Label
+        $loadingLabel.Content = "Loading, please wait..."
+        $loadingLabel.HorizontalAlignment = "Center"
+        $loadingLabel.VerticalAlignment = "Center"
+        $loadingLabel.FontSize = 16
+        $loadingLabel.FontWeight = [Windows.FontWeights]::Bold
+        $loadingLabel.Foreground = [Windows.Media.Brushes]::Gray
+
+        # Add the loading message to the items control
+        $itemsControl.Items.Clear()
+        $itemsControl.Items.Add($loadingLabel) | Out-Null
+
+        # Use a single UI update batch
+        $itemsControl.Dispatcher.Invoke([System.Windows.Threading.DispatcherPriority]::Background, [action]{
+            # Clear the loading message
+            $itemsControl.Items.Clear()
+
+            if (-not ($alphabetical)) {
+                $categories = $Apps | Select-Object -ExpandProperty category -Unique | Sort-Object
+                foreach ($category in $categories) {
+                    AddCategoryLabel -category $category -itemsControl $itemsControl
+                    foreach ($App in $Apps | Where-Object {$_.category -eq $category}) {
+                        createAppEntry -itemsControl $itemsControl -app $app -hidden $true
+                    }
+                }
+            } else {
+
+                foreach ($App in $Apps) {
+                    createAppEntry -itemsControl $itemsControl -app $app -hidden $false
                 }
             }
-        } else {
-            foreach ($App in $Apps){
-                createAppEntry -itemsControl $itemsControl -app $app
+        })
+        if ($sync.SelectedApps) {
+            $sync.ItemsControl.Items | Where-Object {
+                $_.Tag.name -in $sync.SelectedApps
+            } | ForEach-Object {
+                # Neccesary so no duplicates are added
+                $sync.SelectedApps.Remove($_.Tag.name)
+                $_.Child.Children[0].IsChecked = $true
             }
         }
-        
     }
-
     function createAppEntry {
         param(
             $itemsControl,
-            $app
+            $app,
+            [bool]$hidden
         )
         # Create the outer Border for the application type
         $border = New-Object Windows.Controls.Border
-        # $border.Name = "wpfappborder" + $app.Name
         $border.BorderBrush = [Windows.Media.Brushes]::Gray
         $border.BorderThickness = 1
         $border.CornerRadius = 5
@@ -161,6 +228,11 @@ function Invoke-WPFUIApps {
         $border.VerticalAlignment = "Top"
         $border.Margin = New-Object Windows.Thickness(0, 10, 0, 0)
         $border.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, "AppInstallUnselectedColor")
+        $border.Tag = [PSCustomObject]@{
+            name = $app.Name
+            category = $app.category
+        }
+        $border.Visibility = if ($hidden) {[Windows.Visibility]::Collapsed} else {[Windows.Visibility]::Visible}
         $border.Add_MouseUp({
             $childCheckbox = ($this.Child.Children | Where-Object {$_.Template.TargetType -eq [System.Windows.Controls.Checkbox]})[0]
             $childCheckBox.isChecked = -not $childCheckbox.IsChecked
@@ -309,16 +381,16 @@ function Invoke-WPFUIApps {
 
 
     $window = $sync.Form
-    
 
-    switch ($targetGridName){
-        "appspanel"{ 
-            $targetGrid = setup-StackPanel 
+    switch ($targetGridName) {
+        "appspanel"{
+            $targetGrid = setup-StackPanel
             $dockPanelContainer = setup-Header -targetGrid $targetGrid
             $itemsControl = setup-AppArea -targetGrid $dockPanelContainer
+            $sync.ItemsControl = $itemsControl
             createCategoryAppList -itemsControl $itemsControl -Apps $Objects -alphabetical $alphabetical
         }
-        default { 
+        default {
             Write-Output "$targetGridName not yet implemented "
         }
     }

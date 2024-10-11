@@ -145,17 +145,15 @@ Invoke-WPFUIElements -configVariable $sync.configs.feature -targetGridName "feat
 
 $sync.SortbyCategory.Add_Checked({
     Write-Host "Sort By Category"
-    $start = Get-Date
-    Invoke-WPFUIApps -Objects $sync.configs.applications -targetGridName "appspanel"
-    $end = Get-Date
-    Write-Host "Took: $(($end-$start).Milliseconds)"
+    $sync.Form.Dispatcher.BeginInvoke([System.Windows.Threading.DispatcherPriority]::Background, [action]{
+        Invoke-WPFUIApps -Objects $sync.configs.applications -targetGridName "appspanel"
+    }) | Out-Null
 })
 $sync.SortbyAlphabet.Add_Checked({
     Write-Host "Sort By Alphabet"
-    $start = Get-Date
-    Invoke-WPFUIApps -Objects $sync.configs.applications -targetGridName "appspanel" -alphabetical $true
-    $end = Get-Date
-    Write-Host "Took: $(($end-$start).Milliseconds)"
+    $sync.Form.Dispatcher.BeginInvoke([System.Windows.Threading.DispatcherPriority]::Background, [action]{
+        Invoke-WPFUIApps -Objects $sync.configs.applications -targetGridName "appspanel" -alphabetical $true
+    })
 })
 
 #===========================================================================
