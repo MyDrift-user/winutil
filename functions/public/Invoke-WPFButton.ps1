@@ -17,7 +17,6 @@ function Invoke-WPFButton {
     if (-not $sync.ProcessRunning) {
         Set-WinUtilProgressBar  -label "" -percent 0 -hide $true
     }
-
     Switch -Wildcard ($Button) {
         "WPFTab?BT" {Invoke-WPFTab $Button}
         "WPFInstall" {Invoke-WPFInstall}
@@ -26,7 +25,9 @@ function Invoke-WPFButton {
         "WPFStandard" {Invoke-WPFPresets "Standard" -checkboxfilterpattern "WPFTweak*"}
         "WPFMinimal" {Invoke-WPFPresets "Minimal" -checkboxfilterpattern "WPFTweak*"}
         "WPFClearTweaksSelection" {Invoke-WPFPresets -imported $true -checkboxfilterpattern "WPFTweak*"}
-        "WPFClearInstallSelection" {Invoke-WPFPresets -imported $true -checkboxfilterpattern "WPFInstall*"}
+        "WPFClearInstallSelection" {
+            $sync.ItemsControl.Items.Child.Children | Where-Object {$_.isChecked -eq $true} | ForEach-Object {$_.isChecked = $false}
+        }
         "WPFtweaksbutton" {Invoke-WPFtweaksbutton}
         "WPFOOSUbutton" {Invoke-WPFOOSU}
         "WPFAddUltPerf" {Invoke-WPFUltimatePerformance -State "Enable"}

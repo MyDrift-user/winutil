@@ -21,26 +21,24 @@ function Invoke-WPFSelectedLabelUpdate {
     # Get the actual Name from the Label inside the Checkbox
     $app_name = $checkbox.Content.Children.Text
     if ($type -eq "Add") {
-        $sync.selectedApps.Add($app_name)
+        $sync.selectedApps.Add($($sync.configs.applications | Where-Object { $_.Name -eq $app_name }))
         # The List type needs to be specified again, because otherwise Sort-Object will convert the list to a string if there is only a single entry
-        [System.Collections.Generic.List[string]]$sync.selectedApps = $sync.SelectedApps | Sort-Object
-
-        $SelectedLabel.Content = "Selected Apps: $($sync.SelectedApps.Count)"
-        $SelectedLabel.ToolTip = $sync.SelectedApps -join "`n"
+        [System.Collections.Generic.List[pscustomobject]]$sync.selectedApps = $sync.SelectedApps | Sort-Object
     }
     elseif ($type -eq "Remove") {
-        $sync.SelectedApps.Remove($app_name)
-        $SelectedLabel.Content = "Selected Apps: $($sync.SelectedApps.Count)"
-        $selected = $sync.selectedApps -join "`n"
-
-        if ($selected -ne "") {
-            $SelectedLabel.ToolTip = $sync.SelectedApps -join "`n"
-        } else {
-            $SelectedLabel.ToolTip = $Null
+        $appToRemove = $sync.SelectedApps | Where-Object { $_.name -eq $app_name }
+        if ($appToRemove) {
+            $sync.SelectedApps.Remove($appToRemove)
         }
-
     }
     else{
         Write-Error "Type: $type not implemented"
+    }
+    $count = $sync.SelectedApps.Count
+    $SelectedLabel.Content = "Selected Apps: $count"
+    if ($count -gt 0) {
+        $SelectedLabel.ToolTip = $($sync.SelectedApps | Select-Object -ExpandProperty name) -join "`n"
+    } else {
+        $SelectedLabel.ToolTip = $Null
     }
 }

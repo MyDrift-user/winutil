@@ -115,29 +115,11 @@ Invoke-WinutilThemeChange -init $true
 $noimage = "https://images.emojiterra.com/google/noto-emoji/unicode-15/color/512px/1f4e6.png"
 $noimage = [Windows.Media.Imaging.BitmapImage]::new([Uri]::new($noimage))
 
-# Extract unique categories from the applications configuration
-$uniqueCategories = $sync.configs.applications.PSObject.Properties.Value |
-    Where-Object { $_.Category } |
-    Select-Object -Unique -ExpandProperty Category
-
-# Create a custom PSCustomObject to simulate category-level checkboxes
-$categoryConfig = @{}
-
-foreach ($category in $uniqueCategories) {
-    # Sanitize the category name for use in the Name property (remove spaces, special characters)
-    $sanitizedCategoryName = $category -replace '\W', '_'
-
-    $categoryConfig[$sanitizedCategoryName] = [PSCustomObject]@{
-        Category = "Categories"
-        Content = $category
-    }
-    $sync.configs.appnavigation | Add-Member -MemberType NoteProperty -Name $sanitizedCategoryName -Value $categoryConfig[$sanitizedCategoryName] -Force
-}
 
 $sync.configs.applications = $sync.configs.applications | Sort-Object -Property Name
 # Now call the function with the final merged config
 Invoke-WPFUIElements -configVariable $sync.configs.appnavigation -targetGridName "appscategory" -columncount 1
-Invoke-WPFUIApps -Objects $sync.configs.applications -targetGridName "appspanel"
+Invoke-WPFUIApps -Apps $sync.configs.applications -targetGridName "appspanel"
 
 
 Invoke-WPFUIElements -configVariable $sync.configs.tweaks -targetGridName "tweakspanel" -columncount 2
@@ -146,13 +128,13 @@ Invoke-WPFUIElements -configVariable $sync.configs.feature -targetGridName "feat
 $sync.SortbyCategory.Add_Checked({
     Write-Host "Sort By Category"
     $sync.Form.Dispatcher.BeginInvoke([System.Windows.Threading.DispatcherPriority]::Background, [action]{
-        Invoke-WPFUIApps -Objects $sync.configs.applications -targetGridName "appspanel"
+        Invoke-WPFUIApps -Apps $sync.configs.applications -targetGridName "appspanel"
     }) | Out-Null
 })
 $sync.SortbyAlphabet.Add_Checked({
     Write-Host "Sort By Alphabet"
     $sync.Form.Dispatcher.BeginInvoke([System.Windows.Threading.DispatcherPriority]::Background, [action]{
-        Invoke-WPFUIApps -Objects $sync.configs.applications -targetGridName "appspanel" -alphabetical $true
+        Invoke-WPFUIApps -Apps $sync.configs.applications -targetGridName "appspanel" -alphabetical $true
     })
 })
 
@@ -473,12 +455,12 @@ $sync["SearchBar"].Add_TextChanged({
     } else {
         $sync.SearchBarClearButton.Visibility = "Collapsed"
     }
-
-    Write-Host "#TODO Search not implemented"
+    Search-AppsByNameOrDescription -SearchString $sync.SearchBar.Text -ItemsControl $sync.ItemsControl
 })
 
 $sync["Form"].Add_Loaded({
     param($e)
+    $sync.Form.MinWidth = "1000"
     $sync["Form"].MaxWidth = [Double]::PositiveInfinity
     $sync["Form"].MaxHeight = [Double]::PositiveInfinity
 })
@@ -606,7 +588,7 @@ $sync["SponsorMenuItem"].Add_Click({
 })
 
 #Initialize List to store the Names of the selected Apps on the Install Tab
-$sync.selectedApps = [System.Collections.Generic.List[string]]::new()
+$sync.selectedApps = [System.Collections.Generic.List[pscustomobject]]::new()
 
 $sync["Form"].ShowDialog() | out-null
 Stop-Transcript
