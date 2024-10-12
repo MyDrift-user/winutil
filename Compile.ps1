@@ -73,14 +73,16 @@ Get-ChildItem "functions" -Recurse -File | ForEach-Object {
     }
 Update-Progress "Adding: Config *.json" 40
 Get-ChildItem "config" | Where-Object {$psitem.extension -eq ".json"} | ForEach-Object {
-    $json = (Get-Content $psitem.FullName).replace("'","''")
-    $jsonAsObject = $json | convertfrom-json
+    $json = (Get-Content $psitem.FullName -Raw)
+    $jsonAsObject = $json | ConvertFrom-Json
 
-    # The replace at the end is required, as without it the output of 'converto-json' will be somewhat weird for Multiline Strings
-    # Most Notably is the scripts in some json files, making it harder for users who want to review these scripts, which're found in the compiled script
-    $json = ($jsonAsObject | convertto-json -Depth 3).replace('\r\n',"`r`n")
 
-    $script_content.Add($(Write-output "`$sync.configs.$($psitem.BaseName) = '$json' | ConvertFrom-Json"))
+    # Line 90 requires no whitespace inside the here-strings, to keep formatting of the JSON in the final script.
+    $json = @"
+$($jsonAsObject | ConvertTo-Json -Depth 3)
+"@
+
+    $script_content.Add($(Write-Output "`$sync.configs.$($psitem.BaseName) = @'`n$json`n'@ `| ConvertFrom-Json" ))
 }
 
 # Read the entire XAML file as a single string, preserving line breaks

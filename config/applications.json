@@ -445,7 +445,7 @@
         "category": "Utilities",
         "name": "Dual Monitor Tools",
         "link": "https://dualmonitortool.sourceforge.net/",
-        "description": "Dual Monitor Tools (DMT) is a FOSS app that customize handling multiple monitors and even lock the mouse on specific monitor. Useful for full screen games and apps that does not handle well a second monitor or helps the workflow."
+        "description": "Dual Monitor Tools (DMT) is a FOSS app that allows you to customize the handling of multiple monitors. Useful for fullscreen games and apps that handle a second monitor poorly and can improve your workflow."
     },
     {
         "category": "Utilities",
@@ -2856,14 +2856,7 @@
         "winget": "KiCad.KiCad"
     },
     {
-        "category": "Utilities",
-        "choco": "formatfactory",
-        "name": "Format Factory",
-        "description": "FormatFactory is an ad-supported freeware multimedia converter that can convert video, audio, and picture files. It is also capable of ripping DVDs and CDs to other file formats, as well as creating .iso images. It can also join multiple video files together into one.",
-        "link": "http://www.pcfreetime.com/formatfactory/",
-        "winget": "na"
-    },
-    {
+
         "category": "Utilities",
         "choco": "na",
         "name": "Dropbox",
