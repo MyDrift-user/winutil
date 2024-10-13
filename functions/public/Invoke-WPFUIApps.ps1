@@ -27,8 +27,8 @@ function Search-AppsByNameOrDescription {
     param(
         [Parameter(Mandatory=$false)]
         [string]$SearchString = "",
-        [Parameter(Mandatory=$true)]
-        [System.Windows.Controls.ItemsControl]$ItemsControl
+        [Parameter(Mandatory=$false)]
+        [System.Windows.Controls.ItemsControl]$ItemsControl = $sync.ItemsControl
     )
     $Apps = $ItemsControl.Items
 
@@ -149,7 +149,7 @@ function Invoke-WPFUIApps {
 
         $showSelectedAppsButton = New-Object Windows.Controls.Button
         $showSelectedAppsButton.Name = "ShowSelectedAppsButton"
-        $showSelectedAppsButton.Content = "Show Selected Only"
+        $showSelectedAppsButton.Content = "Show Selected"
         $showSelectedAppsButton.Add_Click({
             if ($sync.SelectedApps.Count -gt 0) {
                 Show-OnlyCheckedApps -appKeys $sync.SelectedApps -ItemsControl $sync.ItemsControl
@@ -254,14 +254,6 @@ function Invoke-WPFUIApps {
                 }
             }
         })
-        if ($sync.SelectedApps) {
-            $sync.ItemsControl.Items | Where-Object {
-                $_.Tag.name -in $sync.SelectedApps
-            } | ForEach-Object {
-                $null = $sync.SelectedApps.Remove($_.Tag.name)
-                $_.Child.Children[0].IsChecked = $true
-            }
-        }
     }
 
     function New-AppEntry {
@@ -381,7 +373,6 @@ function Invoke-WPFUIApps {
         $installButton.Add_Click({
             $appKey = $this.Parent.Parent.Parent.Tag
             $appObject = $SortedAppsHashtable.$appKey
-            Write-Host "Installing $($appObject.Content) ..."
             Invoke-WPFInstall -PackagesToInstall $appObject
         })
 
@@ -406,7 +397,6 @@ function Invoke-WPFUIApps {
         $uninstallButton.Add_Click({
             $appKey = $this.Parent.Parent.Parent.Tag
             $appObject = $SortedAppsHashtable.$appKey
-            Write-Host "Uninstalling $($appObject.Content) ..."
             Invoke-WPFUnInstall -PackagesToUninstall $appObject
         })
 

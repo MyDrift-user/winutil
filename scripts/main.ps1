@@ -457,7 +457,7 @@ $sync["SearchBar"].Add_TextChanged({
     } else {
         $sync.SearchBarClearButton.Visibility = "Collapsed"
     }
-    Search-AppsByNameOrDescription -SearchString $sync.SearchBar.Text -ItemsControl $sync.ItemsControl
+    Search-AppsByNameOrDescription -SearchString $sync.SearchBar.Text
 })
 
 $sync["Form"].Add_Loaded({
