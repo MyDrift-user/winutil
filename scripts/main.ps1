@@ -114,6 +114,7 @@ Invoke-WinutilThemeChange -init $true
 
 $noimage = "https://images.emojiterra.com/google/noto-emoji/unicode-15/color/512px/1f4e6.png"
 $noimage = [Windows.Media.Imaging.BitmapImage]::new([Uri]::new($noimage))
+
 $sync.Buttons = @{}
 $SortedAppsHashtable = [ordered]@{}
 $sortedProperties = $sync.configs.applications.PSObject.Properties | Sort-Object { $_.Value.Content }
@@ -123,8 +124,8 @@ $sortedProperties | ForEach-Object {
 
 # Now call the function with the final merged config
 Invoke-WPFUIElements -configVariable $sync.configs.appnavigation -targetGridName "appscategory" -columncount 1
-Invoke-WPFUIApps -Apps $SortedAppsHashtable -targetGridName "appspanel"
 
+Invoke-WPFUIApps -Apps $SortedAppsHashtable -targetGridName "appspanel"
 
 Invoke-WPFUIElements -configVariable $sync.configs.tweaks -targetGridName "tweakspanel" -columncount 2
 Invoke-WPFUIElements -configVariable $sync.configs.feature -targetGridName "featurespanel" -columncount 2

@@ -123,7 +123,9 @@ function Invoke-WPFUIElements {
         if ($configVariable -eq $sync.configs.applications) {
             # Create a WrapPanel to hold buttons at the top
             $wrapPanelTop = New-Object Windows.Controls.WrapPanel
+
             $wrapPanelTop.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, "MainBackgroundColor")
+
             $wrapPanelTop.HorizontalAlignment = "Left"
             $wrapPanelTop.VerticalAlignment = "Top"
             $wrapPanelTop.Orientation = "Horizontal"
@@ -208,8 +210,10 @@ function Invoke-WPFUIElements {
 
             $label = New-Object Windows.Controls.Label
             $label.Content = $category -replace ".*__", ""
+
             $label.SetResourceReference([Windows.Controls.Control]::FontSizeProperty, "FontSizeHeading")
             $label.SetResourceReference([Windows.Controls.Control]::FontFamilyProperty, "HeaderFontFamily")
+
             $itemsControl.Items.Add($label) | Out-Null
 
             $sync[$category] = $label
@@ -230,11 +234,13 @@ function Invoke-WPFUIElements {
                     $border.HorizontalAlignment = "Stretch"
                     $border.VerticalAlignment = "Top"
                     $border.Margin = New-Object Windows.Thickness(0, 10, 0, 0)
+
                     $border.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, "AppInstallUnselectedColor")
                     $border.Add_MouseUp({
                         $childCheckbox = ($this.Child.Children | Where-Object {$_.Template.TargetType -eq [System.Windows.Controls.Checkbox]})[0]
                         $childCheckBox.isChecked = -not $childCheckbox.IsChecked
                     })
+
                     # Create a DockPanel inside the Border
                     $dockPanel = New-Object Windows.Controls.DockPanel
                     $dockPanel.LastChildFill = $true
@@ -243,6 +249,7 @@ function Invoke-WPFUIElements {
                     # Create the CheckBox, vertically centered
                     $checkBox = New-Object Windows.Controls.CheckBox
                     $checkBox.Name = $entryInfo.Name
+
                     $checkBox.Background = "Transparent"
                     $checkBox.HorizontalAlignment = "Left"
                     $checkBox.VerticalAlignment = "Center"
@@ -258,6 +265,7 @@ function Invoke-WPFUIElements {
                         $borderElement = $this.Parent.Parent
                         $borderElement.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, "AppInstallUnselectedColor")
                     })
+
                     # Create a StackPanel for the image and name
                     $imageAndNamePanel = New-Object Windows.Controls.StackPanel
                     $imageAndNamePanel.Orientation = "Horizontal"
@@ -286,6 +294,7 @@ function Invoke-WPFUIElements {
                     $appName.FontWeight = [Windows.FontWeights]::Bold
                     $appName.VerticalAlignment = "Center"
                     $appName.Margin = New-Object Windows.Thickness(5, 0, 0, 0)
+
                     $appName.Background = "Transparent"
                     $imageAndNamePanel.Children.Add($appName) | Out-Null
 
@@ -314,7 +323,9 @@ function Invoke-WPFUIElements {
                     $installIcon.Text = [char]0xE118  # Install Icon
                     $installIcon.FontFamily = "Segoe MDL2 Assets"
                     $installIcon.FontSize = 20
+
                     $installIcon.SetResourceReference([Windows.Controls.Control]::ForegroundProperty, "MainForegroundColor")
+
                     $installIcon.Background = "Transparent"
                     $installIcon.HorizontalAlignment = "Center"
                     $installIcon.VerticalAlignment = "Center"
@@ -336,7 +347,9 @@ function Invoke-WPFUIElements {
                     $uninstallIcon.Text = [char]0xE74D  # Uninstall Icon
                     $uninstallIcon.FontFamily = "Segoe MDL2 Assets"
                     $uninstallIcon.FontSize = 20
+
                     $uninstallIcon.SetResourceReference([Windows.Controls.Control]::ForegroundProperty, "MainForegroundColor")
+
                     $uninstallIcon.Background = "Transparent"
                     $uninstallIcon.HorizontalAlignment = "Center"
                     $uninstallIcon.VerticalAlignment = "Center"
@@ -358,7 +371,9 @@ function Invoke-WPFUIElements {
                     $infoIcon.Text = [char]0xE946  # Info Icon
                     $infoIcon.FontFamily = "Segoe MDL2 Assets"
                     $infoIcon.FontSize = 20
+
                     $infoIcon.SetResourceReference([Windows.Controls.Control]::ForegroundProperty, "MainForegroundColor")
+
                     $infoIcon.Background = "Transparent"
                     $infoIcon.HorizontalAlignment = "Center"
                     $infoIcon.VerticalAlignment = "Center"
@@ -416,7 +431,9 @@ function Invoke-WPFUIElements {
                             $label.Content = $entryInfo.Content
                             $label.ToolTip = $entryInfo.Description
                             $label.HorizontalAlignment = "Left"
+
                             $label.SetResourceReference([Windows.Controls.Control]::FontSizeProperty, "FontSize")
+
                             $label.SetResourceReference([Windows.Controls.Control]::ForegroundProperty, "MainForegroundColor")
                             $dockPanel.Children.Add($label) | Out-Null
                             $itemsControl.Items.Add($dockPanel) | Out-Null
@@ -435,14 +452,18 @@ function Invoke-WPFUIElements {
                             $toggleButton = New-Object Windows.Controls.ToggleButton
                             $toggleButton.Name = $entryInfo.Name
                             $toggleButton.HorizontalAlignment = "Left"
+
                             $toggleButton.SetResourceReference([Windows.Controls.Control]::HeightProperty, "TabButtonHeight")
                             $toggleButton.SetResourceReference([Windows.Controls.Control]::WidthProperty, "TabButtonWidth")
+
                             $toggleButton.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, "ButtonInstallBackgroundColor")
                             $toggleButton.SetResourceReference([Windows.Controls.Control]::ForegroundProperty, "MainForegroundColor")
                             $toggleButton.FontWeight = [Windows.FontWeights]::Bold
 
                             $textBlock = New-Object Windows.Controls.TextBlock
+
                             $textBlock.SetResourceReference([Windows.Controls.Control]::FontSizeProperty, "TabButtonFontSize")
+
                             $textBlock.Background = [Windows.Media.Brushes]::Transparent
                             $textBlock.SetResourceReference([Windows.Controls.Control]::ForegroundProperty, "ButtonInstallForegroundColor")
 
@@ -471,11 +492,14 @@ function Invoke-WPFUIElements {
                             $label.Content = $entryInfo.Content
                             $label.HorizontalAlignment = "Left"
                             $label.VerticalAlignment = "Center"
+
                             $label.SetResourceReference([Windows.Controls.Control]::FontSizeProperty, "ButtonFontSize")
+
                             $horizontalStackPanel.Children.Add($label) | Out-Null
 
                             $comboBox = New-Object Windows.Controls.ComboBox
                             $comboBox.Name = $entryInfo.Name
+
                             $comboBox.SetResourceReference([Windows.Controls.Control]::HeightProperty, "ButtonHeight")
                             $comboBox.SetResourceReference([Windows.Controls.Control]::WidthProperty, "ButtonWidth")
                             $comboBox.HorizontalAlignment = "Left"
@@ -485,7 +509,9 @@ function Invoke-WPFUIElements {
                             foreach ($comboitem in ($entryInfo.ComboItems -split " ")) {
                                 $comboBoxItem = New-Object Windows.Controls.ComboBoxItem
                                 $comboBoxItem.Content = $comboitem
+
                                 $comboBoxItem.SetResourceReference([Windows.Controls.Control]::FontSizeProperty, "ButtonFontSize")
+
                                 $comboBox.Items.Add($comboBoxItem) | Out-Null
                             }
 
@@ -502,8 +528,10 @@ function Invoke-WPFUIElements {
                             $button.Name = $entryInfo.Name
                             $button.Content = $entryInfo.Content
                             $button.HorizontalAlignment = "Left"
+
                             $button.SetResourceReference([Windows.Controls.Control]::MarginProperty, "ButtonMargin")
                             $button.SetResourceReference([Windows.Controls.Control]::FontSizeProperty, "ButtonFontSize")
+
                             if ($entryInfo.ButtonWidth) {
                                 $button.Width = $entryInfo.ButtonWidth
                             }
@@ -532,8 +560,10 @@ function Invoke-WPFUIElements {
                             $radioButton.GroupName = $entryInfo.GroupName
                             $radioButton.Content = $entryInfo.Content
                             $radioButton.HorizontalAlignment = "Left"
+
                             $radioButton.SetResourceReference([Windows.Controls.Control]::MarginProperty, "CheckBoxMargin")
                             $radioButton.SetResourceReference([Windows.Controls.Control]::FontSizeProperty, "ButtonFontSize")
+
                             $radioButton.ToolTip = $entryInfo.Description
 
                             if ($entryInfo.Checked -eq $true) {
@@ -552,9 +582,11 @@ function Invoke-WPFUIElements {
                             $checkBox = New-Object Windows.Controls.CheckBox
                             $checkBox.Name = $entryInfo.Name
                             $checkBox.Content = $entryInfo.Content
+
                             $checkBox.SetResourceReference([Windows.Controls.Control]::FontSizeProperty, "FontSize")
                             $checkBox.ToolTip = $entryInfo.Description
                             $checkBox.SetResourceReference([Windows.Controls.Control]::MarginProperty, "CheckBoxMargin")
+
                             if ($entryInfo.Checked -eq $true) {
                                 $checkBox.IsChecked = $entryInfo.Checked
                             }
