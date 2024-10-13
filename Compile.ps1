@@ -76,12 +76,21 @@ Get-ChildItem "config" | Where-Object {$psitem.extension -eq ".json"} | ForEach-
     $json = (Get-Content $psitem.FullName -Raw)
     $jsonAsObject = $json | ConvertFrom-Json
 
+    # Add 'WPFInstall' as a prefix to every entry-name in 'applications.json' file
+    if ($psitem.Name -eq "applications.json") {
+        foreach ($appEntryName in $jsonAsObject.PSObject.Properties.Name) {
+            $appEntryContent = $jsonAsObject.$appEntryName
+            $jsonAsObject.PSObject.Properties.Remove($appEntryName)
+            $jsonAsObject | Add-Member -MemberType NoteProperty -Name "WPFInstall$appEntryName" -Value $appEntryContent
+        }
+    }
 
     # Line 90 requires no whitespace inside the here-strings, to keep formatting of the JSON in the final script.
     $json = @"
 $($jsonAsObject | ConvertTo-Json -Depth 3)
 "@
 
+    $sync.configs.$($psitem.BaseName) = $json | ConvertFrom-Json
     $script_content.Add($(Write-Output "`$sync.configs.$($psitem.BaseName) = @'`n$json`n'@ `| ConvertFrom-Json" ))
 }
 
