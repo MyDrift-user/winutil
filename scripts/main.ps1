@@ -114,12 +114,16 @@ Invoke-WinutilThemeChange -init $true
 
 $noimage = "https://images.emojiterra.com/google/noto-emoji/unicode-15/color/512px/1f4e6.png"
 $noimage = [Windows.Media.Imaging.BitmapImage]::new([Uri]::new($noimage))
+$sync.Buttons = @{}
+$SortedAppsHashtable = [ordered]@{}
+$sortedProperties = $sync.configs.applications.PSObject.Properties | Sort-Object { $_.Value.Content }
+$sortedProperties | ForEach-Object {
+    $SortedAppsHashtable[$_.Name] = $_.Value
+}
 
-
-$sync.configs.applications = $sync.configs.applications | Sort-Object -Property Name
 # Now call the function with the final merged config
 Invoke-WPFUIElements -configVariable $sync.configs.appnavigation -targetGridName "appscategory" -columncount 1
-Invoke-WPFUIApps -Apps $sync.configs.applications -targetGridName "appspanel"
+Invoke-WPFUIApps -Apps $SortedAppsHashtable -targetGridName "appspanel"
 
 
 Invoke-WPFUIElements -configVariable $sync.configs.tweaks -targetGridName "tweakspanel" -columncount 2
@@ -128,13 +132,13 @@ Invoke-WPFUIElements -configVariable $sync.configs.feature -targetGridName "feat
 $sync.SortbyCategory.Add_Checked({
     Write-Host "Sort By Category"
     $sync.Form.Dispatcher.BeginInvoke([System.Windows.Threading.DispatcherPriority]::Background, [action]{
-        Invoke-WPFUIApps -Apps $sync.configs.applications -targetGridName "appspanel"
+        Invoke-WPFUIApps -Apps $SortedAppsHashtable -targetGridName "appspanel"
     }) | Out-Null
 })
 $sync.SortbyAlphabet.Add_Checked({
     Write-Host "Sort By Alphabet"
     $sync.Form.Dispatcher.BeginInvoke([System.Windows.Threading.DispatcherPriority]::Background, [action]{
-        Invoke-WPFUIApps -Apps $sync.configs.applications -targetGridName "appspanel" -alphabetical $true
+        Invoke-WPFUIApps -Apps $SortedAppsHashtable -targetGridName "appspanel" -alphabetical $true
     })
 })
 
@@ -586,7 +590,9 @@ $sync["SponsorMenuItem"].Add_Click({
 })
 
 #Initialize List to store the Names of the selected Apps on the Install Tab
-$sync.selectedApps = [System.Collections.Generic.List[pscustomobject]]::new()
+$sync.selectedApps = [System.Collections.Generic.List[string]]::new()
+$sync.ShowOnlySeleced = $false
+
 
 $sync["Form"].ShowDialog() | out-null
 Stop-Transcript

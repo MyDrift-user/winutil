@@ -5,7 +5,12 @@ function Toggle-CategoryVisibility {
         [Parameter(Mandatory=$true)]
         [System.Windows.Controls.ItemsControl]$ItemsControl
     )
-    $appsInCategory = $ItemsControl.Items | Where-Object { $_.Tag.category -eq $Category }
+
+    $appsInCategory = $ItemsControl.Items | Where-Object { 
+        if ($null -ne $_.Tag){
+            $SortedAppsHashtable.$($_.Tag).Category -eq $Category 
+        }
+    }
     $isCollapsed = $appsInCategory[0].Visibility -eq [Windows.Visibility]::Visible
     foreach ($appEntry in $appsInCategory) {
         $appEntry.Visibility = if ($isCollapsed) {
@@ -33,19 +38,44 @@ function Search-AppsByNameOrDescription {
         }
     } else {
         $Apps | ForEach-Object {
-            if ($_.Tag.Name -like "*$SearchString*" -or $_.Tag.Description -like "*$SearchString*") {
-                $_.Visibility = 'Visible'
-            } else {
-                $_.Visibility = 'Collapsed'
+            if ($null -ne $_.Tag) {
+                if ($SortedAppsHashtable.$($_.Tag).Content -like "*$SearchString*") {
+                    $_.Visibility = 'Visible'
+                } else {
+                    $_.Visibility = 'Collapsed'
+                }
             }
         }
+    }
+}
+function Show-OnlyCheckedApps {
+    param (
+        [Parameter(Mandatory=$true)]
+        [String[]]$appKeys,
+        [Parameter(Mandatory=$true)]
+        [System.Windows.Controls.ItemsControl]$ItemsControl
+    )
+    Write-Host "Showing only $($appKeys.Count) apps"
+    $sync.ShowOnlySelected = -not $sync.ShowOnlySelected
+    if ($sync.ShowOnlySelected) {
+        $sync.Buttons.ShowSelectedAppsButton.Content = "Show All"
+        foreach ($item in $ItemsControl.Items) {
+            if ($appKeys -contains $item.Tag) {
+                $item.Visibility = [Windows.Visibility]::Visible
+            } else {
+                $item.Visibility = [Windows.Visibility]::Collapsed
+            }
+        } 
+    } else {
+        $sync.Buttons.ShowSelectedAppsButton.Content = "Show Selected"
+        $ItemsControl.Items | ForEach-Object { $_.Visibility = [Windows.Visibility]::Visible }
     }
 }
 function Invoke-WPFUIApps {
     [OutputType([void])]
     param(
         [Parameter(Mandatory, Position = 0)]
-        [PSCustomObject]$Apps,
+        [PSCustomObject[]]$Apps,
 
         [Parameter(Mandatory, Position = 1)]
         [string]$TargetGridName,
@@ -116,6 +146,17 @@ function Invoke-WPFUIApps {
 
         $null = $wrapPanelTop.Children.Add($selectedLabel)
         $sync.$($selectedLabel.Name) = $selectedLabel
+
+        $showSelectedAppsButton = New-Object Windows.Controls.Button
+        $showSelectedAppsButton.Name = "ShowSelectedAppsButton"
+        $showSelectedAppsButton.Content = "Show Selected Only"
+        $showSelectedAppsButton.Add_Click({
+            if ($sync.SelectedApps.Count -gt 0) {
+                Show-OnlyCheckedApps -appKeys $sync.SelectedApps -ItemsControl $sync.ItemsControl
+            }
+        })
+        $sync.Buttons.ShowSelectedAppsButton = $showSelectedAppsButton
+        $null = $wrapPanelTop.Children.Add($showSelectedAppsButton)
 
         [Windows.Controls.DockPanel]::SetDock($wrapPanelTop, [Windows.Controls.Dock]::Top)
         $null = $dockPanel.Children.Add($wrapPanelTop)
@@ -200,16 +241,16 @@ function Invoke-WPFUIApps {
             $itemsControl.Items.Clear()
 
             if (-not ($Alphabetical)) {
-                $categories = $Apps | Select-Object -ExpandProperty category -Unique | Sort-Object
+                $categories = $Apps.Values | Select-Object -ExpandProperty category -Unique | Sort-Object
                 foreach ($category in $categories) {
                     Add-CategoryLabel -Category $category -ItemsControl $itemsControl
-                    foreach ($app in $Apps | Where-Object {$_.category -eq $category}) {
-                        New-AppEntry -ItemsControl $itemsControl -App $app -Hidden $true
+                    $Apps.Keys | Where-Object { $Apps.$_.Category -eq $category } | ForEach-Object {
+                        New-AppEntry -ItemsControl $itemsControl -AppKey $_ -Hidden $true
                     }
                 }
             } else {
-                foreach ($app in $Apps) {
-                    New-AppEntry -ItemsControl $itemsControl -App $app -Hidden $false
+                foreach ($appKey in $Apps.Keys) {
+                    New-AppEntry -ItemsControl $itemsControl -AppKey $appKey -Hidden $false
                 }
             }
         })
@@ -226,9 +267,10 @@ function Invoke-WPFUIApps {
     function New-AppEntry {
         param(
             $ItemsControl,
-            $App,
+            $AppKey,
             [bool]$Hidden
         )
+        $App = $Apps.$AppKey
         # Create the outer Border for the application type
         $border = New-Object Windows.Controls.Border
         $border.BorderBrush = [Windows.Media.Brushes]::Gray
@@ -239,10 +281,7 @@ function Invoke-WPFUIApps {
         $border.VerticalAlignment = "Top"
         $border.Margin = New-Object Windows.Thickness(0, 10, 0, 0)
         $border.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, "AppInstallUnselectedColor")
-        $border.Tag = [PSCustomObject]@{
-            name = $App.Name
-            category = $App.category
-        }
+        $border.Tag = $Appkey
         $border.ToolTip = $App.description
         $border.Visibility = if ($Hidden) {[Windows.Visibility]::Collapsed} else {[Windows.Visibility]::Visible}
         $border.Add_MouseUp({
@@ -256,7 +295,7 @@ function Invoke-WPFUIApps {
 
         # Create the CheckBox, vertically centered
         $checkBox = New-Object Windows.Controls.CheckBox
-        # $checkBox.Name = $App.Name
+        $checkBox.Name = $AppKey
         $checkBox.Background = "Transparent"
         $checkBox.HorizontalAlignment = "Left"
         $checkBox.VerticalAlignment = "Center"
@@ -272,6 +311,7 @@ function Invoke-WPFUIApps {
             $borderElement = $this.Parent.Parent
             $borderElement.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, "AppInstallUnselectedColor")
         })
+        $sync.$($checkBox.Name) = $checkBox
         # Create a StackPanel for the image and name
         $imageAndNamePanel = New-Object Windows.Controls.StackPanel
         $imageAndNamePanel.Orientation = "Horizontal"
@@ -295,7 +335,7 @@ function Invoke-WPFUIApps {
 
         # Create the TextBlock for the application name
         $appName = New-Object Windows.Controls.TextBlock
-        $appName.Text = $App.Name
+        $appName.Text = $App.Content
         $appName.FontSize = 16
         $appName.FontWeight = [Windows.FontWeights]::Bold
         $appName.VerticalAlignment = "Center"
@@ -334,13 +374,14 @@ function Invoke-WPFUIApps {
         $installIcon.VerticalAlignment = "Center"
 
         $installButton.Content = $installIcon
+        $installButton.ToolTip = "Install or Upgrade the application"
         $buttonPanel.Children.Add($installButton) | Out-Null
 
         # Add Click event for the "Install" button
         $installButton.Add_Click({
-            $appName = $this.Parent.Parent.Parent.Tag.Name
-            Write-Host "Installing $appName ..."
-            $appObject = $sync.configs.applications | Where-Object { $_.Name -eq $appName }
+            $appKey = $this.Parent.Parent.Parent.Tag
+            $appObject = $SortedAppsHashtable.$appKey
+            Write-Host "Installing $($appObject.Content) ..."
             Invoke-WPFInstall -PackagesToInstall $appObject
         })
 
@@ -361,10 +402,11 @@ function Invoke-WPFUIApps {
         $uninstallButton.Content = $uninstallIcon
         $buttonPanel.Children.Add($uninstallButton) | Out-Null
 
+        $uninstallButton.ToolTip = "Uninstall the application"
         $uninstallButton.Add_Click({
-            $appName = $this.Parent.Parent.Parent.Tag.Name
-            Write-Host "Uninstalling $appName ..."
-            $appObject = $sync.configs.applications | Where-Object { $_.Name -eq $appName }
+            $appKey = $this.Parent.Parent.Parent.Tag
+            $appObject = $SortedAppsHashtable.$appKey
+            Write-Host "Uninstalling $($appObject.Content) ..."
             Invoke-WPFUnInstall -PackagesToUninstall $appObject
         })
 
@@ -384,12 +426,13 @@ function Invoke-WPFUIApps {
         $infoIcon.VerticalAlignment = "Center"
 
         $infoButton.Content = $infoIcon
+        $infoButton.ToolTip = "Open the application's website in your default browser"
         $buttonPanel.Children.Add($infoButton) | Out-Null
 
         $infoButton.Add_Click({
-            $appName = $this.Parent.Parent.Parent.Tag.Name
-            $appWebsite = $sync.configs.applications | Where-Object { $_.Name -eq $appName } | Select-Object -ExpandProperty link
-            Start-Process $appWebsite
+            $appKey = $this.Parent.Parent.Parent.Tag
+            $appObject = $SortedAppsHashtable.$appKey
+            Start-Process $appObject.link
         })
 
         # Add the button panel to the DockPanel
