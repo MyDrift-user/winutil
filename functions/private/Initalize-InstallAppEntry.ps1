@@ -70,22 +70,22 @@ function Initialize-InstallAppEntry {
         $imageAndNamePanel.Orientation = "Horizontal"
         $imageAndNamePanel.VerticalAlignment = "Center"
 
-        # Create the Image and set a placeholder
-        $image = New-Object Windows.Controls.Image
-        # $image.Name = "wpfapplogo" + $App.Name
-        $image.Width = 40
-        $image.Height = 40
-        $image.Margin = New-Object Windows.Thickness(0, 0, 10, 0)
-        $image.Source = $noimage  # Ensure $noimage is defined in your script
+        # Create the icon TextBlock
+        $icon = New-Object Windows.Controls.TextBlock
+        $icon.Text = [char]0xE74C  # OEM Icon
+        $icon.FontFamily = "Segoe MDL2 Assets"
+        $icon.FontSize = 40
+        $icon.Width = 50
+        $icon.Height = 50
+        $icon.Margin = New-Object Windows.Thickness(10, 10, 10, 2)
+        $icon.SetResourceReference([Windows.Controls.Control]::ForegroundProperty, "MainForegroundColor")
+        $icon.Background = "Transparent"
+        $icon.HorizontalAlignment = "Center"
+        $icon.VerticalAlignment = "Center"
+        $icon.TextAlignment = "Center"
+        $icon.SetResourceReference([Windows.Controls.Control]::VisibilityProperty, "AppTileCompactVisibility")
 
-        # Clip the image corners
-        $image.Clip = New-Object Windows.Media.RectangleGeometry
-        $image.Clip.Rect = New-Object Windows.Rect(0, 0, $image.Width, $image.Height)
-        $image.Clip.RadiusX = 5
-        $image.Clip.RadiusY = 5
-        $image.SetResourceReference([Windows.Controls.Control]::VisibilityProperty, "AppTileCompactVisibility")
-
-        $imageAndNamePanel.Children.Add($image) | Out-Null
+        $imageAndNamePanel.Children.Add($icon) | Out-Null
 
         # Create the TextBlock for the application name
         $appName = New-Object Windows.Controls.TextBlock

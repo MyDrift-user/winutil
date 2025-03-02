@@ -109,9 +109,6 @@ $sync.Form.Add_Loaded({
 Invoke-WinutilThemeChange -init $true
 # Load the configuration files
 
-$noimage = "https://images.emojiterra.com/google/noto-emoji/unicode-15/color/512px/1f4e6.png"
-$noimage = [Windows.Media.Imaging.BitmapImage]::new([Uri]::new($noimage))
-
 $sync.configs.applicationsHashtable = @{}
 $sync.configs.applications.PSObject.Properties | ForEach-Object {
     $sync.configs.applicationsHashtable[$_.Name] = $_.Value
