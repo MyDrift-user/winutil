@@ -1,7 +1,6 @@
 function Invoke-WPFUpdatesScan {
-
-
     Invoke-WPFRunspace -DebugPreference $DebugPreference -ScriptBlock {
+        $sync.form.Dispatcher.Invoke([action] { $sync["WPFScanUpdates"].IsEnabled = $false })
         # Check if the PSWindowsUpdate module is installed
         if (-not (Get-Module -ListAvailable -Name PSWindowsUpdate)) {
             try {
@@ -11,6 +10,7 @@ function Invoke-WPFUpdatesScan {
             }
             catch {
                 Write-Error "Failed to install PSWindowsUpdate module: $_"
+                $sync.form.Dispatcher.Invoke([action] { $sync["WPFScanUpdates"].IsEnabled = $true })
                 return
             }
         }
@@ -22,6 +22,7 @@ function Invoke-WPFUpdatesScan {
         }
         catch {
             Write-Error "Failed to import PSWindowsUpdate module: $_"
+            $sync.form.Dispatcher.Invoke([action] { $sync["WPFScanUpdates"].IsEnabled = $true })
             return
         }
 
@@ -54,5 +55,6 @@ function Invoke-WPFUpdatesScan {
         } catch {
             Write-Error "Error scanning for updates: $_"
         }
+        $sync.form.Dispatcher.Invoke([action] { $sync["WPFScanUpdates"].IsEnabled = $true })
     }
 }
