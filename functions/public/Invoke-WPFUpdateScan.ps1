@@ -62,12 +62,14 @@ function Invoke-WPFUpdateScan {
                     # Build the list of items first
                     $items = foreach ($update in $updates) {
                         [PSCustomObject]@{
-                            LongTitle    = $update.Title
-                            ComputerName = $update.ComputerName
-                            KB           = $update.KB
-                            Size         = $update.Size
-                            Title        = $update.Title -replace '\s*\(KB\d+\)', '' -replace '\s*KB\d+\b', ''
-                            Status       = "Not Installed"
+                            LongTitle       = $update.Title
+                            ComputerName    = $update.ComputerName
+                            KB              = $update.KB
+                            UpdateID        = $update.Identity.UpdateID
+                            RevisionNumber  = $update.Identity.RevisionNumber
+                            Size            = $update.Size
+                            Title           = $update.Title -replace '\s*\(KB\d+\)', '' -replace '\s*KB\d+\b', ''
+                            Status          = "Not Installed"
                         }
                     }
 
@@ -107,6 +109,9 @@ function Invoke-WPFUpdateScan {
                         $sync["WPFUpdateHistory"].Columns[0].Visibility = if ($Computers.Count -gt 1) { "Visible" } else { "Collapsed" }
                     })
                     Write-Host "Scanning for Windows update history completed"
+                }
+                default {
+                    throw "[Invoke-WPFUpdateScan] Invalid 'type' Parameter was provided, 'type' is $type"
                 }
             }
 

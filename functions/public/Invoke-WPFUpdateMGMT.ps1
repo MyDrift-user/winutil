@@ -79,10 +79,12 @@ function Invoke-WPFUpdateMGMT {
 
             # Get selected updates
             $selectedUpdates = $sync["WPFUpdatesList"].SelectedItems | ForEach-Object {
-                [PSCustomObject]@{
-                        ComputerName = $_.ComputerName
-                        Title = $_.LongTitle
-                        KB = $_.KB
+                    [PSCustomObject]@{
+                        ComputerName    = $_.ComputerName
+                        Title           = $_.LongTitle
+                        KB              = $_.KB
+                        UpdateID        = $_.UpdateID
+                        RevisionNumber  = $_.RevisionNumber
                     }
                 }
 
@@ -102,12 +104,7 @@ function Invoke-WPFUpdateMGMT {
                     $updateParams = $params.Clone()
                     $updateParams['ComputerName'] = $update.ComputerName
 
-                    # Install update based on KB or Title
-                    if ($update.KB) {
-                        Get-WindowsUpdate -KBArticleID $update.KB -Install @updateParams
-                    } else {
-                        Get-WindowsUpdate -Title $update.Title -Install @updateParams
-                    }
+                    Get-WindowsUpdate -UpdateID $update.UpdateID -RevisionNumber $update.RevisionNumber  -Install @updateParams
                 }
 
                 $sync.form.Dispatcher.Invoke([action] {
