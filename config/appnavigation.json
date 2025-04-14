@@ -1,6 +1,6 @@
 {
     "WPFToggleView": {
-        "Content": ["Expanded View", "Compact View"],
+        "Content": ["Compact View", "Expanded View"],
         "Category": "____Actions",
         "Type": "ToggleButton",
         "Order": "1",

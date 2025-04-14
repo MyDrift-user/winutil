@@ -119,22 +119,11 @@ $sync.configs.applications.PSObject.Properties | ForEach-Object {
 # Now call the function with the final merged config
 Invoke-WPFUIElements -configVariable $sync.configs.appnavigation -targetGridName "appscategory" -columncount 1
 
-# Add logic to handle click to the ToggleView Button on the Install Tab
-$sync.WPFToggleView.Add_Click({
-    $sync.CompactView = -not $sync.CompactView
-    Update-AppTileProperties
-    if ($sync.SearchBar.Text -eq "") {
-        Set-CategoryVisibility -Category "*"
-    }
-})
 Invoke-WPFUIApps -Apps $sync.configs.applicationsHashtable -targetGridName "appspanel"
 
 Invoke-WPFUIElements -configVariable $sync.configs.tweaks -targetGridName "tweakspanel" -columncount 2
 
 Invoke-WPFUIElements -configVariable $sync.configs.feature -targetGridName "featurespanel" -columncount 2
-
-# Future implementation: Add Windows Version to updates panel
-#Invoke-WPFUIElements -configVariable $sync.configs.updates -targetGridName "updatespanel" -columncount 1
 
 #===========================================================================
 # Store Form Objects In PowerShell
@@ -204,12 +193,7 @@ Invoke-WPFRunspace -ScriptBlock {
 
 # Print the logo
 Invoke-WPFFormVariables
-$sync.CompactView = $false
-$sync.Form.Resources.AppTileWidth = [double]::NaN
-$sync.Form.Resources.AppTileCompactVisibility = [Windows.Visibility]::Visible
-$sync.Form.Resources.AppTileFontSize = [double]16
-$sync.Form.Resources.AppTileMargins = [Windows.Thickness]5
-$sync.Form.Resources.AppTileBorderThickness = [Windows.Thickness]0
+
 function Update-AppTileProperties {
     if ($sync.CompactView -eq $true) {
         $sync.Form.Resources.AppTileWidth = [double]::NaN
@@ -217,6 +201,7 @@ function Update-AppTileProperties {
         $sync.Form.Resources.AppTileFontSize = [double]12
         $sync.Form.Resources.AppTileMargins = [Windows.Thickness]2
         $sync.Form.Resources.AppTileBorderThickness = [Windows.Thickness]0
+        Set-CategoryVisibility -Category "*" -overrideState Expand
     }
     else {
         $sync.Form.Resources.AppTileWidth = $sync.ItemsControl.ActualWidth -20
@@ -224,8 +209,22 @@ function Update-AppTileProperties {
         $sync.Form.Resources.AppTileFontSize = [double]16
         $sync.Form.Resources.AppTileMargins = [Windows.Thickness]5
         $sync.Form.Resources.AppTileBorderThickness = [Windows.Thickness]1
+        Set-CategoryVisibility -Category "*" -overrideState Collapse
     }
 }
+
+$sync.CompactView = $true
+Update-AppTileProperties
+
+# Add logic to handle click to the ToggleView Button on the Install Tab
+$sync.WPFToggleView.Add_Click({
+    $sync.CompactView = -not $sync.CompactView
+    Update-AppTileProperties
+    if ($sync.SearchBar.Text -eq "") {
+        Set-CategoryVisibility -Category "*"
+    }
+})
+
 # We need to update the app tile properties when the form is resized because to fill a WrapPanel update the width of the elemenmt manually (afaik)
 $sync.Form.Add_SizeChanged({
     Update-AppTileProperties
