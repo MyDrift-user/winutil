@@ -92,20 +92,9 @@ function Invoke-WPFUIElements {
 
         # Store application data in an array under the category
         $organizedData[$entryObject.Panel][$entryObject.Category] += $entryObject
-
-        # Only apply the logic for distributing entries across columns if the targetGridName is "appspanel"
-        if ($targetGridName -eq "appspanel") {
-            $panelcount = 0
-            $entrycount = $configHashtable.Keys.Count + $organizedData["0"].Keys.Count
-        }
-
     }
 
-    # Initialize panel count
-    $panelcount = 0
-
     # Iterate through 'organizedData' by panel, category, and application
-    $count = 0
     foreach ($panelKey in ($organizedData.Keys | Sort-Object)) {
         # Create a Border for each column
         $border = New-Object Windows.Controls.Border
@@ -140,8 +129,6 @@ function Invoke-WPFUIElements {
 
         # Now proceed with adding category labels and entries to $itemsControl
         foreach ($category in ($organizedData[$panelKey].Keys | Sort-Object)) {
-            $count++
-
             $label = New-Object Windows.Controls.Label
             $label.Content = $category -replace ".*__", ""
             $label.SetResourceReference([Windows.Controls.Control]::FontSizeProperty, "HeaderFontSize")
@@ -152,7 +139,6 @@ function Invoke-WPFUIElements {
             # Sort entries by Order and then by Name
             $entries = $organizedData[$panelKey][$category] | Sort-Object Order, Name
             foreach ($entryInfo in $entries) {
-                $count++
                 # Create the UI elements based on the entry type
                 switch ($entryInfo.Type) {
                     "Toggle" {
