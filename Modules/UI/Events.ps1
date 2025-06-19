@@ -63,7 +63,7 @@ function Register-ButtonHandlers {
 function Register-SearchHandlers {
     <#
     .SYNOPSIS
-    Registers event handlers for search functionality
+    Registers event handlers for unified search functionality
     #>
     param(
         [Parameter(Mandatory=$false)]
@@ -80,38 +80,74 @@ function Register-SearchHandlers {
     )
     
     try {
-        # Get search controls for both tabs
+        # Get unified search control
         if ($Sync) {
             $txtSearch = Get-UIControl -Sync $Sync -ControlName "txtSearch"
-            $txtSearchTweaks = Get-UIControl -Sync $Sync -ControlName "txtSearchTweaks"
+            $applicationsContent = Get-UIControl -Sync $Sync -ControlName "ApplicationsContent"
+            $tweaksContent = Get-UIControl -Sync $Sync -ControlName "TweaksContent"
         } else {
             $txtSearch = $Window.FindName("txtSearch")
-            $txtSearchTweaks = $Window.FindName("txtSearchTweaks")
+            $applicationsContent = $Window.FindName("ApplicationsContent")
+            $tweaksContent = $Window.FindName("TweaksContent")
         }
         
-        # Applications search
+        # Unified search handler
         if ($txtSearch) {
             $txtSearch.Add_TextChanged({
-                $searchText = $this.Text
-                if ($Sync) {
-                    Filter-ApplicationContent -Sync $Sync -AppsConfig $AppsConfig -SearchText $searchText
-                } else {
-                    Write-Log "Search functionality requires Sync hashtable" -Level "WARN"
+                try {
+                    $searchText = $this.Text
+                    
+                    # Determine which tab is active and search accordingly
+                    if ($Sync) {
+                        $appContent = Get-UIControl -Sync $Sync -ControlName "ApplicationsContent"
+                        $tweakContent = Get-UIControl -Sync $Sync -ControlName "TweaksContent"
+                        
+                        if ($appContent.Visibility -eq "Visible") {
+                            # Search applications
+                            Filter-ApplicationContent -Sync $Sync -AppsConfig $AppsConfig -SearchText $searchText
+                        } elseif ($tweakContent.Visibility -eq "Visible") {
+                            # Search tweaks
+                            Filter-TweakContent -Sync $Sync -TweaksConfig $TweaksConfig -SearchText $searchText
+                        }
+                    } else {
+                        # Fallback for Window-based approach
+                        $appContent = $Window.FindName("ApplicationsContent")
+                        $tweakContent = $Window.FindName("TweaksContent")
+                        
+                        if ($appContent.Visibility -eq "Visible") {
+                            Write-Log "Applications search functionality requires Sync hashtable" -Level "WARN"
+                        } elseif ($tweakContent.Visibility -eq "Visible") {
+                            Write-Log "Tweaks search functionality requires Sync hashtable" -Level "WARN"
+                        }
+                    }
+                } catch {
+                    Write-Log "Exception during search: $($_.Exception.Message)" -Level "ERROR"
                 }
             })
         }
         
-        # Tweaks search
-        if ($txtSearchTweaks) {
-            $txtSearchTweaks.Add_TextChanged({
-                $searchText = $this.Text
-                if ($Sync) {
-                    Filter-TweakContent -Sync $Sync -TweaksConfig $TweaksConfig -SearchText $searchText
-                } else {
-                    Write-Log "Search functionality requires Sync hashtable" -Level "WARN"
+        # Function to update search placeholder text
+        function Update-SearchPlaceholder {
+            param($SearchBox, $PlaceholderText)
+            
+            try {
+                if ($SearchBox) {
+                    $SearchBox.ApplyTemplate()
+                    $placeholder = $SearchBox.Template.FindName("PlaceholderText", $SearchBox)
+                    if ($placeholder) {
+                        $placeholder.Text = $PlaceholderText
+                    }
                 }
-            })
+            } catch {
+                Write-Log "Exception updating search placeholder: $($_.Exception.Message)" -Level "DEBUG"
+            }
         }
+        
+        # Store reference for placeholder updates
+        if ($Sync -and $txtSearch) {
+            $Sync["SearchBox"] = $txtSearch
+        }
+        
     }
     catch {
         Write-Log "Exception registering search handlers: $($_.Exception.Message)" -Level "ERROR"
@@ -450,13 +486,39 @@ function Register-GeneralHandlers {
                     
                     # Update tab button appearance - Applications active
                     if ($btnApps) {
-                        $btnApps.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF1F2937")
+                        $btnApps.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF2D2D30")
                         $btnApps.Foreground = [System.Windows.Media.Brushes]::White
+                        
+                        # Show active indicator line
+                        try {
+                            $btnApps.ApplyTemplate()
+                            $activeLine = $btnApps.Template.FindName("ActiveLine", $btnApps)
+                            if ($activeLine) { $activeLine.Opacity = 1.0 }
+                        } catch { }
                     }
                     if ($btnTweaks) {
                         $btnTweaks.Background = [System.Windows.Media.Brushes]::Transparent
-                        $btnTweaks.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF9CA3AF")
+                        $btnTweaks.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FFAAAAAA")
+                        
+                        # Hide active indicator line
+                        try {
+                            $btnTweaks.ApplyTemplate()
+                            $inactiveLine = $btnTweaks.Template.FindName("ActiveLine", $btnTweaks)
+                            if ($inactiveLine) { $inactiveLine.Opacity = 0.0 }
+                        } catch { }
                     }
+                    
+                    # Update search placeholder for Applications
+                    try {
+                        if ($Sync -and $Sync["SearchBox"]) {
+                            $searchBox = $Sync["SearchBox"]
+                            $searchBox.ApplyTemplate()
+                            $placeholder = $searchBox.Template.FindName("PlaceholderText", $searchBox)
+                            if ($placeholder) {
+                                $placeholder.Text = "Search applications..."
+                            }
+                        }
+                    } catch { }
                 }
                 catch {
                     Write-Log "Exception switching to Applications tab: $($_.Exception.Message)" -Level "ERROR"
@@ -489,13 +551,39 @@ function Register-GeneralHandlers {
                     
                     # Update tab button appearance - Tweaks active
                     if ($btnTweaks) {
-                        $btnTweaks.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF1F2937")
+                        $btnTweaks.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF2D2D30")
                         $btnTweaks.Foreground = [System.Windows.Media.Brushes]::White
+                        
+                        # Show active indicator line
+                        try {
+                            $btnTweaks.ApplyTemplate()
+                            $activeLine = $btnTweaks.Template.FindName("ActiveLine", $btnTweaks)
+                            if ($activeLine) { $activeLine.Opacity = 1.0 }
+                        } catch { }
                     }
                     if ($btnApps) {
                         $btnApps.Background = [System.Windows.Media.Brushes]::Transparent
-                        $btnApps.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF9CA3AF")
+                        $btnApps.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FFAAAAAA")
+                        
+                        # Hide active indicator line
+                        try {
+                            $btnApps.ApplyTemplate()
+                            $inactiveLine = $btnApps.Template.FindName("ActiveLine", $btnApps)
+                            if ($inactiveLine) { $inactiveLine.Opacity = 0.0 }
+                        } catch { }
                     }
+                    
+                    # Update search placeholder for Tweaks
+                    try {
+                        if ($Sync -and $Sync["SearchBox"]) {
+                            $searchBox = $Sync["SearchBox"]
+                            $searchBox.ApplyTemplate()
+                            $placeholder = $searchBox.Template.FindName("PlaceholderText", $searchBox)
+                            if ($placeholder) {
+                                $placeholder.Text = "Search tweaks..."
+                            }
+                        }
+                    } catch { }
                 }
                 catch {
                     Write-Log "Exception switching to Tweaks tab: $($_.Exception.Message)" -Level "ERROR"
@@ -506,12 +594,36 @@ function Register-GeneralHandlers {
         # Set default active tab appearance (Applications)
         try {
             if ($btnApplicationsTab) {
-                $btnApplicationsTab.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF1F2937")
+                $btnApplicationsTab.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF2D2D30")
                 $btnApplicationsTab.Foreground = [System.Windows.Media.Brushes]::White
             }
             if ($btnTweaksTab) {
                 $btnTweaksTab.Background = [System.Windows.Media.Brushes]::Transparent
-                $btnTweaksTab.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF9CA3AF")
+                $btnTweaksTab.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FFAAAAAA")
+            }
+            
+            # Set default active indicator for Applications tab
+            try {
+                if ($btnApplicationsTab) {
+                    $btnApplicationsTab.ApplyTemplate()
+                    $activeLine = $btnApplicationsTab.Template.FindName("ActiveLine", $btnApplicationsTab)
+                    if ($activeLine) { $activeLine.Opacity = 1.0 }
+                }
+                if ($btnTweaksTab) {
+                    $btnTweaksTab.ApplyTemplate()
+                    $inactiveLine = $btnTweaksTab.Template.FindName("ActiveLine", $btnTweaksTab)
+                    if ($inactiveLine) { $inactiveLine.Opacity = 0.0 }
+                }
+            } catch { }
+            
+            # Set default search placeholder for Applications
+            if ($Sync -and $Sync["SearchBox"]) {
+                $searchBox = $Sync["SearchBox"]
+                $searchBox.ApplyTemplate()
+                $placeholder = $searchBox.Template.FindName("PlaceholderText", $searchBox)
+                if ($placeholder) {
+                    $placeholder.Text = "Search applications..."
+                }
             }
         } catch {
             Write-Log "Exception setting default tab appearance: $($_.Exception.Message)" -Level "ERROR"

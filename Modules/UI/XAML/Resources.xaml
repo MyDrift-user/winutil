@@ -22,23 +22,50 @@
     
     <Style x:Key="TabButton" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="#FF9CA3AF"/>
-        <Setter Property="Padding" Value="20,12"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="#FFAAAAAA"/>
+        <Setter Property="Padding" Value="24,14"/>
+        <Setter Property="FontWeight" Value="Medium"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="MinWidth" Value="120"/>
-        <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#FF374151"/>
-                <Setter Property="Foreground" Value="#FFE5E7EB"/>
-            </Trigger>
-            <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Background" Value="#FF4B5563"/>
-                <Setter Property="Foreground" Value="White"/>
-            </Trigger>
-        </Style.Triggers>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Name="MainBorder" 
+                            Background="{TemplateBinding Background}" 
+                            BorderThickness="0" 
+                            CornerRadius="6,6,0,0"
+                            Margin="0,0,4,0">
+                        <Grid>
+                            <ContentPresenter x:Name="ContentSite" 
+                                            VerticalAlignment="Center" 
+                                            HorizontalAlignment="Center" 
+                                            ContentSource="Content" 
+                                            Margin="{TemplateBinding Padding}"/>
+                            
+                            <!-- Active indicator line -->
+                            <Rectangle Name="ActiveLine"
+                                     Height="2"
+                                     VerticalAlignment="Bottom"
+                                     Fill="#FF0078D4"
+                                     Opacity="0"
+                                     Margin="8,0,8,0"/>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="MainBorder" Property="Background" Value="#FF333333"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="MainBorder" Property="Background" Value="#FF404040"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
     
     <Style x:Key="ModernListBox" TargetType="ListBox">
@@ -59,6 +86,80 @@
         <Setter Property="IsReadOnly" Value="True"/>
         <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+    </Style>
+    
+    <Style x:Key="SearchTextBox" TargetType="TextBox">
+        <Setter Property="Background" Value="#FF1E1E1E"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="#FF404040"/>
+        <Setter Property="Padding" Value="12,0"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="CaretBrush" Value="#FF0078D4"/>
+        <Setter Property="SelectionBrush" Value="#FF0078D4"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Grid>
+                        <Border Name="BorderElement"
+                                Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="4">
+                            <Grid Margin="{TemplateBinding Padding}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Search Icon -->
+                                <TextBlock Grid.Column="0" 
+                                          Text="🔍" 
+                                          Foreground="#FF666666" 
+                                          VerticalAlignment="Center"
+                                          Margin="0,0,8,0"
+                                          FontSize="14"/>
+                                
+                                <!-- Content and Placeholder -->
+                                <Grid Grid.Column="1">
+                                    <ScrollViewer x:Name="PART_ContentHost" 
+                                                  VerticalAlignment="Center"
+                                                  Background="Transparent"
+                                                  Focusable="False"/>
+                                    
+                                    <TextBlock Name="PlaceholderText"
+                                               Text="Search..."
+                                               Foreground="#FF666666" 
+                                               VerticalAlignment="Center"
+                                               IsHitTestVisible="False"
+                                               Visibility="Collapsed"/>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Text" Value="">
+                            <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="Text" Value="{x:Null}">
+                            <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="BorderElement" Property="BorderBrush" Value="#FF606060"/>
+                        </Trigger>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="BorderElement" Property="BorderBrush" Value="#FF0078D4"/>
+                            <Setter TargetName="BorderElement" Property="Background" Value="#FF252525"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="BorderElement" Property="Background" Value="#FF2D2D30"/>
+                            <Setter Property="Foreground" Value="#FF666666"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
     
     <Style x:Key="ModernComboBox" TargetType="ComboBox">

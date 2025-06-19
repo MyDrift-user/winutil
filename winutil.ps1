@@ -6838,16 +6838,25 @@ $global:MainWindowXAML = @'
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
                 <!-- WinUtil Title -->
                 <TextBlock Grid.Column="0" Text="WinUtil" FontSize="28" FontWeight="Bold" Foreground="#FF0078D4" VerticalAlignment="Center" Margin="0,0,40,0"/>
                 
                 <!-- Navigation Tabs -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
                     <Button Name="btnApplicationsTab" Content="Applications" Style="{StaticResource TabButton}" Tag="0" Margin="0,0,8,0"/>
                     <Button Name="btnTweaksTab" Content="Tweaks" Style="{StaticResource TabButton}" Tag="1"/>
                 </StackPanel>
+                
+                <!-- Search Box -->
+                <TextBox Name="txtSearch" Grid.Column="2"
+                         Style="{StaticResource SearchTextBox}"
+                         Width="280"
+                         Height="36"
+                         VerticalAlignment="Center"
+                         Margin="20,0,0,0"/>
             </Grid>
         </Border>
         
@@ -6856,52 +6865,12 @@ $global:MainWindowXAML = @'
             <!-- Applications Content -->
             <Grid Name="ApplicationsContent" Visibility="Visible">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
-                <!-- Search Box -->
-                <TextBox Name="txtSearch" Grid.Row="0" 
-                         Style="{StaticResource ModernTextBox}" 
-                         IsReadOnly="False"
-                         Height="45"
-                         FontSize="14"
-                         Margin="0,0,0,20">
-                    <TextBox.Template>
-                        <ControlTemplate TargetType="TextBox">
-                            <Border Background="{TemplateBinding Background}" 
-                                    BorderBrush="{TemplateBinding BorderBrush}" 
-                                    BorderThickness="{TemplateBinding BorderThickness}" 
-                                    CornerRadius="10">
-                                <Grid>
-                                    <ScrollViewer x:Name="PART_ContentHost" 
-                                                  VerticalAlignment="Center" 
-                                                  Margin="15,0"/>
-                                    <TextBlock Text="Search applications..." 
-                                               Foreground="#FF666666" 
-                                               VerticalAlignment="Center" 
-                                               Margin="15,0"
-                                               IsHitTestVisible="False">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
-                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                </Grid>
-                            </Border>
-                        </ControlTemplate>
-                    </TextBox.Template>
-                </TextBox>
-                
                 <!-- Applications List -->
-                <ListBox Name="lstApplications" Grid.Row="1" Style="{StaticResource ModernListBox}" Background="Transparent" BorderThickness="0" Margin="0,0,0,20">
+                <ListBox Name="lstApplications" Grid.Row="0" Style="{StaticResource ModernListBox}" Background="Transparent" BorderThickness="0" Margin="0,0,0,20">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <Border Background="Transparent" Padding="15" Margin="0,3" CornerRadius="8">
@@ -6934,7 +6903,7 @@ $global:MainWindowXAML = @'
                 </ListBox>
                 
                 <!-- Application Actions -->
-                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button Name="btnInstallApps" Content="Install Selected Applications" Style="{StaticResource ModernButton}" Margin="0,0,15,0" Padding="30,15"/>
                     <Button Name="btnUninstallApps" Content="Uninstall Selected Applications" Style="{StaticResource ModernButton}" Background="#FFD13438" Padding="30,15"/>
                 </StackPanel>
@@ -6944,52 +6913,12 @@ $global:MainWindowXAML = @'
             <Grid Name="TweaksContent" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
-                <!-- Search Box -->
-                <TextBox Name="txtSearchTweaks" Grid.Row="0" 
-                         Style="{StaticResource ModernTextBox}" 
-                         IsReadOnly="False"
-                         Height="45"
-                         FontSize="14"
-                         Margin="0,0,0,20">
-                    <TextBox.Template>
-                        <ControlTemplate TargetType="TextBox">
-                            <Border Background="{TemplateBinding Background}" 
-                                    BorderBrush="{TemplateBinding BorderBrush}" 
-                                    BorderThickness="{TemplateBinding BorderThickness}" 
-                                    CornerRadius="10">
-                                <Grid>
-                                    <ScrollViewer x:Name="PART_ContentHost" 
-                                                  VerticalAlignment="Center" 
-                                                  Margin="15,0"/>
-                                    <TextBlock Text="Search tweaks..." 
-                                               Foreground="#FF666666" 
-                                               VerticalAlignment="Center" 
-                                               Margin="15,0"
-                                               IsHitTestVisible="False">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
-                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                </Grid>
-                            </Border>
-                        </ControlTemplate>
-                    </TextBox.Template>
-                </TextBox>
-                
                 <!-- Preset Buttons -->
-                <Grid Grid.Row="1" Margin="0,0,0,20">
+                <Grid Grid.Row="0" Margin="0,0,0,20">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -7004,12 +6933,12 @@ $global:MainWindowXAML = @'
                 </Grid>
                 
                 <!-- Tweaks Tree -->
-                <TreeView Name="trvTweaks" Grid.Row="2" Style="{StaticResource ModernTreeView}" Background="Transparent" BorderThickness="0" Margin="0,0,0,20">
+                <TreeView Name="trvTweaks" Grid.Row="1" Style="{StaticResource ModernTreeView}" Background="Transparent" BorderThickness="0" Margin="0,0,0,20">
                     <!-- TreeView items will be populated via code-behind -->
                 </TreeView>
                 
                 <!-- Tweak Actions -->
-                <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center">
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button Name="btnApplyTweaks" Content="Apply Selected Tweaks" Style="{StaticResource ModernButton}" Margin="0,0,15,0" Padding="30,15"/>
                     <Button Name="btnUndoTweaks" Content="Undo Selected Tweaks" Style="{StaticResource ModernButton}" Background="#FFFF8C00" Padding="30,15"/>
                 </StackPanel>
@@ -7044,23 +6973,50 @@ $global:ResourcesXAML = @'
     
     <Style x:Key="TabButton" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="#FF9CA3AF"/>
-        <Setter Property="Padding" Value="20,12"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="#FFAAAAAA"/>
+        <Setter Property="Padding" Value="24,14"/>
+        <Setter Property="FontWeight" Value="Medium"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="MinWidth" Value="120"/>
-        <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#FF374151"/>
-                <Setter Property="Foreground" Value="#FFE5E7EB"/>
-            </Trigger>
-            <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Background" Value="#FF4B5563"/>
-                <Setter Property="Foreground" Value="White"/>
-            </Trigger>
-        </Style.Triggers>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Name="MainBorder" 
+                            Background="{TemplateBinding Background}" 
+                            BorderThickness="0" 
+                            CornerRadius="6,6,0,0"
+                            Margin="0,0,4,0">
+                        <Grid>
+                            <ContentPresenter x:Name="ContentSite" 
+                                            VerticalAlignment="Center" 
+                                            HorizontalAlignment="Center" 
+                                            ContentSource="Content" 
+                                            Margin="{TemplateBinding Padding}"/>
+                            
+                            <!-- Active indicator line -->
+                            <Rectangle Name="ActiveLine"
+                                     Height="2"
+                                     VerticalAlignment="Bottom"
+                                     Fill="#FF0078D4"
+                                     Opacity="0"
+                                     Margin="8,0,8,0"/>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="MainBorder" Property="Background" Value="#FF333333"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="MainBorder" Property="Background" Value="#FF404040"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
     
     <Style x:Key="ModernListBox" TargetType="ListBox">
@@ -7081,6 +7037,80 @@ $global:ResourcesXAML = @'
         <Setter Property="IsReadOnly" Value="True"/>
         <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+    </Style>
+    
+    <Style x:Key="SearchTextBox" TargetType="TextBox">
+        <Setter Property="Background" Value="#FF1E1E1E"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="#FF404040"/>
+        <Setter Property="Padding" Value="12,0"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="CaretBrush" Value="#FF0078D4"/>
+        <Setter Property="SelectionBrush" Value="#FF0078D4"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Grid>
+                        <Border Name="BorderElement"
+                                Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="4">
+                            <Grid Margin="{TemplateBinding Padding}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Search Icon -->
+                                <TextBlock Grid.Column="0" 
+                                          Text="🔍" 
+                                          Foreground="#FF666666" 
+                                          VerticalAlignment="Center"
+                                          Margin="0,0,8,0"
+                                          FontSize="14"/>
+                                
+                                <!-- Content and Placeholder -->
+                                <Grid Grid.Column="1">
+                                    <ScrollViewer x:Name="PART_ContentHost" 
+                                                  VerticalAlignment="Center"
+                                                  Background="Transparent"
+                                                  Focusable="False"/>
+                                    
+                                    <TextBlock Name="PlaceholderText"
+                                               Text="Search..."
+                                               Foreground="#FF666666" 
+                                               VerticalAlignment="Center"
+                                               IsHitTestVisible="False"
+                                               Visibility="Collapsed"/>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Text" Value="">
+                            <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="Text" Value="{x:Null}">
+                            <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="BorderElement" Property="BorderBrush" Value="#FF606060"/>
+                        </Trigger>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="BorderElement" Property="BorderBrush" Value="#FF0078D4"/>
+                            <Setter TargetName="BorderElement" Property="Background" Value="#FF252525"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="BorderElement" Property="Background" Value="#FF2D2D30"/>
+                            <Setter Property="Foreground" Value="#FF666666"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
     
     <Style x:Key="ModernComboBox" TargetType="ComboBox">
@@ -9496,7 +9526,7 @@ function Register-ButtonHandlers {
 function Register-SearchHandlers {
     <#
     .SYNOPSIS
-    Registers event handlers for search functionality
+    Registers event handlers for unified search functionality
     #>
     param(
         [Parameter(Mandatory=$false)]
@@ -9513,38 +9543,74 @@ function Register-SearchHandlers {
     )
     
     try {
-        # Get search controls for both tabs
+        # Get unified search control
         if ($Sync) {
             $txtSearch = Get-UIControl -Sync $Sync -ControlName "txtSearch"
-            $txtSearchTweaks = Get-UIControl -Sync $Sync -ControlName "txtSearchTweaks"
+            $applicationsContent = Get-UIControl -Sync $Sync -ControlName "ApplicationsContent"
+            $tweaksContent = Get-UIControl -Sync $Sync -ControlName "TweaksContent"
         } else {
             $txtSearch = $Window.FindName("txtSearch")
-            $txtSearchTweaks = $Window.FindName("txtSearchTweaks")
+            $applicationsContent = $Window.FindName("ApplicationsContent")
+            $tweaksContent = $Window.FindName("TweaksContent")
         }
         
-        # Applications search
+        # Unified search handler
         if ($txtSearch) {
             $txtSearch.Add_TextChanged({
-                $searchText = $this.Text
-                if ($Sync) {
-                    Filter-ApplicationContent -Sync $Sync -AppsConfig $AppsConfig -SearchText $searchText
-                } else {
-                    Write-Log "Search functionality requires Sync hashtable" -Level "WARN"
+                try {
+                    $searchText = $this.Text
+                    
+                    # Determine which tab is active and search accordingly
+                    if ($Sync) {
+                        $appContent = Get-UIControl -Sync $Sync -ControlName "ApplicationsContent"
+                        $tweakContent = Get-UIControl -Sync $Sync -ControlName "TweaksContent"
+                        
+                        if ($appContent.Visibility -eq "Visible") {
+                            # Search applications
+                            Filter-ApplicationContent -Sync $Sync -AppsConfig $AppsConfig -SearchText $searchText
+                        } elseif ($tweakContent.Visibility -eq "Visible") {
+                            # Search tweaks
+                            Filter-TweakContent -Sync $Sync -TweaksConfig $TweaksConfig -SearchText $searchText
+                        }
+                    } else {
+                        # Fallback for Window-based approach
+                        $appContent = $Window.FindName("ApplicationsContent")
+                        $tweakContent = $Window.FindName("TweaksContent")
+                        
+                        if ($appContent.Visibility -eq "Visible") {
+                            Write-Log "Applications search functionality requires Sync hashtable" -Level "WARN"
+                        } elseif ($tweakContent.Visibility -eq "Visible") {
+                            Write-Log "Tweaks search functionality requires Sync hashtable" -Level "WARN"
+                        }
+                    }
+                } catch {
+                    Write-Log "Exception during search: $($_.Exception.Message)" -Level "ERROR"
                 }
             })
         }
         
-        # Tweaks search
-        if ($txtSearchTweaks) {
-            $txtSearchTweaks.Add_TextChanged({
-                $searchText = $this.Text
-                if ($Sync) {
-                    Filter-TweakContent -Sync $Sync -TweaksConfig $TweaksConfig -SearchText $searchText
-                } else {
-                    Write-Log "Search functionality requires Sync hashtable" -Level "WARN"
+        # Function to update search placeholder text
+        function Update-SearchPlaceholder {
+            param($SearchBox, $PlaceholderText)
+            
+            try {
+                if ($SearchBox) {
+                    $SearchBox.ApplyTemplate()
+                    $placeholder = $SearchBox.Template.FindName("PlaceholderText", $SearchBox)
+                    if ($placeholder) {
+                        $placeholder.Text = $PlaceholderText
+                    }
                 }
-            })
+            } catch {
+                Write-Log "Exception updating search placeholder: $($_.Exception.Message)" -Level "DEBUG"
+            }
         }
+        
+        # Store reference for placeholder updates
+        if ($Sync -and $txtSearch) {
+            $Sync["SearchBox"] = $txtSearch
+        }
+        
     }
     catch {
         Write-Log "Exception registering search handlers: $($_.Exception.Message)" -Level "ERROR"
@@ -9883,13 +9949,39 @@ function Register-GeneralHandlers {
                     
                     # Update tab button appearance - Applications active
                     if ($btnApps) {
-                        $btnApps.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF1F2937")
+                        $btnApps.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF2D2D30")
                         $btnApps.Foreground = [System.Windows.Media.Brushes]::White
+                        
+                        # Show active indicator line
+                        try {
+                            $btnApps.ApplyTemplate()
+                            $activeLine = $btnApps.Template.FindName("ActiveLine", $btnApps)
+                            if ($activeLine) { $activeLine.Opacity = 1.0 }
+                        } catch { }
                     }
                     if ($btnTweaks) {
                         $btnTweaks.Background = [System.Windows.Media.Brushes]::Transparent
-                        $btnTweaks.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF9CA3AF")
+                        $btnTweaks.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FFAAAAAA")
+                        
+                        # Hide active indicator line
+                        try {
+                            $btnTweaks.ApplyTemplate()
+                            $inactiveLine = $btnTweaks.Template.FindName("ActiveLine", $btnTweaks)
+                            if ($inactiveLine) { $inactiveLine.Opacity = 0.0 }
+                        } catch { }
                     }
+                    
+                    # Update search placeholder for Applications
+                    try {
+                        if ($Sync -and $Sync["SearchBox"]) {
+                            $searchBox = $Sync["SearchBox"]
+                            $searchBox.ApplyTemplate()
+                            $placeholder = $searchBox.Template.FindName("PlaceholderText", $searchBox)
+                            if ($placeholder) {
+                                $placeholder.Text = "Search applications..."
+                            }
+                        }
+                    } catch { }
                 }
                 catch {
                     Write-Log "Exception switching to Applications tab: $($_.Exception.Message)" -Level "ERROR"
@@ -9922,13 +10014,39 @@ function Register-GeneralHandlers {
                     
                     # Update tab button appearance - Tweaks active
                     if ($btnTweaks) {
-                        $btnTweaks.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF1F2937")
+                        $btnTweaks.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF2D2D30")
                         $btnTweaks.Foreground = [System.Windows.Media.Brushes]::White
+                        
+                        # Show active indicator line
+                        try {
+                            $btnTweaks.ApplyTemplate()
+                            $activeLine = $btnTweaks.Template.FindName("ActiveLine", $btnTweaks)
+                            if ($activeLine) { $activeLine.Opacity = 1.0 }
+                        } catch { }
                     }
                     if ($btnApps) {
                         $btnApps.Background = [System.Windows.Media.Brushes]::Transparent
-                        $btnApps.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF9CA3AF")
+                        $btnApps.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FFAAAAAA")
+                        
+                        # Hide active indicator line
+                        try {
+                            $btnApps.ApplyTemplate()
+                            $inactiveLine = $btnApps.Template.FindName("ActiveLine", $btnApps)
+                            if ($inactiveLine) { $inactiveLine.Opacity = 0.0 }
+                        } catch { }
                     }
+                    
+                    # Update search placeholder for Tweaks
+                    try {
+                        if ($Sync -and $Sync["SearchBox"]) {
+                            $searchBox = $Sync["SearchBox"]
+                            $searchBox.ApplyTemplate()
+                            $placeholder = $searchBox.Template.FindName("PlaceholderText", $searchBox)
+                            if ($placeholder) {
+                                $placeholder.Text = "Search tweaks..."
+                            }
+                        }
+                    } catch { }
                 }
                 catch {
                     Write-Log "Exception switching to Tweaks tab: $($_.Exception.Message)" -Level "ERROR"
@@ -9939,12 +10057,36 @@ function Register-GeneralHandlers {
         # Set default active tab appearance (Applications)
         try {
             if ($btnApplicationsTab) {
-                $btnApplicationsTab.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF1F2937")
+                $btnApplicationsTab.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF2D2D30")
                 $btnApplicationsTab.Foreground = [System.Windows.Media.Brushes]::White
             }
             if ($btnTweaksTab) {
                 $btnTweaksTab.Background = [System.Windows.Media.Brushes]::Transparent
-                $btnTweaksTab.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF9CA3AF")
+                $btnTweaksTab.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FFAAAAAA")
+            }
+            
+            # Set default active indicator for Applications tab
+            try {
+                if ($btnApplicationsTab) {
+                    $btnApplicationsTab.ApplyTemplate()
+                    $activeLine = $btnApplicationsTab.Template.FindName("ActiveLine", $btnApplicationsTab)
+                    if ($activeLine) { $activeLine.Opacity = 1.0 }
+                }
+                if ($btnTweaksTab) {
+                    $btnTweaksTab.ApplyTemplate()
+                    $inactiveLine = $btnTweaksTab.Template.FindName("ActiveLine", $btnTweaksTab)
+                    if ($inactiveLine) { $inactiveLine.Opacity = 0.0 }
+                }
+            } catch { }
+            
+            # Set default search placeholder for Applications
+            if ($Sync -and $Sync["SearchBox"]) {
+                $searchBox = $Sync["SearchBox"]
+                $searchBox.ApplyTemplate()
+                $placeholder = $searchBox.Template.FindName("PlaceholderText", $searchBox)
+                if ($placeholder) {
+                    $placeholder.Text = "Search applications..."
+                }
             }
         } catch {
             Write-Log "Exception setting default tab appearance: $($_.Exception.Message)" -Level "ERROR"
