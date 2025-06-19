@@ -89,6 +89,7 @@ $content += @'
         "Tweaks\General.ps1",
         "Presets\Loader.ps1",
         "Presets\Validator.ps1",
+        "UI\Logo.ps1",
         "UI\Binding.ps1",
         "UI\Events.ps1"
     )
@@ -177,6 +178,9 @@ function Start-WinUtilGUI {
 # Main execution
 try {
     Initialize-Logging -LogLevel $LogLevel
+    
+    # Display ASCII art logo
+    Show-CTTLogo
     
     $configs = Load-EmbeddedConfigurations
     if (-not $configs) {
