@@ -6,7 +6,10 @@
         MinHeight="700"
         MinWidth="1000"
         WindowStartupLocation="CenterScreen"
-        Background="#FF1A1A1A">
+        Background="#FF1A1A1A"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        ResizeMode="CanResize">
     
     <Window.Resources>
         <ResourceDictionary>
@@ -22,17 +25,19 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         
-        <!-- Header with Title and Tabs -->
+        <!-- Custom Title Bar with Navigation -->
         <Border Grid.Row="0" Background="#FF2D2D30" BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1">
-            <Grid Margin="30,0">
+            <Grid Margin="20,0">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
-                <!-- WinUtil Title -->
-                <TextBlock Grid.Column="0" Text="WinUtil" FontSize="28" FontWeight="Bold" Foreground="#FF0078D4" VerticalAlignment="Center" Margin="0,0,40,0"/>
+                <!-- WinUtil Title (Draggable Area) -->
+                <TextBlock Name="titleBar" Grid.Column="0" Text="WinUtil" FontSize="28" FontWeight="Bold" Foreground="#FF0078D4" VerticalAlignment="Center" Margin="0,0,40,0" Cursor="Hand"/>
                 
                 <!-- Navigation Tabs -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
@@ -40,13 +45,23 @@
                     <Button Name="btnTweaksTab" Content="Tweaks" Style="{StaticResource TabButton}" Tag="1"/>
                 </StackPanel>
                 
+                <!-- Draggable spacer area -->
+                <Rectangle Grid.Column="2" Fill="Transparent" Name="dragArea" Cursor="SizeAll"/>
+                
                 <!-- Search Box -->
-                <TextBox Name="txtSearch" Grid.Column="2"
+                <TextBox Name="txtSearch" Grid.Column="3"
                          Style="{StaticResource SearchTextBox}"
                          Width="280"
                          Height="36"
                          VerticalAlignment="Center"
-                         Margin="20,0,0,0"/>
+                         Margin="20,0,20,0"/>
+                
+                <!-- Window Controls -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Name="btnMinimize" Content="&#xE921;" Style="{StaticResource WindowControlButton}" Width="46" Height="32" FontFamily="Segoe MDL2 Assets" FontSize="10"/>
+                    <Button Name="btnMaximize" Content="&#xE922;" Style="{StaticResource WindowControlButton}" Width="46" Height="32" FontFamily="Segoe MDL2 Assets" FontSize="10"/>
+                    <Button Name="btnClose" Content="&#xE8BB;" Style="{StaticResource WindowControlCloseButton}" Width="46" Height="32" FontFamily="Segoe MDL2 Assets" FontSize="10"/>
+                </StackPanel>
             </Grid>
         </Border>
         
@@ -76,7 +91,6 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
                 <!-- Preset Buttons -->
@@ -94,16 +108,38 @@
                     </StackPanel>
                 </Grid>
                 
-                <!-- Tweaks Tree -->
-                <TreeView Name="trvTweaks" Grid.Row="1" Style="{StaticResource ModernTreeView}" Background="Transparent" BorderThickness="0" Margin="0,0,0,20">
-                    <!-- TreeView items will be populated via code-behind -->
-                </TreeView>
-                
-                <!-- Tweak Actions -->
-                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button Name="btnApplyTweaks" Content="Apply Selected Tweaks" Style="{StaticResource ModernButton}" Margin="0,0,15,0" Padding="30,15"/>
-                    <Button Name="btnUndoTweaks" Content="Undo Selected Tweaks" Style="{StaticResource ModernButton}" Background="#FFFF8C00" Padding="30,15"/>
-                </StackPanel>
+                <!-- Main Content Area with Floating Button Bar -->
+                <Grid Grid.Row="1">
+                    <!-- Tweaks Panels Container -->
+                    <ScrollViewer Name="svTweaksPanels" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="0,0,0,35">
+                        <Grid Name="grdTweaksPanels">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Panel 1 -->
+                            <Border Name="Panel1" Grid.Column="0" Style="{StaticResource TweakPanel}" Margin="0,0,5,0" HorizontalAlignment="Stretch">
+                                <TreeView Name="trvTweaksPanel1" Style="{StaticResource ModernTreeView}" Background="Transparent" BorderThickness="0"/>
+                            </Border>
+                            
+                            <!-- Panel 2 -->
+                            <Border Name="Panel2" Grid.Column="1" Style="{StaticResource TweakPanel}" Margin="5,0,0,0" HorizontalAlignment="Stretch">
+                                <TreeView Name="trvTweaksPanel2" Style="{StaticResource ModernTreeView}" Background="Transparent" BorderThickness="0"/>
+                            </Border>
+                        </Grid>
+                    </ScrollViewer>
+                    
+                    <!-- Floating Action Bar -->
+                    <Border VerticalAlignment="Bottom" HorizontalAlignment="Stretch" 
+                            Background="#FF1A1A1A" BorderBrush="#FF3F3F46" BorderThickness="0,1,0,0"
+                            Padding="20,6" Margin="0,0,0,0">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button Name="btnApplyTweaks" Content="Apply Selected Tweaks" Style="{StaticResource ModernButton}" Margin="0,0,10,0" Padding="20,6"/>
+                            <Button Name="btnUndoTweaks" Content="Undo Selected Tweaks" Style="{StaticResource ModernButton}" Background="#FFFF8C00" Padding="20,6"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
             </Grid>
         </Grid>
     </Grid>

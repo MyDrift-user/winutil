@@ -95,21 +95,21 @@ function Register-SearchHandlers {
         if ($txtSearch) {
             $txtSearch.Add_TextChanged({
                 try {
-                    $searchText = $this.Text
+                $searchText = $this.Text
                     
                     # Determine which tab is active and search accordingly
-                    if ($Sync) {
+                if ($Sync) {
                         $appContent = Get-UIControl -Sync $Sync -ControlName "ApplicationsContent"
                         $tweakContent = Get-UIControl -Sync $Sync -ControlName "TweaksContent"
                         
                         if ($appContent.Visibility -eq "Visible") {
                             # Search applications
-                            Filter-ApplicationContent -Sync $Sync -AppsConfig $AppsConfig -SearchText $searchText
+                    Filter-ApplicationContent -Sync $Sync -AppsConfig $AppsConfig -SearchText $searchText
                         } elseif ($tweakContent.Visibility -eq "Visible") {
                             # Search tweaks
                             Filter-TweakContent -Sync $Sync -TweaksConfig $TweaksConfig -SearchText $searchText
                         }
-                    } else {
+                } else {
                         # Fallback for Window-based approach
                         $appContent = $Window.FindName("ApplicationsContent")
                         $tweakContent = $Window.FindName("TweaksContent")
@@ -628,6 +628,133 @@ function Register-GeneralHandlers {
         } catch {
             Write-Log "Exception setting default tab appearance: $($_.Exception.Message)" -Level "ERROR"
         }
+        
+        # Register window control handlers
+        try {
+            # Get window control buttons
+            if ($Sync) {
+                $btnMinimize = Get-UIControl -Sync $Sync -ControlName "btnMinimize"
+                $btnMaximize = Get-UIControl -Sync $Sync -ControlName "btnMaximize"
+                $btnClose = Get-UIControl -Sync $Sync -ControlName "btnClose"
+                $titleBar = Get-UIControl -Sync $Sync -ControlName "titleBar"
+                $dragArea = Get-UIControl -Sync $Sync -ControlName "dragArea"
+                $windowRef = $Sync["Form"]  # The window is stored as "Form" in the sync hashtable
+            } else {
+                $btnMinimize = $Window.FindName("btnMinimize")
+                $btnMaximize = $Window.FindName("btnMaximize") 
+                $btnClose = $Window.FindName("btnClose")
+                $titleBar = $Window.FindName("titleBar")
+                $dragArea = $Window.FindName("dragArea")
+                $windowRef = $Window
+            }
+            
+            # Minimize button
+            if ($btnMinimize -and $windowRef) {
+                $btnMinimize.Add_Click({
+                    try {
+                        if ($Sync -and $Sync["Form"]) {
+                            $Sync["Form"].WindowState = [System.Windows.WindowState]::Minimized
+                        } elseif ($Window) {
+                            $Window.WindowState = [System.Windows.WindowState]::Minimized
+                        }
+                    } catch {
+                        # Silent error handling - just prevent crashes
+                    }
+                }.GetNewClosure())
+            }
+            
+            # Maximize/Restore button
+            if ($btnMaximize -and $windowRef) {
+                $btnMaximize.Add_Click({
+                    try {
+                        $targetWindow = if ($Sync -and $Sync["Form"]) { $Sync["Form"] } else { $Window }
+                        
+                        if ($targetWindow) {
+                            if ($targetWindow.WindowState -eq [System.Windows.WindowState]::Maximized) {
+                                $targetWindow.WindowState = [System.Windows.WindowState]::Normal
+                                # Update button icon to maximize
+                                try {
+                                    $this.Content = [char]0xE922
+                                } catch { }
+                            } else {
+                                $targetWindow.WindowState = [System.Windows.WindowState]::Maximized
+                                # Update button icon to restore
+                                try {
+                                    $this.Content = [char]0xE923
+                                } catch { }
+                            }
+                        }
+                    } catch {
+                        # Silent error handling - just prevent crashes
+                    }
+                }.GetNewClosure())
+            }
+            
+            # Close button
+            if ($btnClose -and $windowRef) {
+                $btnClose.Add_Click({
+                    try {
+                        if ($Sync -and $Sync["Form"]) {
+                            $Sync["Form"].Close()
+                        } elseif ($Window) {
+                            $Window.Close()
+                        }
+                    } catch {
+                        # Silent error handling - just prevent crashes
+                    }
+                }.GetNewClosure())
+            }
+            
+            # Drag functionality
+            if ($titleBar -and $windowRef) {
+                $titleBar.Add_MouseLeftButtonDown({
+                    try {
+                        $targetWindow = if ($Sync -and $Sync["Form"]) { $Sync["Form"] } else { $Window }
+                        
+                        if ($_.ClickCount -eq 1) {
+                            $targetWindow.DragMove()
+                        } elseif ($_.ClickCount -eq 2) {
+                            # Double-click to maximize/restore
+                            if ($targetWindow.WindowState -eq [System.Windows.WindowState]::Maximized) {
+                                $targetWindow.WindowState = [System.Windows.WindowState]::Normal
+                            } else {
+                                $targetWindow.WindowState = [System.Windows.WindowState]::Maximized
+                            }
+                            
+                            # Update maximize button icon
+                            try {
+                                $maxButton = if ($Sync) { Get-UIControl -Sync $Sync -ControlName "btnMaximize" } else { $Window.FindName("btnMaximize") }
+                                if ($maxButton) {
+                                    if ($targetWindow.WindowState -eq [System.Windows.WindowState]::Maximized) {
+                                        $maxButton.Content = [char]0xE923  # Restore icon
+                                    } else {
+                                        $maxButton.Content = [char]0xE922  # Maximize icon
+                                    }
+                                }
+                            } catch { }
+                        }
+                    } catch {
+                        # Silent error handling - just prevent crashes
+                    }
+                }.GetNewClosure())
+            }
+            
+            if ($dragArea -and $windowRef) {
+                $dragArea.Add_MouseLeftButtonDown({
+                    try {
+                        $targetWindow = if ($Sync -and $Sync["Form"]) { $Sync["Form"] } else { $Window }
+                        if ($_.ClickCount -eq 1) {
+                            $targetWindow.DragMove()
+                        }
+                    } catch {
+                        # Silent error handling - just prevent crashes
+                    }
+                }.GetNewClosure())
+            }
+            
+        } catch {
+            Write-Log "Exception registering window control handlers: $($_.Exception.Message)" -Level "ERROR"
+        }
     }
     catch {
         Write-Log "Exception registering general handlers: $($_.Exception.Message)" -Level "ERROR"
@@ -722,20 +849,26 @@ function Clear-AllSelections {
             }
         }
         
-        # Clear tweak selections
+        # Clear tweak selections across all panels
         if ($Sync) {
-            $trvTweaks = Get-UIControl -Sync $Sync -ControlName "trvTweaks"
+            $trvTweaksPanel1 = Get-UIControl -Sync $Sync -ControlName "trvTweaksPanel1"
+            $trvTweaksPanel2 = Get-UIControl -Sync $Sync -ControlName "trvTweaksPanel2"
         } else {
-            $trvTweaks = $Window.FindName("trvTweaks")
+            $trvTweaksPanel1 = $Window.FindName("trvTweaksPanel1")
+            $trvTweaksPanel2 = $Window.FindName("trvTweaksPanel2")
         }
         
-        if ($trvTweaks) {
-            foreach ($categoryNode in $trvTweaks.Items) {
-                foreach ($tweakNode in $categoryNode.Items) {
-                    $control = $tweakNode.Header
-                    # Only clear standard checkboxes, not toggles (which should maintain state)
-                    if ($control -is [System.Windows.Controls.CheckBox] -and $control.Style -eq $null) {
-                        $control.IsChecked = $false
+        $panels = @($trvTweaksPanel1, $trvTweaksPanel2)
+        
+        foreach ($treeView in $panels) {
+            if ($treeView) {
+                foreach ($categoryNode in $treeView.Items) {
+                    foreach ($tweakNode in $categoryNode.Items) {
+                        $control = $tweakNode.Header
+                        # Only clear standard checkboxes, not toggles (which should maintain state)
+                        if ($control -is [System.Windows.Controls.CheckBox] -and $control.Style -eq $null) {
+                            $control.IsChecked = $false
+                        }
                     }
                 }
             }
@@ -774,7 +907,7 @@ function Select-Applications {
                 foreach ($appNode in $categoryNode.Items) {
                     $checkBox = $appNode.Header
                     if ($checkBox -is [System.Windows.Controls.CheckBox] -and $AppIDs -contains $checkBox.Tag) {
-                        $checkBox.IsChecked = $true
+                            $checkBox.IsChecked = $true
                     }
                 }
             }
@@ -803,20 +936,26 @@ function Select-Tweaks {
     
     try {
         if ($Sync) {
-            $trvTweaks = Get-UIControl -Sync $Sync -ControlName "trvTweaks"
+            $trvTweaksPanel1 = Get-UIControl -Sync $Sync -ControlName "trvTweaksPanel1"
+            $trvTweaksPanel2 = Get-UIControl -Sync $Sync -ControlName "trvTweaksPanel2"
         } else {
-            $trvTweaks = $Window.FindName("trvTweaks")
+            $trvTweaksPanel1 = $Window.FindName("trvTweaksPanel1")
+            $trvTweaksPanel2 = $Window.FindName("trvTweaksPanel2")
         }
         
-        if ($trvTweaks) {
-            foreach ($categoryNode in $trvTweaks.Items) {
-                foreach ($tweakNode in $categoryNode.Items) {
-                    $control = $tweakNode.Header
-                    # Only select standard checkboxes, not toggles/buttons/comboboxes
-                    if ($control -is [System.Windows.Controls.CheckBox] -and 
-                        $control.Style -eq $null -and 
-                        $TweakIDs -contains $control.Tag) {
-                        $control.IsChecked = $true
+        $panels = @($trvTweaksPanel1, $trvTweaksPanel2)
+        
+        foreach ($treeView in $panels) {
+            if ($treeView) {
+                foreach ($categoryNode in $treeView.Items) {
+                    foreach ($tweakNode in $categoryNode.Items) {
+                        $control = $tweakNode.Header
+                        # Only select standard checkboxes, not toggles/buttons/comboboxes
+                        if ($control -is [System.Windows.Controls.CheckBox] -and 
+                            $control.Style -eq $null -and 
+                            $TweakIDs -contains $control.Tag) {
+                            $control.IsChecked = $true
+                        }
                     }
                 }
             }

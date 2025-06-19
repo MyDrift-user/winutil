@@ -132,8 +132,9 @@ function Populate-Applications {
                 $checkBox = New-Object System.Windows.Controls.CheckBox
                 $checkBox.Content = $app.Content
                 $checkBox.Tag = $app.ID
-                $checkBox.Foreground = [System.Windows.Media.Brushes]::White
-                $checkBox.Margin = "0,4,0,4"
+                                $checkBox.Foreground = [System.Windows.Media.Brushes]::White
+                $checkBox.FontSize = 13
+                $checkBox.Margin = "0,1,0,1"
                 
                 # Add tooltip with description if available
                 if ($app.Description) {
@@ -158,7 +159,7 @@ function Populate-Applications {
 function Populate-Tweaks {
     <#
     .SYNOPSIS
-    Populates the tweaks tree view and categories
+    Populates the tweaks TreeViews with categories and tweaks from the configuration
     
     .PARAMETER Window
     The WPF window object (deprecated - use Sync instead)
@@ -181,196 +182,235 @@ function Populate-Tweaks {
     )
     
     try {
-        Write-Log "Populating tweaks tree..." -Level "DEBUG"
+        Write-Log "Populating tweaks..." -Level "DEBUG"
         
-        # Get UI controls - use Sync if available, otherwise fallback to Window
+        # Get TreeView controls for each panel
         if ($Sync) {
-            $trvTweaks = Get-UIControl -Sync $Sync -ControlName "trvTweaks"
+            $trvTweaksPanel1 = Get-UIControl -Sync $Sync -ControlName "trvTweaksPanel1"
+            $trvTweaksPanel2 = Get-UIControl -Sync $Sync -ControlName "trvTweaksPanel2"
         } else {
-            $trvTweaks = $Window.FindName("trvTweaks")
+            $trvTweaksPanel1 = $Window.FindName("trvTweaksPanel1")
+            $trvTweaksPanel2 = $Window.FindName("trvTweaksPanel2")
         }
         
-        if (-not $trvTweaks) {
-            Write-Log "Could not find tweaks tree control" -Level "ERROR"
+        if (-not $trvTweaksPanel1 -or -not $trvTweaksPanel2) {
+            Write-Log "Could not find tweaks panel TreeViews" -Level "ERROR"
             return
         }
         
-        # Group tweaks by category
-        $tweaksByCategory = @{}
-        $categories = @()
+        # Clear existing content
+        $trvTweaksPanel1.Items.Clear()
+        $trvTweaksPanel2.Items.Clear()
         
-        foreach ($tweakProperty in $TweaksConfig.PSObject.Properties) {
-            $tweak = $tweakProperty.Value | Add-Member -MemberType NoteProperty -Name "ID" -Value $tweakProperty.Name -PassThru
-            $category = if ($tweak.category) { $tweak.category } else { "Other" }
-            
-            if (-not $tweaksByCategory.ContainsKey($category)) {
-                $tweaksByCategory[$category] = @()
-                $categories += $category
-            }
-            
-            $tweaksByCategory[$category] += $tweak
+        # Map panel numbers to TreeView controls
+        $panelTreeViews = @{
+            "1" = $trvTweaksPanel1
+            "2" = $trvTweaksPanel2
         }
         
-        # Clear and populate tree
-        $trvTweaks.Items.Clear()
+        $totalTweaks = 0
+        $totalCategories = 0
         
-        foreach ($category in $categories | Sort-Object) {
-            # Create category node
-            $categoryNode = New-Object System.Windows.Controls.TreeViewItem
-            $categoryNode.Header = $category
-            $categoryNode.IsExpanded = $true
+        # Process each panel
+        foreach ($panelProperty in ($TweaksConfig.PSObject.Properties | Sort-Object Name)) {
+            $panelNumber = $panelProperty.Name
+            $panel = $panelProperty.Value
+            $treeView = $panelTreeViews[$panelNumber]
             
-            # Add tweaks to category
-            foreach ($tweak in $tweaksByCategory[$category] | Sort-Object Content) {
-                $tweakNode = New-Object System.Windows.Controls.TreeViewItem
-                $tweakNode.Style = $trvTweaks.FindResource("CheckboxTreeViewItem")
+            if (-not $treeView) {
+                Write-Log "TreeView for panel $panelNumber not found" -Level "WARN"
+                continue
+            }
+            
+            Write-Log "Populating Panel $panelNumber" -Level "DEBUG"
+            
+            $panelTweakCount = 0
+            
+            # Process each category within the panel
+            foreach ($categoryProperty in $panel.PSObject.Properties) {
+                $categoryName = $categoryProperty.Name
+                $categoryTweaks = $categoryProperty.Value
                 
-                # Determine the control type (default to checkbox if not specified)
-                $controlType = if ($tweak.Type) { $tweak.Type } else { "Checkbox" }
+                Write-Log "Processing Category: $categoryName" -Level "DEBUG"
                 
-                switch ($controlType.ToLower()) {
-                    "toggle" {
-                        # Create toggle switch (CheckBox styled as toggle)
-                        $toggleSwitch = New-Object System.Windows.Controls.CheckBox
-                        $toggleSwitch.Content = $tweak.Content
-                        $toggleSwitch.Tag = $tweak.ID
-                        $toggleSwitch.Style = $trvTweaks.FindResource("ToggleSwitch")
-                        
-                        # Set initial state based on DefaultState if available
-                        if ($tweak.registry -and $tweak.registry[0].DefaultState) {
-                            $toggleSwitch.IsChecked = [bool]::Parse($tweak.registry[0].DefaultState)
-                        }
-                        
-                        # Add tooltip with description if available
-                        if ($tweak.Description) {
-                            $toggleSwitch.ToolTip = $tweak.Description
-                        }
-                        
-                        # Add immediate execution event handler
-                        $toggleSwitch.Add_Checked({
-                            param($sender, $e)
-                            $tweakId = $sender.Tag
-                            Write-Log "Toggle ON: $tweakId" -Level "INFO"
-                            # Execute tweak immediately
-                            Invoke-TweakExecution -TweakId $tweakId -Action "Apply"
-                        })
-                        
-                        $toggleSwitch.Add_Unchecked({
-                            param($sender, $e)
-                            $tweakId = $sender.Tag
-                            Write-Log "Toggle OFF: $tweakId" -Level "INFO"
-                            # Execute undo immediately
-                            Invoke-TweakExecution -TweakId $tweakId -Action "Undo"
-                        })
-                        
-                        $tweakNode.Header = $toggleSwitch
-                    }
+                # Create category node
+                $categoryNode = New-Object System.Windows.Controls.TreeViewItem
+                # We'll set the header with the actual count after processing all tweaks
+                $categoryNode.Header = $categoryName
+                $categoryNode.IsExpanded = $true
+                
+                $categoryTweakCount = 0
+                
+                # Process each tweak in the category
+                foreach ($tweakProperty in $categoryTweaks.PSObject.Properties) {
+                    $tweakId = $tweakProperty.Name
+                    $tweak = $tweakProperty.Value
                     
-                    "button" {
-                        # Create button
-                        $button = New-Object System.Windows.Controls.Button
-                        $button.Content = $tweak.Content
-                        $button.Tag = $tweak.ID
-                        $button.Style = $trvTweaks.FindResource("TweakButton")
-                        
-                        # Set custom width if specified
-                        if ($tweak.ButtonWidth) {
-                            $button.Width = [int]$tweak.ButtonWidth
-                        }
-                        
-                        # Add tooltip with description if available
-                        if ($tweak.Description) {
-                            $button.ToolTip = $tweak.Description
-                        }
-                        
-                        # Add immediate execution event handler
-                        $button.Add_Click({
-                            param($sender, $e)
-                            $tweakId = $sender.Tag
-                            Write-Log "Button clicked: $tweakId" -Level "INFO"
-                            # Execute tweak immediately
-                            Invoke-TweakExecution -TweakId $tweakId -Action "Apply"
-                        })
-                        
-                        $tweakNode.Header = $button
-                    }
+                    # Add the ID to the tweak object for reference
+                    $tweak | Add-Member -MemberType NoteProperty -Name "ID" -Value $tweakId -Force
                     
-                    "combobox" {
-                        # Create container for combobox with label
-                        $container = New-Object System.Windows.Controls.StackPanel
-                        $container.Orientation = [System.Windows.Controls.Orientation]::Vertical
-                        
-                        # Create label
-                        $label = New-Object System.Windows.Controls.TextBlock
-                        $label.Text = $tweak.Content
-                        $label.Foreground = [System.Windows.Media.Brushes]::White
-                        $label.FontSize = 14
-                        $label.Margin = "0,0,0,4"
-                        
-                        # Create combobox
-                        $comboBox = New-Object System.Windows.Controls.ComboBox
-                        $comboBox.Tag = $tweak.ID
-                        $comboBox.Style = $trvTweaks.FindResource("TweakComboBox")
-                        
-                        # Add items from ComboItems property
-                        if ($tweak.ComboItems) {
-                            $items = $tweak.ComboItems -split ' '
-                            foreach ($item in $items) {
-                                $comboBox.Items.Add($item) | Out-Null
+                    $tweakNode = New-Object System.Windows.Controls.TreeViewItem
+                    $tweakNode.Style = $treeView.TryFindResource("CheckboxTreeViewItem")
+                    
+                    # Determine the control type (default to checkbox if not specified)
+                    $controlType = if ($tweak.Type) { $tweak.Type } else { "Checkbox" }
+                    
+                    switch ($controlType.ToLower()) {
+                        "toggle" {
+                            # Create toggle switch (CheckBox styled as toggle)
+                            $toggleSwitch = New-Object System.Windows.Controls.CheckBox
+                            $toggleSwitch.Content = $tweak.Content
+                            $toggleSwitch.Tag = $tweak.ID
+                            $toggleSwitch.Style = $treeView.TryFindResource("ToggleSwitch")
+                            
+                            # Set initial state based on DefaultState if available
+                            if ($tweak.registry -and $tweak.registry[0].DefaultState) {
+                                $toggleSwitch.IsChecked = [bool]::Parse($tweak.registry[0].DefaultState)
                             }
-                            # Select first item by default
-                            if ($comboBox.Items.Count -gt 0) {
-                                $comboBox.SelectedIndex = 0
+                            
+                            # Add tooltip with description if available
+                            if ($tweak.Description) {
+                                $toggleSwitch.ToolTip = $tweak.Description
                             }
-                        }
-                        
-                        # Add tooltip with description if available
-                        if ($tweak.Description) {
-                            $container.ToolTip = $tweak.Description
-                        }
-                        
-                        # Add immediate execution event handler
-                        $comboBox.Add_SelectionChanged({
-                            param($sender, $e)
-                            if ($sender.SelectedItem) {
+                            
+                            # Add immediate execution event handler
+                            $toggleSwitch.Add_Checked({
+                                param($sender, $e)
                                 $tweakId = $sender.Tag
-                                $selectedValue = $sender.SelectedItem.ToString()
-                                Write-Log "ComboBox changed: $tweakId = $selectedValue" -Level "INFO"
-                                # Execute tweak immediately with selected value
-                                Invoke-TweakExecution -TweakId $tweakId -Action "Apply" -Value $selectedValue
-                            }
-                        })
-                        
-                        $container.Children.Add($label) | Out-Null
-                        $container.Children.Add($comboBox) | Out-Null
-                        $tweakNode.Header = $container
-                    }
-                    
-                    default {
-                        # Create standard checkbox (default behavior)
-                        $checkBox = New-Object System.Windows.Controls.CheckBox
-                        $checkBox.Content = $tweak.Content
-                        $checkBox.Tag = $tweak.ID
-                        $checkBox.Foreground = [System.Windows.Media.Brushes]::White
-                        $checkBox.Margin = "0,4,0,4"
-                        
-                        # Add tooltip with description if available
-                        if ($tweak.Description) {
-                            $checkBox.ToolTip = $tweak.Description
+                                Write-Log "Toggle ON: $tweakId" -Level "INFO"
+                                # Execute tweak immediately
+                                Invoke-TweakExecution -TweakId $tweakId -Action "Apply"
+                            })
+                            
+                            $toggleSwitch.Add_Unchecked({
+                                param($sender, $e)
+                                $tweakId = $sender.Tag
+                                Write-Log "Toggle OFF: $tweakId" -Level "INFO"
+                                # Execute undo immediately
+                                Invoke-TweakExecution -TweakId $tweakId -Action "Undo"
+                            })
+                            
+                            $tweakNode.Header = $toggleSwitch
                         }
                         
-                        $tweakNode.Header = $checkBox
+                        "button" {
+                            # Create button
+                            $button = New-Object System.Windows.Controls.Button
+                            $button.Content = $tweak.Content
+                            $button.Tag = $tweak.ID
+                            $button.Style = $treeView.TryFindResource("TweakButton")
+                            
+                            # Set custom width if specified
+                            if ($tweak.ButtonWidth) {
+                                $button.Width = [int]$tweak.ButtonWidth
+                            }
+                            
+                            # Add tooltip with description if available
+                            if ($tweak.Description) {
+                                $button.ToolTip = $tweak.Description
+                            }
+                            
+                            # Add immediate execution event handler
+                            $button.Add_Click({
+                                param($sender, $e)
+                                $tweakId = $sender.Tag
+                                Write-Log "Button clicked: $tweakId" -Level "INFO"
+                                # Execute tweak immediately
+                                Invoke-TweakExecution -TweakId $tweakId -Action "Apply"
+                            })
+                            
+                            $tweakNode.Header = $button
+                        }
+                        
+                        "combobox" {
+                            # Create container for combobox with label
+                            $container = New-Object System.Windows.Controls.StackPanel
+                            $container.Orientation = [System.Windows.Controls.Orientation]::Vertical
+                            
+                            # Create label
+                            $label = New-Object System.Windows.Controls.TextBlock
+                            $label.Text = $tweak.Content
+                            $label.Foreground = [System.Windows.Media.Brushes]::White
+                            $label.FontSize = 14
+                            $label.Margin = "0,0,0,4"
+                            
+                            # Create combobox
+                            $comboBox = New-Object System.Windows.Controls.ComboBox
+                            $comboBox.Tag = $tweak.ID
+                            $comboBox.Style = $treeView.TryFindResource("TweakComboBox")
+                            
+                            # Add items from ComboItems property
+                            if ($tweak.ComboItems) {
+                                $items = $tweak.ComboItems -split ' '
+                                foreach ($item in $items) {
+                                    $comboBox.Items.Add($item) | Out-Null
+                                }
+                                # Select first item by default
+                                if ($comboBox.Items.Count -gt 0) {
+                                    $comboBox.SelectedIndex = 0
+                                }
+                            }
+                            
+                            # Add tooltip with description if available
+                            if ($tweak.Description) {
+                                $container.ToolTip = $tweak.Description
+                            }
+                            
+                            # Add immediate execution event handler
+                            $comboBox.Add_SelectionChanged({
+                                param($sender, $e)
+                                if ($sender.SelectedItem) {
+                                    $tweakId = $sender.Tag
+                                    $selectedValue = $sender.SelectedItem.ToString()
+                                    Write-Log "ComboBox changed: $tweakId = $selectedValue" -Level "INFO"
+                                    # Execute tweak immediately with selected value
+                                    Invoke-TweakExecution -TweakId $tweakId -Action "Apply" -Value $selectedValue
+                                }
+                            })
+                            
+                            $container.Children.Add($label) | Out-Null
+                            $container.Children.Add($comboBox) | Out-Null
+                            $tweakNode.Header = $container
+                        }
+                        
+                        default {
+                            # Create standard checkbox (default behavior)
+                            $checkBox = New-Object System.Windows.Controls.CheckBox
+                            $checkBox.Content = $tweak.Content
+                            $checkBox.Tag = $tweak.ID
+                            $checkBox.Foreground = [System.Windows.Media.Brushes]::White
+                            $checkBox.FontSize = 13
+                            $checkBox.Margin = "0,1,0,1"
+                            
+                            # Add tooltip with description if available
+                            if ($tweak.Description) {
+                                $checkBox.ToolTip = $tweak.Description
+                            }
+                            
+                            $tweakNode.Header = $checkBox
+                        }
                     }
+                    
+                    $categoryNode.Items.Add($tweakNode)
+                    $categoryTweakCount++
+                    $panelTweakCount++
                 }
                 
-                $categoryNode.Items.Add($tweakNode)
+                # Only add category if it has tweaks
+                if ($categoryTweakCount -gt 0) {
+                    # Keep the header as just the category name
+                    $categoryNode.Header = $categoryName
+                    $treeView.Items.Add($categoryNode)
+                    $totalCategories++
+                    Write-Log "Added category '$categoryName' with $categoryTweakCount tweaks to panel $panelNumber" -Level "DEBUG"
+                }
             }
             
-            $trvTweaks.Items.Add($categoryNode)
+            Write-Log "Panel $panelNumber populated with $panelTweakCount tweaks" -Level "DEBUG"
+            $totalTweaks += $panelTweakCount
         }
         
-        $totalTweaks = ($tweaksByCategory.Values | ForEach-Object { $_.Count } | Measure-Object -Sum).Sum
-        Write-Log "Populated $totalTweaks tweaks in $($categories.Count) categories" -Level "DEBUG"
+        Write-Log "Populated $totalTweaks tweaks in $totalCategories categories across panels" -Level "DEBUG"
     }
     catch {
         Write-Log "Exception populating tweaks: $($_.Exception.Message)" -Level "ERROR"
@@ -470,44 +510,64 @@ function Filter-Content {
             }
         }
         
-        # Filter tweaks (collapse/expand categories based on search)
-        $trvTweaks = Get-UIControl -Sync $Sync -ControlName "trvTweaks"
-        if ($trvTweaks) {
-            foreach ($categoryNode in $trvTweaks.Items) {
-                $hasVisibleTweaks = $false
-                
-                foreach ($tweakNode in $categoryNode.Items) {
-                    $control = $tweakNode.Header
-                    $tweakVisible = $false
-                    
-                    # Handle different control types for filtering
-                    if ($control -is [System.Windows.Controls.CheckBox]) {
-                        # Checkbox or Toggle
-                        $tweakVisible = -not $SearchText -or 
-                                       ($control.Content -and $control.Content.ToString().ToLower().Contains($SearchText.ToLower())) -or
-                                       ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
+        # Filter tweaks across all panels
+        $spTweaksPanels = Get-UIControl -Sync $Sync -ControlName "spTweaksPanels"
+        if ($spTweaksPanels) {
+            foreach ($panelBorder in $spTweaksPanels.Children) {
+                if ($panelBorder -is [System.Windows.Controls.Border]) {
+                    $panelContent = $panelBorder.Child
+                    if ($panelContent -is [System.Windows.Controls.StackPanel]) {
+                        # Find the TreeView in the panel
+                        $panelTreeView = $panelContent.Children | Where-Object { $_ -is [System.Windows.Controls.TreeView] } | Select-Object -First 1
+                        
+                        if ($panelTreeView) {
+                            $panelHasVisibleContent = $false
+                            
+                            foreach ($categoryNode in $panelTreeView.Items) {
+                                $hasVisibleTweaks = $false
+                                
+                                foreach ($tweakNode in $categoryNode.Items) {
+                                    $control = $tweakNode.Header
+                                    $tweakVisible = $false
+                                    
+                                    # Handle different control types for filtering
+                                    if ($control -is [System.Windows.Controls.CheckBox]) {
+                                        # Checkbox or Toggle
+                                        $tweakVisible = -not $SearchText -or 
+                                                       ($control.Content -and $control.Content.ToString().ToLower().Contains($SearchText.ToLower())) -or
+                                                       ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
+                                    }
+                                    elseif ($control -is [System.Windows.Controls.Button]) {
+                                        # Button
+                                        $tweakVisible = -not $SearchText -or 
+                                                       ($control.Content -and $control.Content.ToString().ToLower().Contains($SearchText.ToLower())) -or
+                                                       ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
+                                    }
+                                    elseif ($control -is [System.Windows.Controls.StackPanel]) {
+                                        # ComboBox container
+                                        $label = $control.Children | Where-Object { $_ -is [System.Windows.Controls.TextBlock] } | Select-Object -First 1
+                                        $tweakVisible = -not $SearchText -or 
+                                                       ($label -and $label.Text -and $label.Text.ToLower().Contains($SearchText.ToLower())) -or
+                                                       ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
+                                    }
+                                    
+                                    $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
+                                    if ($tweakVisible) { 
+                                        $hasVisibleTweaks = $true 
+                                        $panelHasVisibleContent = $true
+                                    }
+                                }
+                                
+                                $categoryNode.Visibility = if ($hasVisibleTweaks) { "Visible" } else { "Collapsed" }
+                                if ($hasVisibleTweaks -and $SearchText) {
+                                    $categoryNode.IsExpanded = $true
+                                }
+                            }
+                            
+                            # Hide entire panel if no content is visible
+                            $panelBorder.Visibility = if ($panelHasVisibleContent) { "Visible" } else { "Collapsed" }
+                        }
                     }
-                    elseif ($control -is [System.Windows.Controls.Button]) {
-                        # Button
-                        $tweakVisible = -not $SearchText -or 
-                                       ($control.Content -and $control.Content.ToString().ToLower().Contains($SearchText.ToLower())) -or
-                                       ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
-                    }
-                    elseif ($control -is [System.Windows.Controls.StackPanel]) {
-                        # ComboBox container
-                        $label = $control.Children | Where-Object { $_ -is [System.Windows.Controls.TextBlock] } | Select-Object -First 1
-                        $tweakVisible = -not $SearchText -or 
-                                       ($label -and $label.Text -and $label.Text.ToLower().Contains($SearchText.ToLower())) -or
-                                       ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
-                    }
-                    
-                    $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
-                    if ($tweakVisible) { $hasVisibleTweaks = $true }
-                }
-                
-                $categoryNode.Visibility = if ($hasVisibleTweaks) { "Visible" } else { "Collapsed" }
-                if ($hasVisibleTweaks -and $SearchText) {
-                    $categoryNode.IsExpanded = $true
                 }
             }
         }
@@ -603,29 +663,75 @@ function Filter-TweakContent {
     )
     
     try {
-        # Filter tweaks (collapse/expand categories based on search)
-        $trvTweaks = Get-UIControl -Sync $Sync -ControlName "trvTweaks"
-        if ($trvTweaks) {
-            foreach ($categoryNode in $trvTweaks.Items) {
-                $hasVisibleTweaks = $false
+        # Filter tweaks in static panels
+        if ($Sync) {
+            $trvTweaksPanel1 = Get-UIControl -Sync $Sync -ControlName "trvTweaksPanel1"
+            $trvTweaksPanel2 = Get-UIControl -Sync $Sync -ControlName "trvTweaksPanel2"
+            $panel1Border = Get-UIControl -Sync $Sync -ControlName "Panel1"
+            $panel2Border = Get-UIControl -Sync $Sync -ControlName "Panel2"
+        } else {
+            $trvTweaksPanel1 = $Window.FindName("trvTweaksPanel1")
+            $trvTweaksPanel2 = $Window.FindName("trvTweaksPanel2")
+            $panel1Border = $Window.FindName("Panel1")
+            $panel2Border = $Window.FindName("Panel2")
+        }
+        
+        $panels = @(
+            @{ TreeView = $trvTweaksPanel1; Border = $panel1Border }
+            @{ TreeView = $trvTweaksPanel2; Border = $panel2Border }
+        )
+        
+        foreach ($panelInfo in $panels) {
+            $treeView = $panelInfo.TreeView
+            $border = $panelInfo.Border
+            
+            if ($treeView) {
+                $panelHasVisibleContent = $false
                 
-                foreach ($tweakNode in $categoryNode.Items) {
-                    $stackPanel = $tweakNode.Header
-                    if ($stackPanel -is [System.Windows.Controls.StackPanel]) {
-                        $checkBox = $stackPanel.Children | Where-Object { $_ -is [System.Windows.Controls.CheckBox] } | Select-Object -First 1
-                        if ($checkBox) {
+                foreach ($categoryNode in $treeView.Items) {
+                    $hasVisibleTweaks = $false
+                    
+                    foreach ($tweakNode in $categoryNode.Items) {
+                        $control = $tweakNode.Header
+                        $tweakVisible = $false
+                        
+                        # Handle different control types for filtering
+                        if ($control -is [System.Windows.Controls.CheckBox]) {
+                            # Checkbox or Toggle
                             $tweakVisible = -not $SearchText -or 
-                                           ($checkBox.Content -and $checkBox.Content.ToString().ToLower().Contains($SearchText.ToLower()))
-                            
-                            $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
-                            if ($tweakVisible) { $hasVisibleTweaks = $true }
+                                           ($control.Content -and $control.Content.ToString().ToLower().Contains($SearchText.ToLower())) -or
+                                           ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
                         }
+                        elseif ($control -is [System.Windows.Controls.Button]) {
+                            # Button
+                            $tweakVisible = -not $SearchText -or 
+                                           ($control.Content -and $control.Content.ToString().ToLower().Contains($SearchText.ToLower())) -or
+                                           ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
+                        }
+                        elseif ($control -is [System.Windows.Controls.StackPanel]) {
+                            # ComboBox container
+                            $label = $control.Children | Where-Object { $_ -is [System.Windows.Controls.TextBlock] } | Select-Object -First 1
+                            $tweakVisible = -not $SearchText -or 
+                                           ($label -and $label.Text -and $label.Text.ToLower().Contains($SearchText.ToLower())) -or
+                                           ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
+                        }
+                        
+                        $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
+                        if ($tweakVisible) { 
+                            $hasVisibleTweaks = $true 
+                            $panelHasVisibleContent = $true
+                        }
+                    }
+                    
+                    $categoryNode.Visibility = if ($hasVisibleTweaks) { "Visible" } else { "Collapsed" }
+                    if ($hasVisibleTweaks -and $SearchText) {
+                        $categoryNode.IsExpanded = $true
                     }
                 }
                 
-                $categoryNode.Visibility = if ($hasVisibleTweaks) { "Visible" } else { "Collapsed" }
-                if ($hasVisibleTweaks -and $SearchText) {
-                    $categoryNode.IsExpanded = $true
+                # Hide entire panel if no content is visible
+                if ($border) {
+                    $border.Visibility = if ($panelHasVisibleContent) { "Visible" } else { "Collapsed" }
                 }
             }
         }
@@ -694,25 +800,30 @@ function Get-SelectedTweaks {
     
     try {
         if ($Sync) {
-            $trvTweaks = Get-UIControl -Sync $Sync -ControlName "trvTweaks"
+            $trvTweaksPanel1 = Get-UIControl -Sync $Sync -ControlName "trvTweaksPanel1"
+            $trvTweaksPanel2 = Get-UIControl -Sync $Sync -ControlName "trvTweaksPanel2"
         } else {
-            $trvTweaks = $Window.FindName("trvTweaks")
+            $trvTweaksPanel1 = $Window.FindName("trvTweaksPanel1")
+            $trvTweaksPanel2 = $Window.FindName("trvTweaksPanel2")
         }
         
-        if (-not $trvTweaks) { return @() }
-        
         $selectedTweaks = @()
+        $panels = @($trvTweaksPanel1, $trvTweaksPanel2)
         
-        # Recursively traverse tree and find checked items (only checkboxes, not toggles/buttons)
-        foreach ($categoryNode in $trvTweaks.Items) {
-            foreach ($tweakNode in $categoryNode.Items) {
-                $control = $tweakNode.Header
-                # Only include standard checkboxes in bulk selection, not toggles/buttons/comboboxes
-                if ($control -is [System.Windows.Controls.CheckBox] -and 
-                    $control.Style -eq $null -and  # Standard checkbox (not toggle)
-                    $control.IsChecked -and 
-                    $control.Tag) {
-                    $selectedTweaks += $control.Tag
+        # Traverse all panels and find checked items (only checkboxes, not toggles/buttons)
+        foreach ($treeView in $panels) {
+            if ($treeView) {
+                foreach ($categoryNode in $treeView.Items) {
+                    foreach ($tweakNode in $categoryNode.Items) {
+                        $control = $tweakNode.Header
+                        # Only include standard checkboxes in bulk selection, not toggles/buttons/comboboxes
+                        if ($control -is [System.Windows.Controls.CheckBox] -and 
+                            $control.Style -eq $null -and  # Standard checkbox (not toggle)
+                            $control.IsChecked -and 
+                            $control.Tag) {
+                            $selectedTweaks += $control.Tag
+                        }
+                    }
                 }
             }
         }
