@@ -9013,23 +9013,22 @@ function Filter-Content {
     )
     
     try {
-        # Filter applications
+        # Filter applications by hiding/showing items
         $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
         if ($lstApplications) {
-            $appsCollection = @()
-            
-            foreach ($appProperty in $AppsConfig.PSObject.Properties) {
-                $app = $appProperty.Value | Add-Member -MemberType NoteProperty -Name "ID" -Value $appProperty.Name -PassThru
-                
-                if (-not $SearchText -or 
-                    $app.content.ToLower().Contains($SearchText.ToLower()) -or 
-                    $app.description.ToLower().Contains($SearchText.ToLower()) -or
-                    $app.category.ToLower().Contains($SearchText.ToLower())) {
-                    $appsCollection += $app
+            foreach ($item in $lstApplications.Items) {
+                if ($item) {
+                    $container = $lstApplications.ItemContainerGenerator.ContainerFromItem($item)
+                    if ($container) {
+                        $appVisible = -not $SearchText -or 
+                                     ($item.content -and $item.content.ToLower().Contains($SearchText.ToLower())) -or 
+                                     ($item.description -and $item.description.ToLower().Contains($SearchText.ToLower())) -or
+                                     ($item.category -and $item.category.ToLower().Contains($SearchText.ToLower()))
+                        
+                        $container.Visibility = if ($appVisible) { "Visible" } else { "Collapsed" }
+                    }
                 }
             }
-            
-            $lstApplications.ItemsSource = $appsCollection
         }
         
         # Filter tweaks (collapse/expand categories based on search)
@@ -9044,7 +9043,7 @@ function Filter-Content {
                         $checkBox = $stackPanel.Children | Where-Object { $_ -is [System.Windows.Controls.CheckBox] } | Select-Object -First 1
                         if ($checkBox) {
                             $tweakVisible = -not $SearchText -or 
-                                           $checkBox.Content.ToString().ToLower().Contains($SearchText.ToLower())
+                                           ($checkBox.Content -and $checkBox.Content.ToString().ToLower().Contains($SearchText.ToLower()))
                             
                             $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
                             if ($tweakVisible) { $hasVisibleTweaks = $true }
