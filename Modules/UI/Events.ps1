@@ -863,7 +863,7 @@ function Clear-AllSelections {
         foreach ($treeView in $panels) {
             if ($treeView) {
                 foreach ($categoryNode in $treeView.Items) {
-                    foreach ($tweakNode in $categoryNode.Items) {
+                foreach ($tweakNode in $categoryNode.Items) {
                         $control = $tweakNode.Header
                         # Only clear standard checkboxes, not toggles (which should maintain state)
                         if ($control -is [System.Windows.Controls.CheckBox] -and $control.Style -eq $null) {
@@ -948,7 +948,7 @@ function Select-Tweaks {
         foreach ($treeView in $panels) {
             if ($treeView) {
                 foreach ($categoryNode in $treeView.Items) {
-                    foreach ($tweakNode in $categoryNode.Items) {
+                foreach ($tweakNode in $categoryNode.Items) {
                         $control = $tweakNode.Header
                         # Only select standard checkboxes, not toggles/buttons/comboboxes
                         if ($control -is [System.Windows.Controls.CheckBox] -and 

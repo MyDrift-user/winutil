@@ -233,12 +233,12 @@ function Populate-Tweaks {
                 
                 Write-Log "Processing Category: $categoryName" -Level "DEBUG"
                 
-                # Create category node
-                $categoryNode = New-Object System.Windows.Controls.TreeViewItem
+            # Create category node
+            $categoryNode = New-Object System.Windows.Controls.TreeViewItem
                 # We'll set the header with the actual count after processing all tweaks
                 $categoryNode.Header = $categoryName
-                $categoryNode.IsExpanded = $true
-                
+            $categoryNode.IsExpanded = $true
+            
                 $categoryTweakCount = 0
                 
                 # Process each tweak in the category
@@ -249,7 +249,7 @@ function Populate-Tweaks {
                     # Add the ID to the tweak object for reference
                     $tweak | Add-Member -MemberType NoteProperty -Name "ID" -Value $tweakId -Force
                     
-                    $tweakNode = New-Object System.Windows.Controls.TreeViewItem
+                $tweakNode = New-Object System.Windows.Controls.TreeViewItem
                     $tweakNode.Style = $treeView.TryFindResource("CheckboxTreeViewItem")
                     
                     # Determine the control type (default to checkbox if not specified)
@@ -326,7 +326,7 @@ function Populate-Tweaks {
                             # Create container for combobox with label
                             $container = New-Object System.Windows.Controls.StackPanel
                             $container.Orientation = [System.Windows.Controls.Orientation]::Vertical
-                            
+                
                             # Create label
                             $label = New-Object System.Windows.Controls.TextBlock
                             $label.Text = $tweak.Content
@@ -375,15 +375,15 @@ function Populate-Tweaks {
                         
                         default {
                             # Create standard checkbox (default behavior)
-                            $checkBox = New-Object System.Windows.Controls.CheckBox
-                            $checkBox.Content = $tweak.Content
-                            $checkBox.Tag = $tweak.ID
-                            $checkBox.Foreground = [System.Windows.Media.Brushes]::White
+                $checkBox = New-Object System.Windows.Controls.CheckBox
+                $checkBox.Content = $tweak.Content
+                $checkBox.Tag = $tweak.ID
+                $checkBox.Foreground = [System.Windows.Media.Brushes]::White
                             $checkBox.FontSize = 13
                             $checkBox.Margin = "0,1,0,1"
-                            
+                
                             # Add tooltip with description if available
-                            if ($tweak.Description) {
+                if ($tweak.Description) {
                                 $checkBox.ToolTip = $tweak.Description
                             }
                             
@@ -391,7 +391,7 @@ function Populate-Tweaks {
                         }
                     }
                     
-                    $categoryNode.Items.Add($tweakNode)
+                $categoryNode.Items.Add($tweakNode)
                     $categoryTweakCount++
                     $panelTweakCount++
                 }
@@ -524,16 +524,16 @@ function Filter-Content {
                             $panelHasVisibleContent = $false
                             
                             foreach ($categoryNode in $panelTreeView.Items) {
-                                $hasVisibleTweaks = $false
-                                
-                                foreach ($tweakNode in $categoryNode.Items) {
+                $hasVisibleTweaks = $false
+                
+                foreach ($tweakNode in $categoryNode.Items) {
                                     $control = $tweakNode.Header
                                     $tweakVisible = $false
                                     
                                     # Handle different control types for filtering
                                     if ($control -is [System.Windows.Controls.CheckBox]) {
                                         # Checkbox or Toggle
-                                        $tweakVisible = -not $SearchText -or 
+                            $tweakVisible = -not $SearchText -or 
                                                        ($control.Content -and $control.Content.ToString().ToLower().Contains($SearchText.ToLower())) -or
                                                        ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
                                     }
@@ -550,17 +550,17 @@ function Filter-Content {
                                                        ($label -and $label.Text -and $label.Text.ToLower().Contains($SearchText.ToLower())) -or
                                                        ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
                                     }
-                                    
-                                    $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
+                            
+                            $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
                                     if ($tweakVisible) { 
                                         $hasVisibleTweaks = $true 
                                         $panelHasVisibleContent = $true
-                                    }
-                                }
-                                
-                                $categoryNode.Visibility = if ($hasVisibleTweaks) { "Visible" } else { "Collapsed" }
-                                if ($hasVisibleTweaks -and $SearchText) {
-                                    $categoryNode.IsExpanded = $true
+                    }
+                }
+                
+                $categoryNode.Visibility = if ($hasVisibleTweaks) { "Visible" } else { "Collapsed" }
+                if ($hasVisibleTweaks -and $SearchText) {
+                    $categoryNode.IsExpanded = $true
                                 }
                             }
                             
@@ -689,9 +689,9 @@ function Filter-TweakContent {
                 $panelHasVisibleContent = $false
                 
                 foreach ($categoryNode in $treeView.Items) {
-                    $hasVisibleTweaks = $false
-                    
-                    foreach ($tweakNode in $categoryNode.Items) {
+                $hasVisibleTweaks = $false
+                
+                foreach ($tweakNode in $categoryNode.Items) {
                         $control = $tweakNode.Header
                         $tweakVisible = $false
                         
@@ -715,17 +715,17 @@ function Filter-TweakContent {
                                            ($label -and $label.Text -and $label.Text.ToLower().Contains($SearchText.ToLower())) -or
                                            ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
                         }
-                        
-                        $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
+                            
+                            $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
                         if ($tweakVisible) { 
                             $hasVisibleTweaks = $true 
                             $panelHasVisibleContent = $true
-                        }
                     }
-                    
-                    $categoryNode.Visibility = if ($hasVisibleTweaks) { "Visible" } else { "Collapsed" }
-                    if ($hasVisibleTweaks -and $SearchText) {
-                        $categoryNode.IsExpanded = $true
+                }
+                
+                $categoryNode.Visibility = if ($hasVisibleTweaks) { "Visible" } else { "Collapsed" }
+                if ($hasVisibleTweaks -and $SearchText) {
+                    $categoryNode.IsExpanded = $true
                     }
                 }
                 
@@ -814,7 +814,7 @@ function Get-SelectedTweaks {
         foreach ($treeView in $panels) {
             if ($treeView) {
                 foreach ($categoryNode in $treeView.Items) {
-                    foreach ($tweakNode in $categoryNode.Items) {
+            foreach ($tweakNode in $categoryNode.Items) {
                         $control = $tweakNode.Header
                         # Only include standard checkboxes in bulk selection, not toggles/buttons/comboboxes
                         if ($control -is [System.Windows.Controls.CheckBox] -and 

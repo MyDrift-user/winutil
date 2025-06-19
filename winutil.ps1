@@ -6662,8 +6662,30 @@ $global:MainWindowXAML = @'
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
-                <!-- WinUtil Title (Draggable Area) -->
-                <TextBlock Name="titleBar" Grid.Column="0" Text="WinUtil" FontSize="28" FontWeight="Bold" Foreground="#FF0078D4" VerticalAlignment="Center" Margin="0,0,40,0" Cursor="Hand"/>
+                <!-- WinUtil Logo (Draggable Area) -->
+                <Canvas Name="titleBar" Grid.Column="0" Width="32" Height="28" VerticalAlignment="Center" Margin="0,0,15,0" Cursor="Hand">
+                    <Canvas.RenderTransform>
+                        <ScaleTransform ScaleX="0.3" ScaleY="0.3"/>
+                    </Canvas.RenderTransform>
+                    <!-- Logo Path 1 -->
+                    <Path Fill="#FF0567FF">
+                        <Path.Data>
+                            <PathGeometry>M 18.00,14.00 C 18.00,14.00 45.00,27.74 45.00,27.74 45.00,27.74 57.40,34.63 57.40,34.63 57.40,34.63 59.00,43.00 59.00,43.00 59.00,43.00 59.00,83.00 59.00,83.00 55.35,81.66 46.99,77.79 44.72,74.79 41.17,70.10 42.01,59.80 42.00,54.00 42.00,51.62 42.20,48.29 40.98,46.21 38.34,41.74 25.78,38.60 21.28,33.79 16.81,29.02 18.00,20.20 18.00,14.00 Z</PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <!-- Logo Path 2 -->
+                    <Path Fill="#FF0567FF">
+                        <Path.Data>
+                            <PathGeometry>M 107.00,14.00 C 109.01,19.06 108.93,30.37 104.66,34.21 100.47,37.98 86.38,43.10 84.60,47.21 83.94,48.74 84.01,51.32 84.00,53.00 83.97,57.04 84.46,68.90 83.26,72.00 81.06,77.70 72.54,81.42 67.00,83.00 67.00,83.00 67.00,43.00 67.00,43.00 67.00,43.00 67.99,35.63 67.99,35.63 67.99,35.63 80.00,28.26 80.00,28.26 80.00,28.26 107.00,14.00 107.00,14.00 Z</PathGeometry>
+                        </Path.Data>
+                    </Path>
+                    <!-- Logo Path 3 -->
+                    <Path Fill="#FFA3A4A6">
+                        <Path.Data>
+                            <PathGeometry>M 19.00,46.00 C 21.36,47.14 28.67,50.71 30.01,52.63 31.17,54.30 30.99,57.04 31.00,59.00 31.04,65.41 30.35,72.16 33.56,78.00 38.19,86.45 46.10,89.04 54.00,93.31 56.55,94.69 60.10,97.20 63.00,97.22 65.50,97.24 68.77,95.36 71.00,94.25 76.42,91.55 84.51,87.78 88.82,83.68 94.56,78.20 95.96,70.59 96.00,63.00 96.01,60.24 95.59,54.63 97.02,52.39 98.80,49.60 103.95,47.87 107.00,47.00 107.00,47.00 107.00,67.00 107.00,67.00 106.90,87.69 96.10,93.85 80.00,103.00 76.51,104.98 66.66,110.67 63.00,110.52 60.33,110.41 55.55,107.53 53.00,106.25 46.21,102.83 36.63,98.57 31.04,93.68 16.88,81.28 19.00,62.88 19.00,46.00 Z</PathGeometry>
+                        </Path.Data>
+                    </Path>
+                </Canvas>
                 
                 <!-- Navigation Tabs -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
@@ -8987,6 +9009,43 @@ function Show-PresetSummary {
 # Functions exported: Test-Presets, Get-PresetStatistics, Show-PresetSummary 
 
 # ----------------------------------------
+# MODULE: UI\Logo.ps1
+# ----------------------------------------
+function Show-CTTLogo {
+    <#
+    .SYNOPSIS
+    Displays the Chris Titus Tech ASCII logo
+    #>
+    $asciiArt = @"
+
+    CCCCCCCCCCCCCTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+ CCC::::::::::::CT:::::::::::::::::::::TT:::::::::::::::::::::T
+CC:::::::::::::::CT:::::::::::::::::::::TT:::::::::::::::::::::T
+C:::::CCCCCCCC::::CT:::::TT:::::::TT:::::TT:::::TT:::::::TT:::::T
+C:::::C       CCCCCCTTTTTT  T:::::T  TTTTTTTTTTTT  T:::::T  TTTTTT
+C:::::C                     T:::::T                T:::::T
+C:::::C                     T:::::T                T:::::T
+C:::::C                     T:::::T                T:::::T
+C:::::C                     T:::::T                T:::::T
+C:::::C                     T:::::T                T:::::T
+C:::::C                     T:::::T                T:::::T
+C:::::C       CCCCCC        T:::::T                T:::::T
+C:::::CCCCCCCC::::C      TT:::::::TT            TT:::::::TT
+CC:::::::::::::::C       T:::::::::T            T:::::::::T
+CCC::::::::::::C         T:::::::::T            T:::::::::T
+  CCCCCCCCCCCCC          TTTTTTTTTTT            TTTTTTTTTTT
+
+====Chris Titus Tech=====
+=====Windows Toolbox=====
+"@
+    
+    Write-Host $asciiArt -ForegroundColor Cyan
+    Write-Host ""
+}
+
+# Functions exported: Show-CTTLogo 
+
+# ----------------------------------------
 # MODULE: UI\Binding.ps1
 # ----------------------------------------
 function Populate-UI {
@@ -9224,12 +9283,12 @@ function Populate-Tweaks {
                 
                 Write-Log "Processing Category: $categoryName" -Level "DEBUG"
                 
-                # Create category node
-                $categoryNode = New-Object System.Windows.Controls.TreeViewItem
+            # Create category node
+            $categoryNode = New-Object System.Windows.Controls.TreeViewItem
                 # We'll set the header with the actual count after processing all tweaks
                 $categoryNode.Header = $categoryName
-                $categoryNode.IsExpanded = $true
-                
+            $categoryNode.IsExpanded = $true
+            
                 $categoryTweakCount = 0
                 
                 # Process each tweak in the category
@@ -9240,7 +9299,7 @@ function Populate-Tweaks {
                     # Add the ID to the tweak object for reference
                     $tweak | Add-Member -MemberType NoteProperty -Name "ID" -Value $tweakId -Force
                     
-                    $tweakNode = New-Object System.Windows.Controls.TreeViewItem
+                $tweakNode = New-Object System.Windows.Controls.TreeViewItem
                     $tweakNode.Style = $treeView.TryFindResource("CheckboxTreeViewItem")
                     
                     # Determine the control type (default to checkbox if not specified)
@@ -9317,7 +9376,7 @@ function Populate-Tweaks {
                             # Create container for combobox with label
                             $container = New-Object System.Windows.Controls.StackPanel
                             $container.Orientation = [System.Windows.Controls.Orientation]::Vertical
-                            
+                
                             # Create label
                             $label = New-Object System.Windows.Controls.TextBlock
                             $label.Text = $tweak.Content
@@ -9366,15 +9425,15 @@ function Populate-Tweaks {
                         
                         default {
                             # Create standard checkbox (default behavior)
-                            $checkBox = New-Object System.Windows.Controls.CheckBox
-                            $checkBox.Content = $tweak.Content
-                            $checkBox.Tag = $tweak.ID
-                            $checkBox.Foreground = [System.Windows.Media.Brushes]::White
+                $checkBox = New-Object System.Windows.Controls.CheckBox
+                $checkBox.Content = $tweak.Content
+                $checkBox.Tag = $tweak.ID
+                $checkBox.Foreground = [System.Windows.Media.Brushes]::White
                             $checkBox.FontSize = 13
                             $checkBox.Margin = "0,1,0,1"
-                            
+                
                             # Add tooltip with description if available
-                            if ($tweak.Description) {
+                if ($tweak.Description) {
                                 $checkBox.ToolTip = $tweak.Description
                             }
                             
@@ -9382,7 +9441,7 @@ function Populate-Tweaks {
                         }
                     }
                     
-                    $categoryNode.Items.Add($tweakNode)
+                $categoryNode.Items.Add($tweakNode)
                     $categoryTweakCount++
                     $panelTweakCount++
                 }
@@ -9515,16 +9574,16 @@ function Filter-Content {
                             $panelHasVisibleContent = $false
                             
                             foreach ($categoryNode in $panelTreeView.Items) {
-                                $hasVisibleTweaks = $false
-                                
-                                foreach ($tweakNode in $categoryNode.Items) {
+                $hasVisibleTweaks = $false
+                
+                foreach ($tweakNode in $categoryNode.Items) {
                                     $control = $tweakNode.Header
                                     $tweakVisible = $false
                                     
                                     # Handle different control types for filtering
                                     if ($control -is [System.Windows.Controls.CheckBox]) {
                                         # Checkbox or Toggle
-                                        $tweakVisible = -not $SearchText -or 
+                            $tweakVisible = -not $SearchText -or 
                                                        ($control.Content -and $control.Content.ToString().ToLower().Contains($SearchText.ToLower())) -or
                                                        ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
                                     }
@@ -9541,17 +9600,17 @@ function Filter-Content {
                                                        ($label -and $label.Text -and $label.Text.ToLower().Contains($SearchText.ToLower())) -or
                                                        ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
                                     }
-                                    
-                                    $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
+                            
+                            $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
                                     if ($tweakVisible) { 
                                         $hasVisibleTweaks = $true 
                                         $panelHasVisibleContent = $true
-                                    }
-                                }
-                                
-                                $categoryNode.Visibility = if ($hasVisibleTweaks) { "Visible" } else { "Collapsed" }
-                                if ($hasVisibleTweaks -and $SearchText) {
-                                    $categoryNode.IsExpanded = $true
+                    }
+                }
+                
+                $categoryNode.Visibility = if ($hasVisibleTweaks) { "Visible" } else { "Collapsed" }
+                if ($hasVisibleTweaks -and $SearchText) {
+                    $categoryNode.IsExpanded = $true
                                 }
                             }
                             
@@ -9680,9 +9739,9 @@ function Filter-TweakContent {
                 $panelHasVisibleContent = $false
                 
                 foreach ($categoryNode in $treeView.Items) {
-                    $hasVisibleTweaks = $false
-                    
-                    foreach ($tweakNode in $categoryNode.Items) {
+                $hasVisibleTweaks = $false
+                
+                foreach ($tweakNode in $categoryNode.Items) {
                         $control = $tweakNode.Header
                         $tweakVisible = $false
                         
@@ -9706,17 +9765,17 @@ function Filter-TweakContent {
                                            ($label -and $label.Text -and $label.Text.ToLower().Contains($SearchText.ToLower())) -or
                                            ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
                         }
-                        
-                        $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
+                            
+                            $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
                         if ($tweakVisible) { 
                             $hasVisibleTweaks = $true 
                             $panelHasVisibleContent = $true
-                        }
                     }
-                    
-                    $categoryNode.Visibility = if ($hasVisibleTweaks) { "Visible" } else { "Collapsed" }
-                    if ($hasVisibleTweaks -and $SearchText) {
-                        $categoryNode.IsExpanded = $true
+                }
+                
+                $categoryNode.Visibility = if ($hasVisibleTweaks) { "Visible" } else { "Collapsed" }
+                if ($hasVisibleTweaks -and $SearchText) {
+                    $categoryNode.IsExpanded = $true
                     }
                 }
                 
@@ -9805,7 +9864,7 @@ function Get-SelectedTweaks {
         foreach ($treeView in $panels) {
             if ($treeView) {
                 foreach ($categoryNode in $treeView.Items) {
-                    foreach ($tweakNode in $categoryNode.Items) {
+            foreach ($tweakNode in $categoryNode.Items) {
                         $control = $tweakNode.Header
                         # Only include standard checkboxes in bulk selection, not toggles/buttons/comboboxes
                         if ($control -is [System.Windows.Controls.CheckBox] -and 
@@ -10920,7 +10979,7 @@ function Clear-AllSelections {
         foreach ($treeView in $panels) {
             if ($treeView) {
                 foreach ($categoryNode in $treeView.Items) {
-                    foreach ($tweakNode in $categoryNode.Items) {
+                foreach ($tweakNode in $categoryNode.Items) {
                         $control = $tweakNode.Header
                         # Only clear standard checkboxes, not toggles (which should maintain state)
                         if ($control -is [System.Windows.Controls.CheckBox] -and $control.Style -eq $null) {
@@ -11005,7 +11064,7 @@ function Select-Tweaks {
         foreach ($treeView in $panels) {
             if ($treeView) {
                 foreach ($categoryNode in $treeView.Items) {
-                    foreach ($tweakNode in $categoryNode.Items) {
+                foreach ($tweakNode in $categoryNode.Items) {
                         $control = $tweakNode.Header
                         # Only select standard checkboxes, not toggles/buttons/comboboxes
                         if ($control -is [System.Windows.Controls.CheckBox] -and 
@@ -11120,6 +11179,9 @@ function Start-WinUtilGUI {
 # Main execution
 try {
     Initialize-Logging -LogLevel $LogLevel
+    
+    # Display ASCII art logo
+    Show-CTTLogo
     
     $configs = Load-EmbeddedConfigurations
     if (-not $configs) {
