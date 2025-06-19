@@ -6869,38 +6869,10 @@ $global:MainWindowXAML = @'
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
-                <!-- Applications List -->
-                <ListBox Name="lstApplications" Grid.Row="0" Style="{StaticResource ModernListBox}" Background="Transparent" BorderThickness="0" Margin="0,0,0,20">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Border Background="Transparent" Padding="15" Margin="0,3" CornerRadius="8">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#FF3A3A3A"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    
-                                    <CheckBox Grid.Column="0" VerticalAlignment="Top" Margin="0,2,20,0"/>
-                                    
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock Text="{Binding content}" FontWeight="SemiBold" Foreground="White" FontSize="15"/>
-                                        <TextBlock Text="{Binding description}" Foreground="#FFB0B0B0" TextWrapping="Wrap" FontSize="13" Margin="0,3,0,0"/>
-                                        <TextBlock Text="{Binding category}" Foreground="#FF0078D4" FontSize="11" Margin="0,5,0,0"/>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                <!-- Applications Tree -->
+                <TreeView Name="trvApplications" Grid.Row="0" Style="{StaticResource ModernTreeView}" Background="Transparent" BorderThickness="0" Margin="0,0,0,20">
+                    <!-- TreeView items will be populated via code-behind -->
+                </TreeView>
                 
                 <!-- Application Actions -->
                 <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
@@ -7133,6 +7105,138 @@ $global:ResourcesXAML = @'
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="BorderBrush" Value="#FF3F3F46"/>
+    </Style>
+    
+    <!-- TreeViewItem style for category headers -->
+    <Style TargetType="TreeViewItem">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Margin" Value="0,8,0,4"/>
+        <Setter Property="Padding" Value="8,6"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TreeViewItem">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- Header with expand/collapse toggle -->
+                        <Border Grid.Row="0" 
+                                Name="HeaderBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="4">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Expander Toggle -->
+                                <ToggleButton Grid.Column="0"
+                                            Name="Expander"
+                                            IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                                            ClickMode="Press"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Padding="4"
+                                            Margin="0,0,8,0"
+                                            VerticalAlignment="Center">
+                                    <ToggleButton.Template>
+                                        <ControlTemplate TargetType="ToggleButton">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <TextBlock Name="ExpanderSymbol" 
+                                                          Text="▶" 
+                                                          Foreground="#FF0078D4" 
+                                                          FontSize="12"
+                                                          FontWeight="Bold"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"
+                                                          RenderTransformOrigin="0.5,0.5">
+                                                    <TextBlock.RenderTransform>
+                                                        <RotateTransform Angle="0"/>
+                                                    </TextBlock.RenderTransform>
+                                                </TextBlock>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Setter TargetName="ExpanderSymbol" Property="RenderTransform">
+                                                        <Setter.Value>
+                                                            <RotateTransform Angle="90"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="ExpanderSymbol" Property="Foreground" Value="#FF106EBE"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </ToggleButton.Template>
+                                </ToggleButton>
+                                
+                                <!-- Category Header Text -->
+                                <ContentPresenter Grid.Column="1"
+                                                Name="PART_Header"
+                                                ContentSource="Header"
+                                                VerticalAlignment="Center"
+                                                TextBlock.Foreground="{TemplateBinding Foreground}"
+                                                TextBlock.FontSize="{TemplateBinding FontSize}"
+                                                TextBlock.FontWeight="{TemplateBinding FontWeight}"/>
+                            </Grid>
+                        </Border>
+                        
+                        <!-- Children Container -->
+                        <ItemsPresenter Grid.Row="1" 
+                                       Name="ItemsHost"
+                                       Margin="20,4,0,0"/>
+                    </Grid>
+                    
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsExpanded" Value="False">
+                            <Setter TargetName="ItemsHost" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                        <Trigger Property="HasItems" Value="False">
+                            <Setter TargetName="Expander" Property="Visibility" Value="Hidden"/>
+                        </Trigger>
+                        <!-- Only trigger hover on the header border, not when hovering child items -->
+                        <Trigger SourceName="HeaderBorder" Property="IsMouseOver" Value="True">
+                            <Setter TargetName="HeaderBorder" Property="Background" Value="#FF3A3A3A"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="#FF404040"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- TreeViewItem style for checkbox items (applications/tweaks) -->
+    <Style x:Key="CheckboxTreeViewItem" TargetType="TreeViewItem">
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TreeViewItem">
+                    <!-- Just show the header content directly without any TreeViewItem chrome -->
+                    <ContentPresenter ContentSource="Header" 
+                                    Margin="0"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
     
     <Style x:Key="HeaderText" TargetType="TextBlock">
@@ -8803,7 +8907,7 @@ function Populate-UI {
 function Populate-Applications {
     <#
     .SYNOPSIS
-    Populates the applications list and categories
+    Populates the applications tree view grouped by categories
     
     .PARAMETER Window
     The WPF window object (deprecated - use Sync instead)
@@ -8826,32 +8930,71 @@ function Populate-Applications {
     )
     
     try {
-        Write-Log "Populating applications list..." -Level "DEBUG"
+        Write-Log "Populating applications tree..." -Level "DEBUG"
         
         # Get UI controls - use Sync if available, otherwise fallback to Window
         if ($Sync) {
-            $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
+            $trvApplications = Get-UIControl -Sync $Sync -ControlName "trvApplications"
         } else {
-            $lstApplications = $Window.FindName("lstApplications")
+            $trvApplications = $Window.FindName("trvApplications")
         }
         
-        if (-not $lstApplications) {
-            Write-Log "Could not find applications list control" -Level "ERROR"
+        if (-not $trvApplications) {
+            Write-Log "Could not find applications tree control" -Level "ERROR"
             return
         }
         
-        # Convert apps to collection and add ID property
-        $appsCollection = @()
+        # Group applications by category
+        $appsByCategory = @{}
+        $categories = @()
         
         foreach ($appProperty in $AppsConfig.PSObject.Properties) {
             $app = $appProperty.Value | Add-Member -MemberType NoteProperty -Name "ID" -Value $appProperty.Name -PassThru
-            $appsCollection += $app
+            $category = if ($app.category) { $app.category } else { "Other" }
+            
+            if (-not $appsByCategory.ContainsKey($category)) {
+                $appsByCategory[$category] = @()
+                $categories += $category
+            }
+            
+            $appsByCategory[$category] += $app
         }
         
-        # Bind to ListBox
-        $lstApplications.ItemsSource = $appsCollection
+        # Clear and populate tree
+        $trvApplications.Items.Clear()
         
-        Write-Log "Populated $($appsCollection.Count) applications" -Level "DEBUG"
+        foreach ($category in $categories | Sort-Object) {
+            # Create category node
+            $categoryNode = New-Object System.Windows.Controls.TreeViewItem
+            $categoryNode.Header = $category
+            $categoryNode.IsExpanded = $true
+            
+            # Add applications to category
+            foreach ($app in $appsByCategory[$category] | Sort-Object Content) {
+                $appNode = New-Object System.Windows.Controls.TreeViewItem
+                $appNode.Style = $trvApplications.FindResource("CheckboxTreeViewItem")
+                
+                # Create checkbox with tooltip for description
+                $checkBox = New-Object System.Windows.Controls.CheckBox
+                $checkBox.Content = $app.Content
+                $checkBox.Tag = $app.ID
+                $checkBox.Foreground = [System.Windows.Media.Brushes]::White
+                $checkBox.Margin = "0,4,0,4"
+                
+                # Add tooltip with description if available
+                if ($app.Description) {
+                    $checkBox.ToolTip = $app.Description
+                }
+                
+                $appNode.Header = $checkBox
+                $categoryNode.Items.Add($appNode)
+            }
+            
+            $trvApplications.Items.Add($categoryNode)
+        }
+        
+        $totalApps = ($appsByCategory.Values | ForEach-Object { $_.Count } | Measure-Object -Sum).Sum
+        Write-Log "Populated $totalApps applications in $($categories.Count) categories" -Level "DEBUG"
     }
     catch {
         Write-Log "Exception populating applications: $($_.Exception.Message)" -Level "ERROR"
@@ -8926,33 +9069,21 @@ function Populate-Tweaks {
             # Add tweaks to category
             foreach ($tweak in $tweaksByCategory[$category] | Sort-Object Content) {
                 $tweakNode = New-Object System.Windows.Controls.TreeViewItem
+                $tweakNode.Style = $trvTweaks.FindResource("CheckboxTreeViewItem")
                 
-                # Create a StackPanel for better layout
-                $stackPanel = New-Object System.Windows.Controls.StackPanel
-                $stackPanel.Orientation = [System.Windows.Controls.Orientation]::Vertical
-                
-                # Create checkbox and text
+                # Create checkbox with tooltip for description
                 $checkBox = New-Object System.Windows.Controls.CheckBox
                 $checkBox.Content = $tweak.Content
                 $checkBox.Tag = $tweak.ID
                 $checkBox.Foreground = [System.Windows.Media.Brushes]::White
+                $checkBox.Margin = "0,4,0,4"
                 
-                # Add description if available
+                # Add tooltip with description if available
                 if ($tweak.Description) {
-                    $description = New-Object System.Windows.Controls.TextBlock
-                    $description.Text = $tweak.Description
-                    $description.Foreground = [System.Windows.Media.Brushes]::Gray
-                    $description.FontSize = 10
-                    $description.TextWrapping = [System.Windows.TextWrapping]::Wrap
-                    $description.Margin = "20,2,0,0"
-                    
-                    $stackPanel.Children.Add($checkBox)
-                    $stackPanel.Children.Add($description)
-                } else {
-                    $stackPanel.Children.Add($checkBox)
+                    $checkBox.ToolTip = $tweak.Description
                 }
                 
-                $tweakNode.Header = $stackPanel
+                $tweakNode.Header = $checkBox
                 $categoryNode.Items.Add($tweakNode)
             }
             
@@ -9035,20 +9166,27 @@ function Filter-Content {
     )
     
     try {
-        # Filter applications by hiding/showing items
-        $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
-        if ($lstApplications) {
-            foreach ($item in $lstApplications.Items) {
-                if ($item) {
-                    $container = $lstApplications.ItemContainerGenerator.ContainerFromItem($item)
-                    if ($container) {
+        # Filter applications (collapse/expand categories based on search)
+        $trvApplications = Get-UIControl -Sync $Sync -ControlName "trvApplications"
+        if ($trvApplications) {
+            foreach ($categoryNode in $trvApplications.Items) {
+                $hasVisibleApps = $false
+                
+                foreach ($appNode in $categoryNode.Items) {
+                    $checkBox = $appNode.Header
+                    if ($checkBox -is [System.Windows.Controls.CheckBox]) {
                         $appVisible = -not $SearchText -or 
-                                     ($item.content -and $item.content.ToLower().Contains($SearchText.ToLower())) -or 
-                                     ($item.description -and $item.description.ToLower().Contains($SearchText.ToLower())) -or
-                                     ($item.category -and $item.category.ToLower().Contains($SearchText.ToLower()))
+                                     ($checkBox.Content -and $checkBox.Content.ToString().ToLower().Contains($SearchText.ToLower())) -or
+                                     ($checkBox.ToolTip -and $checkBox.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
                         
-                        $container.Visibility = if ($appVisible) { "Visible" } else { "Collapsed" }
+                        $appNode.Visibility = if ($appVisible) { "Visible" } else { "Collapsed" }
+                        if ($appVisible) { $hasVisibleApps = $true }
                     }
+                }
+                
+                $categoryNode.Visibility = if ($hasVisibleApps) { "Visible" } else { "Collapsed" }
+                if ($hasVisibleApps -and $SearchText) {
+                    $categoryNode.IsExpanded = $true
                 }
             }
         }
@@ -9060,16 +9198,14 @@ function Filter-Content {
                 $hasVisibleTweaks = $false
                 
                 foreach ($tweakNode in $categoryNode.Items) {
-                    $stackPanel = $tweakNode.Header
-                    if ($stackPanel -is [System.Windows.Controls.StackPanel]) {
-                        $checkBox = $stackPanel.Children | Where-Object { $_ -is [System.Windows.Controls.CheckBox] } | Select-Object -First 1
-                        if ($checkBox) {
-                            $tweakVisible = -not $SearchText -or 
-                                           ($checkBox.Content -and $checkBox.Content.ToString().ToLower().Contains($SearchText.ToLower()))
-                            
-                            $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
-                            if ($tweakVisible) { $hasVisibleTweaks = $true }
-                        }
+                    $checkBox = $tweakNode.Header
+                    if ($checkBox -is [System.Windows.Controls.CheckBox]) {
+                        $tweakVisible = -not $SearchText -or 
+                                       ($checkBox.Content -and $checkBox.Content.ToString().ToLower().Contains($SearchText.ToLower())) -or
+                                       ($checkBox.ToolTip -and $checkBox.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
+                        
+                        $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
+                        if ($tweakVisible) { $hasVisibleTweaks = $true }
                     }
                 }
                 
@@ -9113,20 +9249,27 @@ function Filter-ApplicationContent {
     )
     
     try {
-        # Filter applications by hiding/showing items
-        $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
-        if ($lstApplications) {
-            foreach ($item in $lstApplications.Items) {
-                if ($item) {
-                    $container = $lstApplications.ItemContainerGenerator.ContainerFromItem($item)
-                    if ($container) {
+        # Filter applications (collapse/expand categories based on search)
+        $trvApplications = Get-UIControl -Sync $Sync -ControlName "trvApplications"
+        if ($trvApplications) {
+            foreach ($categoryNode in $trvApplications.Items) {
+                $hasVisibleApps = $false
+                
+                foreach ($appNode in $categoryNode.Items) {
+                    $checkBox = $appNode.Header
+                    if ($checkBox -is [System.Windows.Controls.CheckBox]) {
                         $appVisible = -not $SearchText -or 
-                                     ($item.content -and $item.content.ToLower().Contains($SearchText.ToLower())) -or 
-                                     ($item.description -and $item.description.ToLower().Contains($SearchText.ToLower())) -or
-                                     ($item.category -and $item.category.ToLower().Contains($SearchText.ToLower()))
+                                     ($checkBox.Content -and $checkBox.Content.ToString().ToLower().Contains($SearchText.ToLower())) -or
+                                     ($checkBox.ToolTip -and $checkBox.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
                         
-                        $container.Visibility = if ($appVisible) { "Visible" } else { "Collapsed" }
+                        $appNode.Visibility = if ($appVisible) { "Visible" } else { "Collapsed" }
+                        if ($appVisible) { $hasVisibleApps = $true }
                     }
+                }
+                
+                $categoryNode.Visibility = if ($hasVisibleApps) { "Visible" } else { "Collapsed" }
+                if ($hasVisibleApps -and $SearchText) {
+                    $categoryNode.IsExpanded = $true
                 }
             }
         }
@@ -9213,21 +9356,21 @@ function Get-SelectedApplications {
     
     try {
         if ($Sync) {
-            $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
+            $trvApplications = Get-UIControl -Sync $Sync -ControlName "trvApplications"
         } else {
-            $lstApplications = $Window.FindName("lstApplications")
+            $trvApplications = $Window.FindName("trvApplications")
         }
         
-        if (-not $lstApplications) { return @() }
+        if (-not $trvApplications) { return @() }
         
         $selectedApps = @()
         
-        foreach ($item in $lstApplications.Items) {
-            $container = $lstApplications.ItemContainerGenerator.ContainerFromItem($item)
-            if ($container) {
-                $checkBox = Find-VisualChild -Parent $container -Type ([System.Windows.Controls.CheckBox])
-                if ($checkBox -and $checkBox.IsChecked) {
-                    $selectedApps += $item
+        # Recursively traverse tree and find checked items
+        foreach ($categoryNode in $trvApplications.Items) {
+            foreach ($appNode in $categoryNode.Items) {
+                $checkBox = $appNode.Header
+                if ($checkBox -is [System.Windows.Controls.CheckBox] -and $checkBox.IsChecked -and $checkBox.Tag) {
+                    $selectedApps += $checkBox.Tag
                 }
             }
         }
@@ -9267,12 +9410,9 @@ function Get-SelectedTweaks {
         # Recursively traverse tree and find checked items
         foreach ($categoryNode in $trvTweaks.Items) {
             foreach ($tweakNode in $categoryNode.Items) {
-                $stackPanel = $tweakNode.Header
-                if ($stackPanel -is [System.Windows.Controls.StackPanel]) {
-                    $checkBox = $stackPanel.Children | Where-Object { $_ -is [System.Windows.Controls.CheckBox] } | Select-Object -First 1
-                    if ($checkBox -and $checkBox.IsChecked -and $checkBox.Tag) {
-                        $selectedTweaks += $checkBox.Tag
-                    }
+                $checkBox = $tweakNode.Header
+                if ($checkBox -is [System.Windows.Controls.CheckBox] -and $checkBox.IsChecked -and $checkBox.Tag) {
+                    $selectedTweaks += $checkBox.Tag
                 }
             }
         }
@@ -10169,17 +10309,16 @@ function Clear-AllSelections {
     try {
         # Clear application selections
         if ($Sync) {
-            $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
+            $trvApplications = Get-UIControl -Sync $Sync -ControlName "trvApplications"
         } else {
-            $lstApplications = $Window.FindName("lstApplications")
+            $trvApplications = $Window.FindName("trvApplications")
         }
         
-        if ($lstApplications) {
-            foreach ($item in $lstApplications.Items) {
-                $container = $lstApplications.ItemContainerGenerator.ContainerFromItem($item)
-                if ($container) {
-                    $checkBox = Find-VisualChild -Parent $container -Type ([System.Windows.Controls.CheckBox])
-                    if ($checkBox) {
+        if ($trvApplications) {
+            foreach ($categoryNode in $trvApplications.Items) {
+                foreach ($appNode in $categoryNode.Items) {
+                    $checkBox = $appNode.Header
+                    if ($checkBox -is [System.Windows.Controls.CheckBox]) {
                         $checkBox.IsChecked = $false
                     }
                 }
@@ -10196,12 +10335,9 @@ function Clear-AllSelections {
         if ($trvTweaks) {
             foreach ($categoryNode in $trvTweaks.Items) {
                 foreach ($tweakNode in $categoryNode.Items) {
-                    $stackPanel = $tweakNode.Header
-                    if ($stackPanel -is [System.Windows.Controls.StackPanel]) {
-                        $checkBox = $stackPanel.Children | Where-Object { $_ -is [System.Windows.Controls.CheckBox] } | Select-Object -First 1
-                        if ($checkBox) {
-                            $checkBox.IsChecked = $false
-                        }
+                    $checkBox = $tweakNode.Header
+                    if ($checkBox -is [System.Windows.Controls.CheckBox]) {
+                        $checkBox.IsChecked = $false
                     }
                 }
             }
@@ -10230,20 +10366,17 @@ function Select-Applications {
     
     try {
         if ($Sync) {
-            $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
+            $trvApplications = Get-UIControl -Sync $Sync -ControlName "trvApplications"
         } else {
-            $lstApplications = $Window.FindName("lstApplications")
+            $trvApplications = $Window.FindName("trvApplications")
         }
         
-        if ($lstApplications) {
-            foreach ($item in $lstApplications.Items) {
-                if ($AppIDs -contains $item.ID) {
-                    $container = $lstApplications.ItemContainerGenerator.ContainerFromItem($item)
-                    if ($container) {
-                        $checkBox = Find-VisualChild -Parent $container -Type ([System.Windows.Controls.CheckBox])
-                        if ($checkBox) {
-                            $checkBox.IsChecked = $true
-                        }
+        if ($trvApplications) {
+            foreach ($categoryNode in $trvApplications.Items) {
+                foreach ($appNode in $categoryNode.Items) {
+                    $checkBox = $appNode.Header
+                    if ($checkBox -is [System.Windows.Controls.CheckBox] -and $AppIDs -contains $checkBox.Tag) {
+                        $checkBox.IsChecked = $true
                     }
                 }
             }
@@ -10280,12 +10413,9 @@ function Select-Tweaks {
         if ($trvTweaks) {
             foreach ($categoryNode in $trvTweaks.Items) {
                 foreach ($tweakNode in $categoryNode.Items) {
-                    $stackPanel = $tweakNode.Header
-                    if ($stackPanel -is [System.Windows.Controls.StackPanel]) {
-                        $checkBox = $stackPanel.Children | Where-Object { $_ -is [System.Windows.Controls.CheckBox] } | Select-Object -First 1
-                        if ($checkBox -and $TweakIDs -contains $checkBox.Tag) {
-                            $checkBox.IsChecked = $true
-                        }
+                    $checkBox = $tweakNode.Header
+                    if ($checkBox -is [System.Windows.Controls.CheckBox] -and $TweakIDs -contains $checkBox.Tag) {
+                        $checkBox.IsChecked = $true
                     }
                 }
             }

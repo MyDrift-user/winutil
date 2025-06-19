@@ -706,17 +706,16 @@ function Clear-AllSelections {
     try {
         # Clear application selections
         if ($Sync) {
-            $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
+            $trvApplications = Get-UIControl -Sync $Sync -ControlName "trvApplications"
         } else {
-            $lstApplications = $Window.FindName("lstApplications")
+            $trvApplications = $Window.FindName("trvApplications")
         }
         
-        if ($lstApplications) {
-            foreach ($item in $lstApplications.Items) {
-                $container = $lstApplications.ItemContainerGenerator.ContainerFromItem($item)
-                if ($container) {
-                    $checkBox = Find-VisualChild -Parent $container -Type ([System.Windows.Controls.CheckBox])
-                    if ($checkBox) {
+        if ($trvApplications) {
+            foreach ($categoryNode in $trvApplications.Items) {
+                foreach ($appNode in $categoryNode.Items) {
+                    $checkBox = $appNode.Header
+                    if ($checkBox -is [System.Windows.Controls.CheckBox]) {
                         $checkBox.IsChecked = $false
                     }
                 }
@@ -733,12 +732,9 @@ function Clear-AllSelections {
         if ($trvTweaks) {
             foreach ($categoryNode in $trvTweaks.Items) {
                 foreach ($tweakNode in $categoryNode.Items) {
-                    $stackPanel = $tweakNode.Header
-                    if ($stackPanel -is [System.Windows.Controls.StackPanel]) {
-                        $checkBox = $stackPanel.Children | Where-Object { $_ -is [System.Windows.Controls.CheckBox] } | Select-Object -First 1
-                        if ($checkBox) {
-                            $checkBox.IsChecked = $false
-                        }
+                    $checkBox = $tweakNode.Header
+                    if ($checkBox -is [System.Windows.Controls.CheckBox]) {
+                        $checkBox.IsChecked = $false
                     }
                 }
             }
@@ -767,20 +763,17 @@ function Select-Applications {
     
     try {
         if ($Sync) {
-            $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
+            $trvApplications = Get-UIControl -Sync $Sync -ControlName "trvApplications"
         } else {
-            $lstApplications = $Window.FindName("lstApplications")
+            $trvApplications = $Window.FindName("trvApplications")
         }
         
-        if ($lstApplications) {
-            foreach ($item in $lstApplications.Items) {
-                if ($AppIDs -contains $item.ID) {
-                    $container = $lstApplications.ItemContainerGenerator.ContainerFromItem($item)
-                    if ($container) {
-                        $checkBox = Find-VisualChild -Parent $container -Type ([System.Windows.Controls.CheckBox])
-                        if ($checkBox) {
-                            $checkBox.IsChecked = $true
-                        }
+        if ($trvApplications) {
+            foreach ($categoryNode in $trvApplications.Items) {
+                foreach ($appNode in $categoryNode.Items) {
+                    $checkBox = $appNode.Header
+                    if ($checkBox -is [System.Windows.Controls.CheckBox] -and $AppIDs -contains $checkBox.Tag) {
+                        $checkBox.IsChecked = $true
                     }
                 }
             }
@@ -817,12 +810,9 @@ function Select-Tweaks {
         if ($trvTweaks) {
             foreach ($categoryNode in $trvTweaks.Items) {
                 foreach ($tweakNode in $categoryNode.Items) {
-                    $stackPanel = $tweakNode.Header
-                    if ($stackPanel -is [System.Windows.Controls.StackPanel]) {
-                        $checkBox = $stackPanel.Children | Where-Object { $_ -is [System.Windows.Controls.CheckBox] } | Select-Object -First 1
-                        if ($checkBox -and $TweakIDs -contains $checkBox.Tag) {
-                            $checkBox.IsChecked = $true
-                        }
+                    $checkBox = $tweakNode.Header
+                    if ($checkBox -is [System.Windows.Controls.CheckBox] -and $TweakIDs -contains $checkBox.Tag) {
+                        $checkBox.IsChecked = $true
                     }
                 }
             }

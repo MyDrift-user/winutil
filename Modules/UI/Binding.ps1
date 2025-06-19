@@ -61,7 +61,7 @@ function Populate-UI {
 function Populate-Applications {
     <#
     .SYNOPSIS
-    Populates the applications list and categories
+    Populates the applications tree view grouped by categories
     
     .PARAMETER Window
     The WPF window object (deprecated - use Sync instead)
@@ -84,32 +84,71 @@ function Populate-Applications {
     )
     
     try {
-        Write-Log "Populating applications list..." -Level "DEBUG"
+        Write-Log "Populating applications tree..." -Level "DEBUG"
         
         # Get UI controls - use Sync if available, otherwise fallback to Window
         if ($Sync) {
-            $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
+            $trvApplications = Get-UIControl -Sync $Sync -ControlName "trvApplications"
         } else {
-            $lstApplications = $Window.FindName("lstApplications")
+            $trvApplications = $Window.FindName("trvApplications")
         }
         
-        if (-not $lstApplications) {
-            Write-Log "Could not find applications list control" -Level "ERROR"
+        if (-not $trvApplications) {
+            Write-Log "Could not find applications tree control" -Level "ERROR"
             return
         }
         
-        # Convert apps to collection and add ID property
-        $appsCollection = @()
+        # Group applications by category
+        $appsByCategory = @{}
+        $categories = @()
         
         foreach ($appProperty in $AppsConfig.PSObject.Properties) {
             $app = $appProperty.Value | Add-Member -MemberType NoteProperty -Name "ID" -Value $appProperty.Name -PassThru
-            $appsCollection += $app
+            $category = if ($app.category) { $app.category } else { "Other" }
+            
+            if (-not $appsByCategory.ContainsKey($category)) {
+                $appsByCategory[$category] = @()
+                $categories += $category
+            }
+            
+            $appsByCategory[$category] += $app
         }
         
-        # Bind to ListBox
-        $lstApplications.ItemsSource = $appsCollection
+        # Clear and populate tree
+        $trvApplications.Items.Clear()
         
-        Write-Log "Populated $($appsCollection.Count) applications" -Level "DEBUG"
+        foreach ($category in $categories | Sort-Object) {
+            # Create category node
+            $categoryNode = New-Object System.Windows.Controls.TreeViewItem
+            $categoryNode.Header = $category
+            $categoryNode.IsExpanded = $true
+            
+            # Add applications to category
+            foreach ($app in $appsByCategory[$category] | Sort-Object Content) {
+                $appNode = New-Object System.Windows.Controls.TreeViewItem
+                $appNode.Style = $trvApplications.FindResource("CheckboxTreeViewItem")
+                
+                # Create checkbox with tooltip for description
+                $checkBox = New-Object System.Windows.Controls.CheckBox
+                $checkBox.Content = $app.Content
+                $checkBox.Tag = $app.ID
+                $checkBox.Foreground = [System.Windows.Media.Brushes]::White
+                $checkBox.Margin = "0,4,0,4"
+                
+                # Add tooltip with description if available
+                if ($app.Description) {
+                    $checkBox.ToolTip = $app.Description
+                }
+                
+                $appNode.Header = $checkBox
+                $categoryNode.Items.Add($appNode)
+            }
+            
+            $trvApplications.Items.Add($categoryNode)
+        }
+        
+        $totalApps = ($appsByCategory.Values | ForEach-Object { $_.Count } | Measure-Object -Sum).Sum
+        Write-Log "Populated $totalApps applications in $($categories.Count) categories" -Level "DEBUG"
     }
     catch {
         Write-Log "Exception populating applications: $($_.Exception.Message)" -Level "ERROR"
@@ -184,33 +223,21 @@ function Populate-Tweaks {
             # Add tweaks to category
             foreach ($tweak in $tweaksByCategory[$category] | Sort-Object Content) {
                 $tweakNode = New-Object System.Windows.Controls.TreeViewItem
+                $tweakNode.Style = $trvTweaks.FindResource("CheckboxTreeViewItem")
                 
-                # Create a StackPanel for better layout
-                $stackPanel = New-Object System.Windows.Controls.StackPanel
-                $stackPanel.Orientation = [System.Windows.Controls.Orientation]::Vertical
-                
-                # Create checkbox and text
+                # Create checkbox with tooltip for description
                 $checkBox = New-Object System.Windows.Controls.CheckBox
                 $checkBox.Content = $tweak.Content
                 $checkBox.Tag = $tweak.ID
                 $checkBox.Foreground = [System.Windows.Media.Brushes]::White
+                $checkBox.Margin = "0,4,0,4"
                 
-                # Add description if available
+                # Add tooltip with description if available
                 if ($tweak.Description) {
-                    $description = New-Object System.Windows.Controls.TextBlock
-                    $description.Text = $tweak.Description
-                    $description.Foreground = [System.Windows.Media.Brushes]::Gray
-                    $description.FontSize = 10
-                    $description.TextWrapping = [System.Windows.TextWrapping]::Wrap
-                    $description.Margin = "20,2,0,0"
-                    
-                    $stackPanel.Children.Add($checkBox)
-                    $stackPanel.Children.Add($description)
-                } else {
-                    $stackPanel.Children.Add($checkBox)
+                    $checkBox.ToolTip = $tweak.Description
                 }
                 
-                $tweakNode.Header = $stackPanel
+                $tweakNode.Header = $checkBox
                 $categoryNode.Items.Add($tweakNode)
             }
             
@@ -293,20 +320,27 @@ function Filter-Content {
     )
     
     try {
-        # Filter applications by hiding/showing items
-        $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
-        if ($lstApplications) {
-            foreach ($item in $lstApplications.Items) {
-                if ($item) {
-                    $container = $lstApplications.ItemContainerGenerator.ContainerFromItem($item)
-                    if ($container) {
+        # Filter applications (collapse/expand categories based on search)
+        $trvApplications = Get-UIControl -Sync $Sync -ControlName "trvApplications"
+        if ($trvApplications) {
+            foreach ($categoryNode in $trvApplications.Items) {
+                $hasVisibleApps = $false
+                
+                foreach ($appNode in $categoryNode.Items) {
+                    $checkBox = $appNode.Header
+                    if ($checkBox -is [System.Windows.Controls.CheckBox]) {
                         $appVisible = -not $SearchText -or 
-                                     ($item.content -and $item.content.ToLower().Contains($SearchText.ToLower())) -or 
-                                     ($item.description -and $item.description.ToLower().Contains($SearchText.ToLower())) -or
-                                     ($item.category -and $item.category.ToLower().Contains($SearchText.ToLower()))
+                                     ($checkBox.Content -and $checkBox.Content.ToString().ToLower().Contains($SearchText.ToLower())) -or
+                                     ($checkBox.ToolTip -and $checkBox.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
                         
-                        $container.Visibility = if ($appVisible) { "Visible" } else { "Collapsed" }
+                        $appNode.Visibility = if ($appVisible) { "Visible" } else { "Collapsed" }
+                        if ($appVisible) { $hasVisibleApps = $true }
                     }
+                }
+                
+                $categoryNode.Visibility = if ($hasVisibleApps) { "Visible" } else { "Collapsed" }
+                if ($hasVisibleApps -and $SearchText) {
+                    $categoryNode.IsExpanded = $true
                 }
             }
         }
@@ -318,16 +352,14 @@ function Filter-Content {
                 $hasVisibleTweaks = $false
                 
                 foreach ($tweakNode in $categoryNode.Items) {
-                    $stackPanel = $tweakNode.Header
-                    if ($stackPanel -is [System.Windows.Controls.StackPanel]) {
-                        $checkBox = $stackPanel.Children | Where-Object { $_ -is [System.Windows.Controls.CheckBox] } | Select-Object -First 1
-                        if ($checkBox) {
-                            $tweakVisible = -not $SearchText -or 
-                                           ($checkBox.Content -and $checkBox.Content.ToString().ToLower().Contains($SearchText.ToLower()))
-                            
-                            $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
-                            if ($tweakVisible) { $hasVisibleTweaks = $true }
-                        }
+                    $checkBox = $tweakNode.Header
+                    if ($checkBox -is [System.Windows.Controls.CheckBox]) {
+                        $tweakVisible = -not $SearchText -or 
+                                       ($checkBox.Content -and $checkBox.Content.ToString().ToLower().Contains($SearchText.ToLower())) -or
+                                       ($checkBox.ToolTip -and $checkBox.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
+                        
+                        $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
+                        if ($tweakVisible) { $hasVisibleTweaks = $true }
                     }
                 }
                 
@@ -371,20 +403,27 @@ function Filter-ApplicationContent {
     )
     
     try {
-        # Filter applications by hiding/showing items
-        $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
-        if ($lstApplications) {
-            foreach ($item in $lstApplications.Items) {
-                if ($item) {
-                    $container = $lstApplications.ItemContainerGenerator.ContainerFromItem($item)
-                    if ($container) {
+        # Filter applications (collapse/expand categories based on search)
+        $trvApplications = Get-UIControl -Sync $Sync -ControlName "trvApplications"
+        if ($trvApplications) {
+            foreach ($categoryNode in $trvApplications.Items) {
+                $hasVisibleApps = $false
+                
+                foreach ($appNode in $categoryNode.Items) {
+                    $checkBox = $appNode.Header
+                    if ($checkBox -is [System.Windows.Controls.CheckBox]) {
                         $appVisible = -not $SearchText -or 
-                                     ($item.content -and $item.content.ToLower().Contains($SearchText.ToLower())) -or 
-                                     ($item.description -and $item.description.ToLower().Contains($SearchText.ToLower())) -or
-                                     ($item.category -and $item.category.ToLower().Contains($SearchText.ToLower()))
+                                     ($checkBox.Content -and $checkBox.Content.ToString().ToLower().Contains($SearchText.ToLower())) -or
+                                     ($checkBox.ToolTip -and $checkBox.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
                         
-                        $container.Visibility = if ($appVisible) { "Visible" } else { "Collapsed" }
+                        $appNode.Visibility = if ($appVisible) { "Visible" } else { "Collapsed" }
+                        if ($appVisible) { $hasVisibleApps = $true }
                     }
+                }
+                
+                $categoryNode.Visibility = if ($hasVisibleApps) { "Visible" } else { "Collapsed" }
+                if ($hasVisibleApps -and $SearchText) {
+                    $categoryNode.IsExpanded = $true
                 }
             }
         }
@@ -471,21 +510,21 @@ function Get-SelectedApplications {
     
     try {
         if ($Sync) {
-            $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
+            $trvApplications = Get-UIControl -Sync $Sync -ControlName "trvApplications"
         } else {
-            $lstApplications = $Window.FindName("lstApplications")
+            $trvApplications = $Window.FindName("trvApplications")
         }
         
-        if (-not $lstApplications) { return @() }
+        if (-not $trvApplications) { return @() }
         
         $selectedApps = @()
         
-        foreach ($item in $lstApplications.Items) {
-            $container = $lstApplications.ItemContainerGenerator.ContainerFromItem($item)
-            if ($container) {
-                $checkBox = Find-VisualChild -Parent $container -Type ([System.Windows.Controls.CheckBox])
-                if ($checkBox -and $checkBox.IsChecked) {
-                    $selectedApps += $item
+        # Recursively traverse tree and find checked items
+        foreach ($categoryNode in $trvApplications.Items) {
+            foreach ($appNode in $categoryNode.Items) {
+                $checkBox = $appNode.Header
+                if ($checkBox -is [System.Windows.Controls.CheckBox] -and $checkBox.IsChecked -and $checkBox.Tag) {
+                    $selectedApps += $checkBox.Tag
                 }
             }
         }
@@ -525,12 +564,9 @@ function Get-SelectedTweaks {
         # Recursively traverse tree and find checked items
         foreach ($categoryNode in $trvTweaks.Items) {
             foreach ($tweakNode in $categoryNode.Items) {
-                $stackPanel = $tweakNode.Header
-                if ($stackPanel -is [System.Windows.Controls.StackPanel]) {
-                    $checkBox = $stackPanel.Children | Where-Object { $_ -is [System.Windows.Controls.CheckBox] } | Select-Object -First 1
-                    if ($checkBox -and $checkBox.IsChecked -and $checkBox.Tag) {
-                        $selectedTweaks += $checkBox.Tag
-                    }
+                $checkBox = $tweakNode.Header
+                if ($checkBox -is [System.Windows.Controls.CheckBox] -and $checkBox.IsChecked -and $checkBox.Tag) {
+                    $selectedTweaks += $checkBox.Tag
                 }
             }
         }

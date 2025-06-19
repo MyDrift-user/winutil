@@ -59,38 +59,10 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
-                <!-- Applications List -->
-                <ListBox Name="lstApplications" Grid.Row="0" Style="{StaticResource ModernListBox}" Background="Transparent" BorderThickness="0" Margin="0,0,0,20">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Border Background="Transparent" Padding="15" Margin="0,3" CornerRadius="8">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#FF3A3A3A"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    
-                                    <CheckBox Grid.Column="0" VerticalAlignment="Top" Margin="0,2,20,0"/>
-                                    
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock Text="{Binding content}" FontWeight="SemiBold" Foreground="White" FontSize="15"/>
-                                        <TextBlock Text="{Binding description}" Foreground="#FFB0B0B0" TextWrapping="Wrap" FontSize="13" Margin="0,3,0,0"/>
-                                        <TextBlock Text="{Binding category}" Foreground="#FF0078D4" FontSize="11" Margin="0,5,0,0"/>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                <!-- Applications Tree -->
+                <TreeView Name="trvApplications" Grid.Row="0" Style="{StaticResource ModernTreeView}" Background="Transparent" BorderThickness="0" Margin="0,0,0,20">
+                    <!-- TreeView items will be populated via code-behind -->
+                </TreeView>
                 
                 <!-- Application Actions -->
                 <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
