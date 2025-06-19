@@ -732,9 +732,10 @@ function Clear-AllSelections {
         if ($trvTweaks) {
             foreach ($categoryNode in $trvTweaks.Items) {
                 foreach ($tweakNode in $categoryNode.Items) {
-                    $checkBox = $tweakNode.Header
-                    if ($checkBox -is [System.Windows.Controls.CheckBox]) {
-                        $checkBox.IsChecked = $false
+                    $control = $tweakNode.Header
+                    # Only clear standard checkboxes, not toggles (which should maintain state)
+                    if ($control -is [System.Windows.Controls.CheckBox] -and $control.Style -eq $null) {
+                        $control.IsChecked = $false
                     }
                 }
             }
@@ -810,9 +811,12 @@ function Select-Tweaks {
         if ($trvTweaks) {
             foreach ($categoryNode in $trvTweaks.Items) {
                 foreach ($tweakNode in $categoryNode.Items) {
-                    $checkBox = $tweakNode.Header
-                    if ($checkBox -is [System.Windows.Controls.CheckBox] -and $TweakIDs -contains $checkBox.Tag) {
-                        $checkBox.IsChecked = $true
+                    $control = $tweakNode.Header
+                    # Only select standard checkboxes, not toggles/buttons/comboboxes
+                    if ($control -is [System.Windows.Controls.CheckBox] -and 
+                        $control.Style -eq $null -and 
+                        $TweakIDs -contains $control.Tag) {
+                        $control.IsChecked = $true
                     }
                 }
             }

@@ -7239,6 +7239,226 @@ $global:ResourcesXAML = @'
         </Setter>
     </Style>
     
+    <!-- Toggle Switch Style (styled like a modern toggle) -->
+    <Style x:Key="ToggleSwitch" TargetType="CheckBox">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Margin" Value="0,4,0,4"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <!-- Toggle Switch -->
+                        <Border Grid.Column="0" 
+                                Name="ToggleTrack"
+                                Width="44" 
+                                Height="24" 
+                                Background="#FF404040" 
+                                CornerRadius="12" 
+                                Margin="0,0,12,0"
+                                VerticalAlignment="Center">
+                            <Border Name="ToggleThumb" 
+                                    Width="18" 
+                                    Height="18" 
+                                    Background="White" 
+                                    CornerRadius="9" 
+                                    HorizontalAlignment="Left"
+                                    Margin="3,0,0,0">
+                                <Border.RenderTransform>
+                                    <TranslateTransform X="0"/>
+                                </Border.RenderTransform>
+                            </Border>
+                        </Border>
+                        
+                        <!-- Content Text -->
+                        <ContentPresenter Grid.Column="1" 
+                                        VerticalAlignment="Center"
+                                        Content="{TemplateBinding Content}"
+                                        TextBlock.Foreground="{TemplateBinding Foreground}"
+                                        TextBlock.FontSize="{TemplateBinding FontSize}"/>
+                    </Grid>
+                    
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="ToggleTrack" Property="Background" Value="#FF0078D4"/>
+                            <Setter TargetName="ToggleThumb" Property="RenderTransform">
+                                <Setter.Value>
+                                    <TranslateTransform X="20"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ToggleTrack" Property="Opacity" Value="0.8"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="ToggleThumb" Property="Width" Value="22"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Tweak Button Style -->
+    <Style x:Key="TweakButton" TargetType="Button">
+        <Setter Property="Background" Value="#FF0078D4"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Padding" Value="16,8"/>
+        <Setter Property="Margin" Value="0,4,0,4"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" 
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}" 
+                            CornerRadius="4"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" 
+                                        VerticalAlignment="Center"
+                                        Content="{TemplateBinding Content}"
+                                        TextBlock.Foreground="{TemplateBinding Foreground}"
+                                        TextBlock.FontSize="{TemplateBinding FontSize}"
+                                        TextBlock.FontWeight="{TemplateBinding FontWeight}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#FF106EBE"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="#FF005A9E"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Background" Value="#FF666666"/>
+                            <Setter Property="Foreground" Value="#FFAAAAAA"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Tweak ComboBox Style -->
+    <Style x:Key="TweakComboBox" TargetType="ComboBox">
+        <Setter Property="Background" Value="#FF2D2D30"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="#FF404040"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="Margin" Value="0,4,0,4"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="MinWidth" Value="200"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid>
+                        <Border Name="MainBorder"
+                                Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="4">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <ContentPresenter Grid.Column="0"
+                                                Name="ContentSite"
+                                                IsHitTestVisible="False"
+                                                Content="{TemplateBinding SelectionBoxItem}"
+                                                ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                Margin="{TemplateBinding Padding}"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Left"/>
+                                
+                                <ToggleButton Grid.Column="1"
+                                            Name="ToggleButton"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                            ClickMode="Press"
+                                            Focusable="False"
+                                            Width="30">
+                                    <Path Data="M 0 0 L 4 4 L 8 0 Z" 
+                                          Fill="#FF666666" 
+                                          HorizontalAlignment="Center" 
+                                          VerticalAlignment="Center"/>
+                                </ToggleButton>
+                            </Grid>
+                        </Border>
+                        
+                        <Popup Name="Popup"
+                               Placement="Bottom"
+                               IsOpen="{TemplateBinding IsDropDownOpen}"
+                               AllowsTransparency="True"
+                               Focusable="False"
+                               PopupAnimation="Slide">
+                            <Border Name="DropDownBorder"
+                                    Background="#FF2D2D30"
+                                    BorderBrush="#FF404040"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                    MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}">
+                                <ScrollViewer>
+                                    <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="MainBorder" Property="BorderBrush" Value="#FF606060"/>
+                        </Trigger>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="MainBorder" Property="BorderBrush" Value="#FF0078D4"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+                <Style TargetType="ComboBoxItem">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="Padding" Value="12,6"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ComboBoxItem">
+                                <Border Background="{TemplateBinding Background}" 
+                                        Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsHighlighted" Value="True">
+                                        <Setter Property="Background" Value="#FF0078D4"/>
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Background" Value="#FF106EBE"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
     <Style x:Key="HeaderText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="18"/>
         <Setter Property="FontWeight" Value="Bold"/>
@@ -9071,19 +9291,144 @@ function Populate-Tweaks {
                 $tweakNode = New-Object System.Windows.Controls.TreeViewItem
                 $tweakNode.Style = $trvTweaks.FindResource("CheckboxTreeViewItem")
                 
-                # Create checkbox with tooltip for description
-                $checkBox = New-Object System.Windows.Controls.CheckBox
-                $checkBox.Content = $tweak.Content
-                $checkBox.Tag = $tweak.ID
-                $checkBox.Foreground = [System.Windows.Media.Brushes]::White
-                $checkBox.Margin = "0,4,0,4"
+                # Determine the control type (default to checkbox if not specified)
+                $controlType = if ($tweak.Type) { $tweak.Type } else { "Checkbox" }
                 
-                # Add tooltip with description if available
-                if ($tweak.Description) {
-                    $checkBox.ToolTip = $tweak.Description
+                switch ($controlType.ToLower()) {
+                    "toggle" {
+                        # Create toggle switch (CheckBox styled as toggle)
+                        $toggleSwitch = New-Object System.Windows.Controls.CheckBox
+                        $toggleSwitch.Content = $tweak.Content
+                        $toggleSwitch.Tag = $tweak.ID
+                        $toggleSwitch.Style = $trvTweaks.FindResource("ToggleSwitch")
+                        
+                        # Set initial state based on DefaultState if available
+                        if ($tweak.registry -and $tweak.registry[0].DefaultState) {
+                            $toggleSwitch.IsChecked = [bool]::Parse($tweak.registry[0].DefaultState)
+                        }
+                        
+                        # Add tooltip with description if available
+                        if ($tweak.Description) {
+                            $toggleSwitch.ToolTip = $tweak.Description
+                        }
+                        
+                        # Add immediate execution event handler
+                        $toggleSwitch.Add_Checked({
+                            param($sender, $e)
+                            $tweakId = $sender.Tag
+                            Write-Log "Toggle ON: $tweakId" -Level "INFO"
+                            # Execute tweak immediately
+                            Invoke-TweakExecution -TweakId $tweakId -Action "Apply"
+                        })
+                        
+                        $toggleSwitch.Add_Unchecked({
+                            param($sender, $e)
+                            $tweakId = $sender.Tag
+                            Write-Log "Toggle OFF: $tweakId" -Level "INFO"
+                            # Execute undo immediately
+                            Invoke-TweakExecution -TweakId $tweakId -Action "Undo"
+                        })
+                        
+                        $tweakNode.Header = $toggleSwitch
+                    }
+                    
+                    "button" {
+                        # Create button
+                        $button = New-Object System.Windows.Controls.Button
+                        $button.Content = $tweak.Content
+                        $button.Tag = $tweak.ID
+                        $button.Style = $trvTweaks.FindResource("TweakButton")
+                        
+                        # Set custom width if specified
+                        if ($tweak.ButtonWidth) {
+                            $button.Width = [int]$tweak.ButtonWidth
+                        }
+                        
+                        # Add tooltip with description if available
+                        if ($tweak.Description) {
+                            $button.ToolTip = $tweak.Description
+                        }
+                        
+                        # Add immediate execution event handler
+                        $button.Add_Click({
+                            param($sender, $e)
+                            $tweakId = $sender.Tag
+                            Write-Log "Button clicked: $tweakId" -Level "INFO"
+                            # Execute tweak immediately
+                            Invoke-TweakExecution -TweakId $tweakId -Action "Apply"
+                        })
+                        
+                        $tweakNode.Header = $button
+                    }
+                    
+                    "combobox" {
+                        # Create container for combobox with label
+                        $container = New-Object System.Windows.Controls.StackPanel
+                        $container.Orientation = [System.Windows.Controls.Orientation]::Vertical
+                        
+                        # Create label
+                        $label = New-Object System.Windows.Controls.TextBlock
+                        $label.Text = $tweak.Content
+                        $label.Foreground = [System.Windows.Media.Brushes]::White
+                        $label.FontSize = 14
+                        $label.Margin = "0,0,0,4"
+                        
+                        # Create combobox
+                        $comboBox = New-Object System.Windows.Controls.ComboBox
+                        $comboBox.Tag = $tweak.ID
+                        $comboBox.Style = $trvTweaks.FindResource("TweakComboBox")
+                        
+                        # Add items from ComboItems property
+                        if ($tweak.ComboItems) {
+                            $items = $tweak.ComboItems -split ' '
+                            foreach ($item in $items) {
+                                $comboBox.Items.Add($item) | Out-Null
+                            }
+                            # Select first item by default
+                            if ($comboBox.Items.Count -gt 0) {
+                                $comboBox.SelectedIndex = 0
+                            }
+                        }
+                        
+                        # Add tooltip with description if available
+                        if ($tweak.Description) {
+                            $container.ToolTip = $tweak.Description
+                        }
+                        
+                        # Add immediate execution event handler
+                        $comboBox.Add_SelectionChanged({
+                            param($sender, $e)
+                            if ($sender.SelectedItem) {
+                                $tweakId = $sender.Tag
+                                $selectedValue = $sender.SelectedItem.ToString()
+                                Write-Log "ComboBox changed: $tweakId = $selectedValue" -Level "INFO"
+                                # Execute tweak immediately with selected value
+                                Invoke-TweakExecution -TweakId $tweakId -Action "Apply" -Value $selectedValue
+                            }
+                        })
+                        
+                        $container.Children.Add($label) | Out-Null
+                        $container.Children.Add($comboBox) | Out-Null
+                        $tweakNode.Header = $container
+                    }
+                    
+                    default {
+                        # Create standard checkbox (default behavior)
+                        $checkBox = New-Object System.Windows.Controls.CheckBox
+                        $checkBox.Content = $tweak.Content
+                        $checkBox.Tag = $tweak.ID
+                        $checkBox.Foreground = [System.Windows.Media.Brushes]::White
+                        $checkBox.Margin = "0,4,0,4"
+                        
+                        # Add tooltip with description if available
+                        if ($tweak.Description) {
+                            $checkBox.ToolTip = $tweak.Description
+                        }
+                        
+                        $tweakNode.Header = $checkBox
+                    }
                 }
                 
-                $tweakNode.Header = $checkBox
                 $categoryNode.Items.Add($tweakNode)
             }
             
@@ -9198,15 +9543,32 @@ function Filter-Content {
                 $hasVisibleTweaks = $false
                 
                 foreach ($tweakNode in $categoryNode.Items) {
-                    $checkBox = $tweakNode.Header
-                    if ($checkBox -is [System.Windows.Controls.CheckBox]) {
+                    $control = $tweakNode.Header
+                    $tweakVisible = $false
+                    
+                    # Handle different control types for filtering
+                    if ($control -is [System.Windows.Controls.CheckBox]) {
+                        # Checkbox or Toggle
                         $tweakVisible = -not $SearchText -or 
-                                       ($checkBox.Content -and $checkBox.Content.ToString().ToLower().Contains($SearchText.ToLower())) -or
-                                       ($checkBox.ToolTip -and $checkBox.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
-                        
-                        $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
-                        if ($tweakVisible) { $hasVisibleTweaks = $true }
+                                       ($control.Content -and $control.Content.ToString().ToLower().Contains($SearchText.ToLower())) -or
+                                       ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
                     }
+                    elseif ($control -is [System.Windows.Controls.Button]) {
+                        # Button
+                        $tweakVisible = -not $SearchText -or 
+                                       ($control.Content -and $control.Content.ToString().ToLower().Contains($SearchText.ToLower())) -or
+                                       ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
+                    }
+                    elseif ($control -is [System.Windows.Controls.StackPanel]) {
+                        # ComboBox container
+                        $label = $control.Children | Where-Object { $_ -is [System.Windows.Controls.TextBlock] } | Select-Object -First 1
+                        $tweakVisible = -not $SearchText -or 
+                                       ($label -and $label.Text -and $label.Text.ToLower().Contains($SearchText.ToLower())) -or
+                                       ($control.ToolTip -and $control.ToolTip.ToString().ToLower().Contains($SearchText.ToLower()))
+                    }
+                    
+                    $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
+                    if ($tweakVisible) { $hasVisibleTweaks = $true }
                 }
                 
                 $categoryNode.Visibility = if ($hasVisibleTweaks) { "Visible" } else { "Collapsed" }
@@ -9407,12 +9769,16 @@ function Get-SelectedTweaks {
         
         $selectedTweaks = @()
         
-        # Recursively traverse tree and find checked items
+        # Recursively traverse tree and find checked items (only checkboxes, not toggles/buttons)
         foreach ($categoryNode in $trvTweaks.Items) {
             foreach ($tweakNode in $categoryNode.Items) {
-                $checkBox = $tweakNode.Header
-                if ($checkBox -is [System.Windows.Controls.CheckBox] -and $checkBox.IsChecked -and $checkBox.Tag) {
-                    $selectedTweaks += $checkBox.Tag
+                $control = $tweakNode.Header
+                # Only include standard checkboxes in bulk selection, not toggles/buttons/comboboxes
+                if ($control -is [System.Windows.Controls.CheckBox] -and 
+                    $control.Style -eq $null -and  # Standard checkbox (not toggle)
+                    $control.IsChecked -and 
+                    $control.Tag) {
+                    $selectedTweaks += $control.Tag
                 }
             }
         }
@@ -9593,6 +9959,58 @@ function Get-UIControl {
     } else {
         Write-Log "UI control '$ControlName' not found in sync hashtable" -Level "WARN"
         return $null
+    }
+}
+
+function Invoke-TweakExecution {
+    <#
+    .SYNOPSIS
+    Executes a tweak immediately when triggered by buttons or toggles
+    
+    .PARAMETER TweakId
+    The ID of the tweak to execute
+    
+    .PARAMETER Action
+    The action to perform (Apply or Undo)
+    
+    .PARAMETER Value
+    Optional value for combobox selections
+    #>
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$TweakId,
+        
+        [Parameter(Mandatory=$true)]
+        [ValidateSet("Apply", "Undo")]
+        [string]$Action,
+        
+        [Parameter(Mandatory=$false)]
+        [string]$Value
+    )
+    
+    try {
+        Write-Log "Executing tweak: $TweakId ($Action)" -Level "INFO"
+        
+        # This is a placeholder for the actual tweak execution logic
+        # In the real implementation, this would:
+        # 1. Load the tweak configuration
+        # 2. Execute registry changes, scripts, service modifications, etc.
+        # 3. Handle the specific value for combobox tweaks
+        
+        # For now, just log the action
+        if ($Value) {
+            Write-Log "Tweak $TweakId executed with value: $Value" -Level "INFO"
+        } else {
+            Write-Log "Tweak $TweakId executed ($Action)" -Level "INFO"
+        }
+        
+        # TODO: Implement actual tweak execution logic here
+        # This would typically involve calling existing tweak functions
+        # based on the TweakId and Action parameters
+        
+    }
+    catch {
+        Write-Log "Error executing tweak $TweakId`: $($_.Exception.Message)" -Level "ERROR"
     }
 }
 
@@ -10335,9 +10753,10 @@ function Clear-AllSelections {
         if ($trvTweaks) {
             foreach ($categoryNode in $trvTweaks.Items) {
                 foreach ($tweakNode in $categoryNode.Items) {
-                    $checkBox = $tweakNode.Header
-                    if ($checkBox -is [System.Windows.Controls.CheckBox]) {
-                        $checkBox.IsChecked = $false
+                    $control = $tweakNode.Header
+                    # Only clear standard checkboxes, not toggles (which should maintain state)
+                    if ($control -is [System.Windows.Controls.CheckBox] -and $control.Style -eq $null) {
+                        $control.IsChecked = $false
                     }
                 }
             }
@@ -10413,9 +10832,12 @@ function Select-Tweaks {
         if ($trvTweaks) {
             foreach ($categoryNode in $trvTweaks.Items) {
                 foreach ($tweakNode in $categoryNode.Items) {
-                    $checkBox = $tweakNode.Header
-                    if ($checkBox -is [System.Windows.Controls.CheckBox] -and $TweakIDs -contains $checkBox.Tag) {
-                        $checkBox.IsChecked = $true
+                    $control = $tweakNode.Header
+                    # Only select standard checkboxes, not toggles/buttons/comboboxes
+                    if ($control -is [System.Windows.Controls.CheckBox] -and 
+                        $control.Style -eq $null -and 
+                        $TweakIDs -contains $control.Tag) {
+                        $control.IsChecked = $true
                     }
                 }
             }
