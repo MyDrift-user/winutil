@@ -6828,221 +6828,192 @@ $global:MainWindowXAML = @'
     
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="80"/>
+            <RowDefinition Height="70"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="180"/>
         </Grid.RowDefinitions>
         
-        <!-- Modern Header -->
-        <Border Grid.Row="0" Background="Transparent" Padding="30,0">
-            <Grid>
+        <!-- Header with Title and Tabs -->
+        <Border Grid.Row="0" Background="#FF2D2D30" BorderBrush="#FF3F3F46" BorderThickness="0,0,0,1">
+            <Grid Margin="30,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="WinUtil" FontSize="32" FontWeight="Light" Foreground="#FF0078D4"/>
-                    <TextBlock Text="Windows Utility Tool" FontSize="14" Foreground="#FFB0B0B0" Margin="0,-5,0,0"/>
-                </StackPanel>
+                <!-- WinUtil Title -->
+                <TextBlock Grid.Column="0" Text="WinUtil" FontSize="28" FontWeight="Bold" Foreground="#FF0078D4" VerticalAlignment="Center" Margin="0,0,40,0"/>
                 
+                <!-- Navigation Tabs -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Name="btnCreateRestorePoint" Content="Create Restore Point" Style="{StaticResource ModernButton}" Margin="10,0"/>
-                    <Button Name="btnClearLog" Content="Clear Log" Style="{StaticResource ModernButton}" Margin="10,0"/>
+                    <Button Name="btnApplicationsTab" Content="Applications" Style="{StaticResource TabButton}" Tag="0" Margin="0,0,8,0"/>
+                    <Button Name="btnTweaksTab" Content="Tweaks" Style="{StaticResource TabButton}" Tag="1"/>
                 </StackPanel>
             </Grid>
         </Border>
         
-        <!-- Main Content -->
-        <Grid Grid.Row="1" Margin="30,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="20"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            
-            <!-- Left Panel - Applications & Tweaks -->
-            <Grid Grid.Column="0">
+        <!-- Main Content Area -->
+        <Grid Grid.Row="1" Margin="30">
+            <!-- Applications Content -->
+            <Grid Name="ApplicationsContent" Visibility="Visible">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
-                <!-- Search and Presets -->
-                <Grid Grid.Row="0" Margin="0,0,0,20">
+                <!-- Search Box -->
+                <TextBox Name="txtSearch" Grid.Row="0" 
+                         Style="{StaticResource ModernTextBox}" 
+                         IsReadOnly="False"
+                         Height="45"
+                         FontSize="14"
+                         Margin="0,0,0,20">
+                    <TextBox.Template>
+                        <ControlTemplate TargetType="TextBox">
+                            <Border Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                    CornerRadius="10">
+                                <Grid>
+                                    <ScrollViewer x:Name="PART_ContentHost" 
+                                                  VerticalAlignment="Center" 
+                                                  Margin="15,0"/>
+                                    <TextBlock Text="Search applications..." 
+                                               Foreground="#FF666666" 
+                                               VerticalAlignment="Center" 
+                                               Margin="15,0"
+                                               IsHitTestVisible="False">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+                        </ControlTemplate>
+                    </TextBox.Template>
+                </TextBox>
+                
+                <!-- Applications List -->
+                <ListBox Name="lstApplications" Grid.Row="1" Style="{StaticResource ModernListBox}" Background="Transparent" BorderThickness="0" Margin="0,0,0,20">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="Transparent" Padding="15" Margin="0,3" CornerRadius="8">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#FF3A3A3A"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <CheckBox Grid.Column="0" VerticalAlignment="Top" Margin="0,2,20,0"/>
+                                    
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{Binding content}" FontWeight="SemiBold" Foreground="White" FontSize="15"/>
+                                        <TextBlock Text="{Binding description}" Foreground="#FFB0B0B0" TextWrapping="Wrap" FontSize="13" Margin="0,3,0,0"/>
+                                        <TextBlock Text="{Binding category}" Foreground="#FF0078D4" FontSize="11" Margin="0,5,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                
+                <!-- Application Actions -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Name="btnInstallApps" Content="Install Selected Applications" Style="{StaticResource ModernButton}" Margin="0,0,15,0" Padding="30,15"/>
+                    <Button Name="btnUninstallApps" Content="Uninstall Selected Applications" Style="{StaticResource ModernButton}" Background="#FFD13438" Padding="30,15"/>
+                </StackPanel>
+            </Grid>
+            
+            <!-- Tweaks Content -->
+            <Grid Name="TweaksContent" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Search Box -->
+                <TextBox Name="txtSearchTweaks" Grid.Row="0" 
+                         Style="{StaticResource ModernTextBox}" 
+                         IsReadOnly="False"
+                         Height="45"
+                         FontSize="14"
+                         Margin="0,0,0,20">
+                    <TextBox.Template>
+                        <ControlTemplate TargetType="TextBox">
+                            <Border Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                    CornerRadius="10">
+                                <Grid>
+                                    <ScrollViewer x:Name="PART_ContentHost" 
+                                                  VerticalAlignment="Center" 
+                                                  Margin="15,0"/>
+                                    <TextBlock Text="Search tweaks..." 
+                                               Foreground="#FF666666" 
+                                               VerticalAlignment="Center" 
+                                               Margin="15,0"
+                                               IsHitTestVisible="False">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+                        </ControlTemplate>
+                    </TextBox.Template>
+                </TextBox>
+                
+                <!-- Preset Buttons -->
+                <Grid Grid.Row="1" Margin="0,0,0,20">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     
-                    <!-- Search -->
-                    <TextBox Name="txtSearch" Grid.Row="0" 
-                             Style="{StaticResource ModernTextBox}" 
-                             IsReadOnly="False"
-                             Height="40"
-                             FontSize="14"
-                             Margin="0,0,0,15">
-                        <TextBox.Template>
-                            <ControlTemplate TargetType="TextBox">
-                                <Border Background="{TemplateBinding Background}" 
-                                        BorderBrush="{TemplateBinding BorderBrush}" 
-                                        BorderThickness="{TemplateBinding BorderThickness}" 
-                                        CornerRadius="8">
-                                    <Grid>
-                                        <ScrollViewer x:Name="PART_ContentHost" 
-                                                      VerticalAlignment="Center" 
-                                                      Margin="15,0"/>
-                                        <TextBlock Text="Search applications and tweaks..." 
-                                                   Foreground="#FF666666" 
-                                                   VerticalAlignment="Center" 
-                                                   Margin="15,0"
-                                                   IsHitTestVisible="False">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource TemplatedParent}}" Value="">
-                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                    </Grid>
-                                </Border>
-                            </ControlTemplate>
-                        </TextBox.Template>
-                    </TextBox>
-                    
-                    <!-- Preset Buttons -->
-                    <TextBlock Grid.Row="1" Text="Quick Presets" Style="{StaticResource SubHeaderText}" Margin="0,0,0,10"/>
-                    <StackPanel Grid.Row="2" Orientation="Horizontal">
-                        <Button Name="btnPresetStandard" Content="Standard Setup" Style="{StaticResource ModernButton}" Width="140" Margin="0,0,10,0"/>
-                        <Button Name="btnPresetMinimal" Content="Minimal Setup" Style="{StaticResource ModernButton}" Width="140" Margin="0,0,10,0"/>
-                        <Button Name="btnClearSelection" Content="Clear All" Style="{StaticResource ModernButton}" Width="100" Background="#FF444444"/>
+                    <TextBlock Grid.Row="0" Text="Quick Presets" Style="{StaticResource SubHeaderText}" Margin="0,0,0,12"/>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <Button Name="btnPresetStandard" Content="Standard Setup" Style="{StaticResource ModernButton}" Width="150" Margin="0,0,12,0"/>
+                        <Button Name="btnPresetMinimal" Content="Minimal Setup" Style="{StaticResource ModernButton}" Width="150" Margin="0,0,12,0"/>
+                        <Button Name="btnClearSelection" Content="Clear All" Style="{StaticResource ModernButton}" Width="120" Background="#FF444444"/>
                     </StackPanel>
                 </Grid>
                 
-                <!-- Tabs for Applications and Tweaks -->
-                <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0">
-                    <TabControl.Resources>
-                        <Style TargetType="TabItem">
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="Foreground" Value="#FFB0B0B0"/>
-                            <Setter Property="Padding" Value="25,12"/>
-                            <Setter Property="FontWeight" Value="SemiBold"/>
-                            <Setter Property="FontSize" Value="16"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="TabItem">
-                                        <Border Name="Border" Background="{TemplateBinding Background}" BorderThickness="0" CornerRadius="8,8,0,0" Margin="0,0,5,0">
-                                            <ContentPresenter x:Name="ContentSite" VerticalAlignment="Center" HorizontalAlignment="Center" ContentSource="Header" Margin="{TemplateBinding Padding}"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsSelected" Value="True">
-                                                <Setter TargetName="Border" Property="Background" Value="#FF2D2D30"/>
-                                                <Setter Property="Foreground" Value="White"/>
-                                            </Trigger>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Border" Property="Background" Value="#FF3A3A3A"/>
-                                                <Setter Property="Foreground" Value="White"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </TabControl.Resources>
-                    
-                    <!-- Applications Tab -->
-                    <TabItem Header="Applications">
-                        <Border Background="#FF2D2D30" CornerRadius="0,8,8,8" Padding="20">
-                            <ListBox Name="lstApplications" Style="{StaticResource ModernListBox}" Background="Transparent" BorderThickness="0">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Background="Transparent" Padding="10" Margin="0,2">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Style.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="#FF3A3A3A"/>
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
-                                                
-                                                <CheckBox Grid.Column="0" VerticalAlignment="Top" Margin="0,2,15,0"/>
-                                                
-                                                <StackPanel Grid.Column="1">
-                                                    <TextBlock Text="{Binding content}" FontWeight="SemiBold" Foreground="White" FontSize="14"/>
-                                                    <TextBlock Text="{Binding description}" Foreground="#FFB0B0B0" TextWrapping="Wrap" FontSize="12" Margin="0,2,0,0"/>
-                                                    <TextBlock Text="{Binding category}" Foreground="#FF0078D4" FontSize="10" Margin="0,4,0,0"/>
-                                                </StackPanel>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
-                        </Border>
-                    </TabItem>
-                    
-                    <!-- Tweaks Tab -->
-                    <TabItem Header="Tweaks">
-                        <Border Background="#FF2D2D30" CornerRadius="0,8,8,8" Padding="20">
-                            <TreeView Name="trvTweaks" Style="{StaticResource ModernTreeView}" Background="Transparent" BorderThickness="0">
-                                <!-- TreeView items will be populated via code-behind -->
-                            </TreeView>
-                        </Border>
-                    </TabItem>
-                </TabControl>
-            </Grid>
-            
-            <!-- Right Panel - Actions -->
-            <Grid Grid.Column="2">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+                <!-- Tweaks Tree -->
+                <TreeView Name="trvTweaks" Grid.Row="2" Style="{StaticResource ModernTreeView}" Background="Transparent" BorderThickness="0" Margin="0,0,0,20">
+                    <!-- TreeView items will be populated via code-behind -->
+                </TreeView>
                 
-                <TextBlock Grid.Row="0" Text="Actions" Style="{StaticResource HeaderText}" Margin="0,0,0,20"/>
-                
-                <StackPanel Grid.Row="1">
-                    <!-- Application Actions -->
-                    <GroupBox Header="Applications" Style="{StaticResource ModernGroupBox}" Margin="0,0,0,20">
-                        <StackPanel Margin="15">
-                            <Button Name="btnInstallApps" Content="Install Selected" Style="{StaticResource ModernButton}" Margin="0,0,0,10"/>
-                            <Button Name="btnUninstallApps" Content="Uninstall Selected" Style="{StaticResource ModernButton}"/>
-                        </StackPanel>
-                    </GroupBox>
-                    
-                    <!-- Tweak Actions -->
-                    <GroupBox Header="Tweaks" Style="{StaticResource ModernGroupBox}" Margin="0,0,0,20">
-                        <StackPanel Margin="15">
-                            <Button Name="btnApplyTweaks" Content="Apply Selected" Style="{StaticResource ModernButton}" Margin="0,0,0,10"/>
-                            <Button Name="btnUndoTweaks" Content="Undo Selected" Style="{StaticResource ModernButton}"/>
-                        </StackPanel>
-                    </GroupBox>
+                <!-- Tweak Actions -->
+                <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Name="btnApplyTweaks" Content="Apply Selected Tweaks" Style="{StaticResource ModernButton}" Margin="0,0,15,0" Padding="30,15"/>
+                    <Button Name="btnUndoTweaks" Content="Undo Selected Tweaks" Style="{StaticResource ModernButton}" Background="#FFFF8C00" Padding="30,15"/>
                 </StackPanel>
             </Grid>
-        </Grid>
-        
-        <!-- Log Output -->
-        <Grid Grid.Row="2" Margin="30,20,30,30">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            
-            <TextBlock Grid.Row="0" Text="Activity Log" Style="{StaticResource SubHeaderText}" Margin="0,0,0,10"/>
-            <Border Grid.Row="1" Background="#FF2D2D30" CornerRadius="8" Padding="15">
-                <TextBox Name="txtLog" Style="{StaticResource ModernTextBox}" Background="Transparent" BorderThickness="0"/>
-            </Border>
         </Grid>
     </Grid>
 </Window> 
@@ -7067,6 +7038,27 @@ $global:ResourcesXAML = @'
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
                 <Setter Property="Background" Value="#FF005A9E"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    
+    <Style x:Key="TabButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="#FF9CA3AF"/>
+        <Setter Property="Padding" Value="20,12"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="MinWidth" Value="120"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#FF374151"/>
+                <Setter Property="Foreground" Value="#FFE5E7EB"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="#FF4B5563"/>
+                <Setter Property="Foreground" Value="White"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -9065,6 +9057,117 @@ function Filter-Content {
     }
 }
 
+function Filter-ApplicationContent {
+    <#
+    .SYNOPSIS
+    Filters applications based on search text
+    
+    .PARAMETER Sync
+    The sync hashtable containing UI control references
+    
+    .PARAMETER AppsConfig
+    The applications configuration object
+    
+    .PARAMETER SearchText
+    Text to search for
+    #>
+    param(
+        [Parameter(Mandatory=$true)]
+        [hashtable]$Sync,
+        
+        [Parameter(Mandatory=$true)]
+        [PSCustomObject]$AppsConfig,
+        
+        [Parameter(Mandatory=$false)]
+        [string]$SearchText = ""
+    )
+    
+    try {
+        # Filter applications by hiding/showing items
+        $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
+        if ($lstApplications) {
+            foreach ($item in $lstApplications.Items) {
+                if ($item) {
+                    $container = $lstApplications.ItemContainerGenerator.ContainerFromItem($item)
+                    if ($container) {
+                        $appVisible = -not $SearchText -or 
+                                     ($item.content -and $item.content.ToLower().Contains($SearchText.ToLower())) -or 
+                                     ($item.description -and $item.description.ToLower().Contains($SearchText.ToLower())) -or
+                                     ($item.category -and $item.category.ToLower().Contains($SearchText.ToLower()))
+                        
+                        $container.Visibility = if ($appVisible) { "Visible" } else { "Collapsed" }
+                    }
+                }
+            }
+        }
+        
+        Write-Log "Applications filtered for search: '$SearchText'" -Level "DEBUG"
+    }
+    catch {
+        Write-Log "Exception filtering applications: $($_.Exception.Message)" -Level "ERROR"
+    }
+}
+
+function Filter-TweakContent {
+    <#
+    .SYNOPSIS
+    Filters tweaks based on search text
+    
+    .PARAMETER Sync
+    The sync hashtable containing UI control references
+    
+    .PARAMETER TweaksConfig
+    The tweaks configuration object
+    
+    .PARAMETER SearchText
+    Text to search for
+    #>
+    param(
+        [Parameter(Mandatory=$true)]
+        [hashtable]$Sync,
+        
+        [Parameter(Mandatory=$true)]
+        [PSCustomObject]$TweaksConfig,
+        
+        [Parameter(Mandatory=$false)]
+        [string]$SearchText = ""
+    )
+    
+    try {
+        # Filter tweaks (collapse/expand categories based on search)
+        $trvTweaks = Get-UIControl -Sync $Sync -ControlName "trvTweaks"
+        if ($trvTweaks) {
+            foreach ($categoryNode in $trvTweaks.Items) {
+                $hasVisibleTweaks = $false
+                
+                foreach ($tweakNode in $categoryNode.Items) {
+                    $stackPanel = $tweakNode.Header
+                    if ($stackPanel -is [System.Windows.Controls.StackPanel]) {
+                        $checkBox = $stackPanel.Children | Where-Object { $_ -is [System.Windows.Controls.CheckBox] } | Select-Object -First 1
+                        if ($checkBox) {
+                            $tweakVisible = -not $SearchText -or 
+                                           ($checkBox.Content -and $checkBox.Content.ToString().ToLower().Contains($SearchText.ToLower()))
+                            
+                            $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
+                            if ($tweakVisible) { $hasVisibleTweaks = $true }
+                        }
+                    }
+                }
+                
+                $categoryNode.Visibility = if ($hasVisibleTweaks) { "Visible" } else { "Collapsed" }
+                if ($hasVisibleTweaks -and $SearchText) {
+                    $categoryNode.IsExpanded = $true
+                }
+            }
+        }
+        
+        Write-Log "Tweaks filtered for search: '$SearchText'" -Level "DEBUG"
+    }
+    catch {
+        Write-Log "Exception filtering tweaks: $($_.Exception.Message)" -Level "ERROR"
+    }
+}
+
 function Get-SelectedApplications {
     <#
     .SYNOPSIS
@@ -9172,7 +9275,7 @@ function Set-UIEnabled {
         # List of controls to enable/disable
         $controlNames = @(
             "btnInstallApps", "btnUninstallApps", "btnApplyTweaks", "btnUndoTweaks",
-            "btnCreateRestorePoint", "btnPresetStandard", "btnPresetMinimal", "btnClearSelection"
+            "btnPresetStandard", "btnPresetMinimal", "btnClearSelection"
         )
         
         foreach ($controlName in $controlNames) {
@@ -9368,23 +9471,18 @@ function Register-ButtonHandlers {
     try {
         Write-Log "Registering UI event handlers..." -Level "DEBUG"
         
-        # Get log TextBox for UI updates
+        # Register all handlers (no log TextBox needed anymore)
         if ($Sync) {
-            $txtLog = Get-UIControl -Sync $Sync -ControlName "txtLog"
-            
-            # Register all handlers
-            Register-SearchHandlers -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -LogTextBox $txtLog -Sync $Sync
-            Register-PresetHandlers -PresetsConfig $PresetsConfig -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -LogTextBox $txtLog -Sync $Sync
-            Register-ActionHandlers -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -LogTextBox $txtLog -Sync $Sync
-            Register-GeneralHandlers -LogTextBox $txtLog -Sync $Sync
+            Register-SearchHandlers -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -Sync $Sync
+            Register-PresetHandlers -PresetsConfig $PresetsConfig -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -Sync $Sync
+            Register-ActionHandlers -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -Sync $Sync
+            Register-GeneralHandlers -Sync $Sync
         } else {
             # Fallback to old method
-            $txtLog = $Window.FindName("txtLog")
-            
-            Register-SearchHandlers -Window $Window -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -LogTextBox $txtLog
-            Register-PresetHandlers -Window $Window -PresetsConfig $PresetsConfig -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -LogTextBox $txtLog
-            Register-ActionHandlers -Window $Window -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -LogTextBox $txtLog
-            Register-GeneralHandlers -Window $Window -LogTextBox $txtLog
+            Register-SearchHandlers -Window $Window -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig
+            Register-PresetHandlers -Window $Window -PresetsConfig $PresetsConfig -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig
+            Register-ActionHandlers -Window $Window -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig
+            Register-GeneralHandlers -Window $Window
         }
         
         Write-Log "Event handlers registered successfully" -Level "DEBUG"
@@ -9410,29 +9508,40 @@ function Register-SearchHandlers {
         [Parameter(Mandatory=$true)]
         [PSCustomObject]$TweaksConfig,
         
-        [Parameter(Mandatory=$true)]
-        [System.Windows.Controls.TextBox]$LogTextBox,
-        
         [Parameter(Mandatory=$false)]
         [hashtable]$Sync
     )
     
     try {
-        # Get search control
+        # Get search controls for both tabs
         if ($Sync) {
             $txtSearch = Get-UIControl -Sync $Sync -ControlName "txtSearch"
+            $txtSearchTweaks = Get-UIControl -Sync $Sync -ControlName "txtSearchTweaks"
         } else {
             $txtSearch = $Window.FindName("txtSearch")
+            $txtSearchTweaks = $Window.FindName("txtSearchTweaks")
         }
         
+        # Applications search
         if ($txtSearch) {
             $txtSearch.Add_TextChanged({
                 $searchText = $this.Text
                 if ($Sync) {
-                    Filter-Content -Sync $Sync -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -SearchText $searchText
+                    Filter-ApplicationContent -Sync $Sync -AppsConfig $AppsConfig -SearchText $searchText
                 } else {
-                    # Fallback for old method - simplified
-                    Write-Log "Search functionality requires Sync hashtable" -Level "WARN" -UITextBox $LogTextBox
+                    Write-Log "Search functionality requires Sync hashtable" -Level "WARN"
+                }
+            })
+        }
+        
+        # Tweaks search
+        if ($txtSearchTweaks) {
+            $txtSearchTweaks.Add_TextChanged({
+                $searchText = $this.Text
+                if ($Sync) {
+                    Filter-TweakContent -Sync $Sync -TweaksConfig $TweaksConfig -SearchText $searchText
+                } else {
+                    Write-Log "Search functionality requires Sync hashtable" -Level "WARN"
                 }
             })
         }
@@ -9460,9 +9569,6 @@ function Register-PresetHandlers {
         [Parameter(Mandatory=$true)]
         [PSCustomObject]$TweaksConfig,
         
-        [Parameter(Mandatory=$true)]
-        [System.Windows.Controls.TextBox]$LogTextBox,
-        
         [Parameter(Mandatory=$false)]
         [hashtable]$Sync
     )
@@ -9483,11 +9589,11 @@ function Register-PresetHandlers {
         if ($btnPresetStandard) {
             $btnPresetStandard.Add_Click({
                 try {
-                    Write-Log "Applying Standard Setup preset..." -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Applying Standard Setup preset..." -Level "INFO"
                     Apply-Preset -PresetName "standard" -PresetsConfig $PresetsConfig -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -Sync $Sync -Window $Window
                 }
                 catch {
-                    Write-Log "Exception applying Standard preset: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception applying Standard preset: $($_.Exception.Message)" -Level "ERROR"
                 }
             })
         }
@@ -9496,11 +9602,11 @@ function Register-PresetHandlers {
         if ($btnPresetMinimal) {
             $btnPresetMinimal.Add_Click({
                 try {
-                    Write-Log "Applying Minimal Setup preset..." -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Applying Minimal Setup preset..." -Level "INFO"
                     Apply-Preset -PresetName "minimal" -PresetsConfig $PresetsConfig -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -Sync $Sync -Window $Window
                 }
                 catch {
-                    Write-Log "Exception applying Minimal preset: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception applying Minimal preset: $($_.Exception.Message)" -Level "ERROR"
                 }
             })
         }
@@ -9509,11 +9615,11 @@ function Register-PresetHandlers {
         if ($btnClearSelection) {
             $btnClearSelection.Add_Click({
                 try {
-                    Write-Log "Clearing all selections..." -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Clearing all selections..." -Level "INFO"
                     Clear-AllSelections -Sync $Sync -Window $Window
                 }
                 catch {
-                    Write-Log "Exception clearing selections: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception clearing selections: $($_.Exception.Message)" -Level "ERROR"
                 }
             })
         }
@@ -9537,9 +9643,6 @@ function Register-ActionHandlers {
         
         [Parameter(Mandatory=$true)]
         [PSCustomObject]$TweaksConfig,
-        
-        [Parameter(Mandatory=$true)]
-        [System.Windows.Controls.TextBox]$LogTextBox,
         
         [Parameter(Mandatory=$false)]
         [hashtable]$Sync
@@ -9565,11 +9668,11 @@ function Register-ActionHandlers {
                 try {
                     $selectedApps = Get-SelectedApplications -Sync $Sync -Window $Window
                     if ($selectedApps.Count -eq 0) {
-                        Write-Log "No applications selected for installation" -Level "WARN" -UITextBox $LogTextBox
+                        Write-Log "No applications selected for installation" -Level "WARN"
                         return
                     }
                     
-                    Write-Log "Starting installation of $($selectedApps.Count) applications..." -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Starting installation of $($selectedApps.Count) applications..." -Level "INFO"
                     
                     # Disable UI during operation
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $false
@@ -9600,11 +9703,11 @@ function Register-ActionHandlers {
                         if ($result) { $successful++ } else { $failed++ }
                     }
                     
-                    Write-Log "Installation completed. Success: $successful, Failed: $failed" -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Installation completed. Success: $successful, Failed: $failed" -Level "INFO"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $true
                 }
                 catch {
-                    Write-Log "Exception during app installation: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception during app installation: $($_.Exception.Message)" -Level "ERROR"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $true
                 }
             })
@@ -9616,11 +9719,11 @@ function Register-ActionHandlers {
                 try {
                     $selectedApps = Get-SelectedApplications -Sync $Sync -Window $Window
                     if ($selectedApps.Count -eq 0) {
-                        Write-Log "No applications selected for uninstallation" -Level "WARN" -UITextBox $LogTextBox
+                        Write-Log "No applications selected for uninstallation" -Level "WARN"
                         return
                     }
                     
-                    Write-Log "Starting uninstallation of $($selectedApps.Count) applications..." -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Starting uninstallation of $($selectedApps.Count) applications..." -Level "INFO"
                     
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $false
                     
@@ -9648,11 +9751,11 @@ function Register-ActionHandlers {
                         if ($result) { $successful++ } else { $failed++ }
                     }
                     
-                    Write-Log "Uninstallation completed. Success: $successful, Failed: $failed" -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Uninstallation completed. Success: $successful, Failed: $failed" -Level "INFO"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $true
                 }
                 catch {
-                    Write-Log "Exception during app uninstallation: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception during app uninstallation: $($_.Exception.Message)" -Level "ERROR"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $true
                 }
             })
@@ -9664,11 +9767,11 @@ function Register-ActionHandlers {
                 try {
                     $selectedTweaks = Get-SelectedTweaks -Sync $Sync -Window $Window
                     if ($selectedTweaks.Count -eq 0) {
-                        Write-Log "No tweaks selected for application" -Level "WARN" -UITextBox $LogTextBox
+                        Write-Log "No tweaks selected for application" -Level "WARN"
                         return
                     }
                     
-                    Write-Log "Applying $($selectedTweaks.Count) tweaks..." -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Applying $($selectedTweaks.Count) tweaks..." -Level "INFO"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $false
                     
                     $successful = 0
@@ -9680,11 +9783,11 @@ function Register-ActionHandlers {
                         if ($result) { $successful++ } else { $failed++ }
                     }
                     
-                    Write-Log "Tweaks application completed. Success: $successful, Failed: $failed" -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Tweaks application completed. Success: $successful, Failed: $failed" -Level "INFO"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $true
                 }
                 catch {
-                    Write-Log "Exception applying tweaks: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception applying tweaks: $($_.Exception.Message)" -Level "ERROR"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $true
                 }
             })
@@ -9696,11 +9799,11 @@ function Register-ActionHandlers {
                 try {
                     $selectedTweaks = Get-SelectedTweaks -Sync $Sync -Window $Window
                     if ($selectedTweaks.Count -eq 0) {
-                        Write-Log "No tweaks selected for undo" -Level "WARN" -UITextBox $LogTextBox
+                        Write-Log "No tweaks selected for undo" -Level "WARN"
                         return
                     }
                     
-                    Write-Log "Undoing $($selectedTweaks.Count) tweaks..." -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Undoing $($selectedTweaks.Count) tweaks..." -Level "INFO"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $false
                     
                     $successful = 0
@@ -9711,11 +9814,11 @@ function Register-ActionHandlers {
                         if ($result) { $successful++ } else { $failed++ }
                     }
                     
-                    Write-Log "Tweaks undo completed. Success: $successful, Failed: $failed" -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Tweaks undo completed. Success: $successful, Failed: $failed" -Level "INFO"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $true
                 }
                 catch {
-                    Write-Log "Exception undoing tweaks: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception undoing tweaks: $($_.Exception.Message)" -Level "ERROR"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $true
                 }
             })
@@ -9729,59 +9832,122 @@ function Register-ActionHandlers {
 function Register-GeneralHandlers {
     <#
     .SYNOPSIS
-    Registers event handlers for general UI controls
+    Registers event handlers for general UI controls including tab switching
     #>
     param(
         [Parameter(Mandatory=$false)]
         [System.Windows.Window]$Window,
-        
-        [Parameter(Mandatory=$true)]
-        [System.Windows.Controls.TextBox]$LogTextBox,
         
         [Parameter(Mandatory=$false)]
         [hashtable]$Sync
     )
     
     try {
-        # Get general buttons
+        # Get tab buttons and content areas
         if ($Sync) {
-            $btnCreateRestorePoint = Get-UIControl -Sync $Sync -ControlName "btnCreateRestorePoint"
-            $btnClearLog = Get-UIControl -Sync $Sync -ControlName "btnClearLog"
+            $btnApplicationsTab = Get-UIControl -Sync $Sync -ControlName "btnApplicationsTab"
+            $btnTweaksTab = Get-UIControl -Sync $Sync -ControlName "btnTweaksTab"
+            $applicationsContent = Get-UIControl -Sync $Sync -ControlName "ApplicationsContent"
+            $tweaksContent = Get-UIControl -Sync $Sync -ControlName "TweaksContent"
         } else {
-            $btnCreateRestorePoint = $Window.FindName("btnCreateRestorePoint")
-            $btnClearLog = $Window.FindName("btnClearLog")
+            $btnApplicationsTab = $Window.FindName("btnApplicationsTab")
+            $btnTweaksTab = $Window.FindName("btnTweaksTab")
+            $applicationsContent = $Window.FindName("ApplicationsContent")
+            $tweaksContent = $Window.FindName("TweaksContent")
         }
         
-        # Create Restore Point
-        if ($btnCreateRestorePoint) {
-            $btnCreateRestorePoint.Add_Click({
+        # Tab appearance logic with improved styling (inline to avoid scoping issues)
+        
+        # Applications tab button click handler
+        if ($btnApplicationsTab -and $applicationsContent -and $tweaksContent) {
+            $btnApplicationsTab.Add_Click({
                 try {
-                    Write-Log "Creating system restore point..." -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Switching to Applications tab" -Level "DEBUG"
                     
-                    $result = Checkpoint-Computer -Description "WinUtil - Before Changes" -RestorePointType "MODIFY_SETTINGS" -ErrorAction SilentlyContinue
-                    if ($result) {
-                        Write-Log "System restore point created successfully" -Level "INFO" -UITextBox $LogTextBox
+                    # Get fresh references to all controls
+                    if ($Sync) {
+                        $appContent = Get-UIControl -Sync $Sync -ControlName "ApplicationsContent"
+                        $tweakContent = Get-UIControl -Sync $Sync -ControlName "TweaksContent"
+                        $btnApps = Get-UIControl -Sync $Sync -ControlName "btnApplicationsTab"
+                        $btnTweaks = Get-UIControl -Sync $Sync -ControlName "btnTweaksTab"
                     } else {
-                        Write-Log "Failed to create system restore point" -Level "WARN" -UITextBox $LogTextBox
+                        $appContent = $Window.FindName("ApplicationsContent")
+                        $tweakContent = $Window.FindName("TweaksContent")
+                        $btnApps = $Window.FindName("btnApplicationsTab")
+                        $btnTweaks = $Window.FindName("btnTweaksTab")
+                    }
+                    
+                    # Switch content visibility
+                    if ($appContent) { $appContent.Visibility = "Visible" }
+                    if ($tweakContent) { $tweakContent.Visibility = "Collapsed" }
+                    
+                    # Update tab button appearance - Applications active
+                    if ($btnApps) {
+                        $btnApps.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF1F2937")
+                        $btnApps.Foreground = [System.Windows.Media.Brushes]::White
+                    }
+                    if ($btnTweaks) {
+                        $btnTweaks.Background = [System.Windows.Media.Brushes]::Transparent
+                        $btnTweaks.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF9CA3AF")
                     }
                 }
                 catch {
-                    Write-Log "Exception creating restore point: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception switching to Applications tab: $($_.Exception.Message)" -Level "ERROR"
                 }
             })
         }
         
-        # Clear Log
-        if ($btnClearLog) {
-            $btnClearLog.Add_Click({
+        # Tweaks tab button click handler
+        if ($btnTweaksTab -and $applicationsContent -and $tweaksContent) {
+            $btnTweaksTab.Add_Click({
                 try {
-                    $LogTextBox.Clear()
-                    # Log cleared - no message needed
+                    Write-Log "Switching to Tweaks tab" -Level "DEBUG"
+                    
+                    # Get fresh references to all controls
+                    if ($Sync) {
+                        $appContent = Get-UIControl -Sync $Sync -ControlName "ApplicationsContent"
+                        $tweakContent = Get-UIControl -Sync $Sync -ControlName "TweaksContent"
+                        $btnApps = Get-UIControl -Sync $Sync -ControlName "btnApplicationsTab"
+                        $btnTweaks = Get-UIControl -Sync $Sync -ControlName "btnTweaksTab"
+                    } else {
+                        $appContent = $Window.FindName("ApplicationsContent")
+                        $tweakContent = $Window.FindName("TweaksContent")
+                        $btnApps = $Window.FindName("btnApplicationsTab")
+                        $btnTweaks = $Window.FindName("btnTweaksTab")
+                    }
+                    
+                    # Switch content visibility
+                    if ($appContent) { $appContent.Visibility = "Collapsed" }
+                    if ($tweakContent) { $tweakContent.Visibility = "Visible" }
+                    
+                    # Update tab button appearance - Tweaks active
+                    if ($btnTweaks) {
+                        $btnTweaks.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF1F2937")
+                        $btnTweaks.Foreground = [System.Windows.Media.Brushes]::White
+                    }
+                    if ($btnApps) {
+                        $btnApps.Background = [System.Windows.Media.Brushes]::Transparent
+                        $btnApps.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF9CA3AF")
+                    }
                 }
                 catch {
-                    Write-Log "Exception clearing log: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception switching to Tweaks tab: $($_.Exception.Message)" -Level "ERROR"
                 }
             })
+        }
+        
+        # Set default active tab appearance (Applications)
+        try {
+            if ($btnApplicationsTab) {
+                $btnApplicationsTab.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF1F2937")
+                $btnApplicationsTab.Foreground = [System.Windows.Media.Brushes]::White
+            }
+            if ($btnTweaksTab) {
+                $btnTweaksTab.Background = [System.Windows.Media.Brushes]::Transparent
+                $btnTweaksTab.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF9CA3AF")
+            }
+        } catch {
+            Write-Log "Exception setting default tab appearance: $($_.Exception.Message)" -Level "ERROR"
         }
     }
     catch {

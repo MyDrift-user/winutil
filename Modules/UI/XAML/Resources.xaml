@@ -20,6 +20,27 @@
         </Style.Triggers>
     </Style>
     
+    <Style x:Key="TabButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="#FF9CA3AF"/>
+        <Setter Property="Padding" Value="20,12"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="MinWidth" Value="120"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#FF374151"/>
+                <Setter Property="Foreground" Value="#FFE5E7EB"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="#FF4B5563"/>
+                <Setter Property="Foreground" Value="White"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    
     <Style x:Key="ModernListBox" TargetType="ListBox">
         <Setter Property="Background" Value="#FF2D2D30"/>
         <Setter Property="Foreground" Value="White"/>

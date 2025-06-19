@@ -345,6 +345,117 @@ function Filter-Content {
     }
 }
 
+function Filter-ApplicationContent {
+    <#
+    .SYNOPSIS
+    Filters applications based on search text
+    
+    .PARAMETER Sync
+    The sync hashtable containing UI control references
+    
+    .PARAMETER AppsConfig
+    The applications configuration object
+    
+    .PARAMETER SearchText
+    Text to search for
+    #>
+    param(
+        [Parameter(Mandatory=$true)]
+        [hashtable]$Sync,
+        
+        [Parameter(Mandatory=$true)]
+        [PSCustomObject]$AppsConfig,
+        
+        [Parameter(Mandatory=$false)]
+        [string]$SearchText = ""
+    )
+    
+    try {
+        # Filter applications by hiding/showing items
+        $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
+        if ($lstApplications) {
+            foreach ($item in $lstApplications.Items) {
+                if ($item) {
+                    $container = $lstApplications.ItemContainerGenerator.ContainerFromItem($item)
+                    if ($container) {
+                        $appVisible = -not $SearchText -or 
+                                     ($item.content -and $item.content.ToLower().Contains($SearchText.ToLower())) -or 
+                                     ($item.description -and $item.description.ToLower().Contains($SearchText.ToLower())) -or
+                                     ($item.category -and $item.category.ToLower().Contains($SearchText.ToLower()))
+                        
+                        $container.Visibility = if ($appVisible) { "Visible" } else { "Collapsed" }
+                    }
+                }
+            }
+        }
+        
+        Write-Log "Applications filtered for search: '$SearchText'" -Level "DEBUG"
+    }
+    catch {
+        Write-Log "Exception filtering applications: $($_.Exception.Message)" -Level "ERROR"
+    }
+}
+
+function Filter-TweakContent {
+    <#
+    .SYNOPSIS
+    Filters tweaks based on search text
+    
+    .PARAMETER Sync
+    The sync hashtable containing UI control references
+    
+    .PARAMETER TweaksConfig
+    The tweaks configuration object
+    
+    .PARAMETER SearchText
+    Text to search for
+    #>
+    param(
+        [Parameter(Mandatory=$true)]
+        [hashtable]$Sync,
+        
+        [Parameter(Mandatory=$true)]
+        [PSCustomObject]$TweaksConfig,
+        
+        [Parameter(Mandatory=$false)]
+        [string]$SearchText = ""
+    )
+    
+    try {
+        # Filter tweaks (collapse/expand categories based on search)
+        $trvTweaks = Get-UIControl -Sync $Sync -ControlName "trvTweaks"
+        if ($trvTweaks) {
+            foreach ($categoryNode in $trvTweaks.Items) {
+                $hasVisibleTweaks = $false
+                
+                foreach ($tweakNode in $categoryNode.Items) {
+                    $stackPanel = $tweakNode.Header
+                    if ($stackPanel -is [System.Windows.Controls.StackPanel]) {
+                        $checkBox = $stackPanel.Children | Where-Object { $_ -is [System.Windows.Controls.CheckBox] } | Select-Object -First 1
+                        if ($checkBox) {
+                            $tweakVisible = -not $SearchText -or 
+                                           ($checkBox.Content -and $checkBox.Content.ToString().ToLower().Contains($SearchText.ToLower()))
+                            
+                            $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
+                            if ($tweakVisible) { $hasVisibleTweaks = $true }
+                        }
+                    }
+                }
+                
+                $categoryNode.Visibility = if ($hasVisibleTweaks) { "Visible" } else { "Collapsed" }
+                if ($hasVisibleTweaks -and $SearchText) {
+                    $categoryNode.IsExpanded = $true
+                }
+            }
+        }
+        
+        Write-Log "Tweaks filtered for search: '$SearchText'" -Level "DEBUG"
+    }
+    catch {
+        Write-Log "Exception filtering tweaks: $($_.Exception.Message)" -Level "ERROR"
+    }
+}
+
 function Get-SelectedApplications {
     <#
     .SYNOPSIS
@@ -452,7 +563,7 @@ function Set-UIEnabled {
         # List of controls to enable/disable
         $controlNames = @(
             "btnInstallApps", "btnUninstallApps", "btnApplyTweaks", "btnUndoTweaks",
-            "btnCreateRestorePoint", "btnPresetStandard", "btnPresetMinimal", "btnClearSelection"
+            "btnPresetStandard", "btnPresetMinimal", "btnClearSelection"
         )
         
         foreach ($controlName in $controlNames) {

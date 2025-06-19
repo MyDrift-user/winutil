@@ -38,23 +38,18 @@ function Register-ButtonHandlers {
     try {
         Write-Log "Registering UI event handlers..." -Level "DEBUG"
         
-        # Get log TextBox for UI updates
+        # Register all handlers (no log TextBox needed anymore)
         if ($Sync) {
-            $txtLog = Get-UIControl -Sync $Sync -ControlName "txtLog"
-            
-            # Register all handlers
-            Register-SearchHandlers -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -LogTextBox $txtLog -Sync $Sync
-            Register-PresetHandlers -PresetsConfig $PresetsConfig -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -LogTextBox $txtLog -Sync $Sync
-            Register-ActionHandlers -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -LogTextBox $txtLog -Sync $Sync
-            Register-GeneralHandlers -LogTextBox $txtLog -Sync $Sync
+            Register-SearchHandlers -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -Sync $Sync
+            Register-PresetHandlers -PresetsConfig $PresetsConfig -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -Sync $Sync
+            Register-ActionHandlers -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -Sync $Sync
+            Register-GeneralHandlers -Sync $Sync
         } else {
             # Fallback to old method
-            $txtLog = $Window.FindName("txtLog")
-            
-            Register-SearchHandlers -Window $Window -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -LogTextBox $txtLog
-            Register-PresetHandlers -Window $Window -PresetsConfig $PresetsConfig -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -LogTextBox $txtLog
-            Register-ActionHandlers -Window $Window -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -LogTextBox $txtLog
-            Register-GeneralHandlers -Window $Window -LogTextBox $txtLog
+            Register-SearchHandlers -Window $Window -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig
+            Register-PresetHandlers -Window $Window -PresetsConfig $PresetsConfig -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig
+            Register-ActionHandlers -Window $Window -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig
+            Register-GeneralHandlers -Window $Window
         }
         
         Write-Log "Event handlers registered successfully" -Level "DEBUG"
@@ -80,29 +75,40 @@ function Register-SearchHandlers {
         [Parameter(Mandatory=$true)]
         [PSCustomObject]$TweaksConfig,
         
-        [Parameter(Mandatory=$true)]
-        [System.Windows.Controls.TextBox]$LogTextBox,
-        
         [Parameter(Mandatory=$false)]
         [hashtable]$Sync
     )
     
     try {
-        # Get search control
+        # Get search controls for both tabs
         if ($Sync) {
             $txtSearch = Get-UIControl -Sync $Sync -ControlName "txtSearch"
+            $txtSearchTweaks = Get-UIControl -Sync $Sync -ControlName "txtSearchTweaks"
         } else {
             $txtSearch = $Window.FindName("txtSearch")
+            $txtSearchTweaks = $Window.FindName("txtSearchTweaks")
         }
         
+        # Applications search
         if ($txtSearch) {
             $txtSearch.Add_TextChanged({
                 $searchText = $this.Text
                 if ($Sync) {
-                    Filter-Content -Sync $Sync -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -SearchText $searchText
+                    Filter-ApplicationContent -Sync $Sync -AppsConfig $AppsConfig -SearchText $searchText
                 } else {
-                    # Fallback for old method - simplified
-                    Write-Log "Search functionality requires Sync hashtable" -Level "WARN" -UITextBox $LogTextBox
+                    Write-Log "Search functionality requires Sync hashtable" -Level "WARN"
+                }
+            })
+        }
+        
+        # Tweaks search
+        if ($txtSearchTweaks) {
+            $txtSearchTweaks.Add_TextChanged({
+                $searchText = $this.Text
+                if ($Sync) {
+                    Filter-TweakContent -Sync $Sync -TweaksConfig $TweaksConfig -SearchText $searchText
+                } else {
+                    Write-Log "Search functionality requires Sync hashtable" -Level "WARN"
                 }
             })
         }
@@ -130,9 +136,6 @@ function Register-PresetHandlers {
         [Parameter(Mandatory=$true)]
         [PSCustomObject]$TweaksConfig,
         
-        [Parameter(Mandatory=$true)]
-        [System.Windows.Controls.TextBox]$LogTextBox,
-        
         [Parameter(Mandatory=$false)]
         [hashtable]$Sync
     )
@@ -153,11 +156,11 @@ function Register-PresetHandlers {
         if ($btnPresetStandard) {
             $btnPresetStandard.Add_Click({
                 try {
-                    Write-Log "Applying Standard Setup preset..." -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Applying Standard Setup preset..." -Level "INFO"
                     Apply-Preset -PresetName "standard" -PresetsConfig $PresetsConfig -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -Sync $Sync -Window $Window
                 }
                 catch {
-                    Write-Log "Exception applying Standard preset: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception applying Standard preset: $($_.Exception.Message)" -Level "ERROR"
                 }
             })
         }
@@ -166,11 +169,11 @@ function Register-PresetHandlers {
         if ($btnPresetMinimal) {
             $btnPresetMinimal.Add_Click({
                 try {
-                    Write-Log "Applying Minimal Setup preset..." -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Applying Minimal Setup preset..." -Level "INFO"
                     Apply-Preset -PresetName "minimal" -PresetsConfig $PresetsConfig -AppsConfig $AppsConfig -TweaksConfig $TweaksConfig -Sync $Sync -Window $Window
                 }
                 catch {
-                    Write-Log "Exception applying Minimal preset: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception applying Minimal preset: $($_.Exception.Message)" -Level "ERROR"
                 }
             })
         }
@@ -179,11 +182,11 @@ function Register-PresetHandlers {
         if ($btnClearSelection) {
             $btnClearSelection.Add_Click({
                 try {
-                    Write-Log "Clearing all selections..." -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Clearing all selections..." -Level "INFO"
                     Clear-AllSelections -Sync $Sync -Window $Window
                 }
                 catch {
-                    Write-Log "Exception clearing selections: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception clearing selections: $($_.Exception.Message)" -Level "ERROR"
                 }
             })
         }
@@ -207,9 +210,6 @@ function Register-ActionHandlers {
         
         [Parameter(Mandatory=$true)]
         [PSCustomObject]$TweaksConfig,
-        
-        [Parameter(Mandatory=$true)]
-        [System.Windows.Controls.TextBox]$LogTextBox,
         
         [Parameter(Mandatory=$false)]
         [hashtable]$Sync
@@ -235,11 +235,11 @@ function Register-ActionHandlers {
                 try {
                     $selectedApps = Get-SelectedApplications -Sync $Sync -Window $Window
                     if ($selectedApps.Count -eq 0) {
-                        Write-Log "No applications selected for installation" -Level "WARN" -UITextBox $LogTextBox
+                        Write-Log "No applications selected for installation" -Level "WARN"
                         return
                     }
                     
-                    Write-Log "Starting installation of $($selectedApps.Count) applications..." -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Starting installation of $($selectedApps.Count) applications..." -Level "INFO"
                     
                     # Disable UI during operation
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $false
@@ -270,11 +270,11 @@ function Register-ActionHandlers {
                         if ($result) { $successful++ } else { $failed++ }
                     }
                     
-                    Write-Log "Installation completed. Success: $successful, Failed: $failed" -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Installation completed. Success: $successful, Failed: $failed" -Level "INFO"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $true
                 }
                 catch {
-                    Write-Log "Exception during app installation: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception during app installation: $($_.Exception.Message)" -Level "ERROR"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $true
                 }
             })
@@ -286,11 +286,11 @@ function Register-ActionHandlers {
                 try {
                     $selectedApps = Get-SelectedApplications -Sync $Sync -Window $Window
                     if ($selectedApps.Count -eq 0) {
-                        Write-Log "No applications selected for uninstallation" -Level "WARN" -UITextBox $LogTextBox
+                        Write-Log "No applications selected for uninstallation" -Level "WARN"
                         return
                     }
                     
-                    Write-Log "Starting uninstallation of $($selectedApps.Count) applications..." -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Starting uninstallation of $($selectedApps.Count) applications..." -Level "INFO"
                     
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $false
                     
@@ -318,11 +318,11 @@ function Register-ActionHandlers {
                         if ($result) { $successful++ } else { $failed++ }
                     }
                     
-                    Write-Log "Uninstallation completed. Success: $successful, Failed: $failed" -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Uninstallation completed. Success: $successful, Failed: $failed" -Level "INFO"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $true
                 }
                 catch {
-                    Write-Log "Exception during app uninstallation: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception during app uninstallation: $($_.Exception.Message)" -Level "ERROR"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $true
                 }
             })
@@ -334,11 +334,11 @@ function Register-ActionHandlers {
                 try {
                     $selectedTweaks = Get-SelectedTweaks -Sync $Sync -Window $Window
                     if ($selectedTweaks.Count -eq 0) {
-                        Write-Log "No tweaks selected for application" -Level "WARN" -UITextBox $LogTextBox
+                        Write-Log "No tweaks selected for application" -Level "WARN"
                         return
                     }
                     
-                    Write-Log "Applying $($selectedTweaks.Count) tweaks..." -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Applying $($selectedTweaks.Count) tweaks..." -Level "INFO"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $false
                     
                     $successful = 0
@@ -350,11 +350,11 @@ function Register-ActionHandlers {
                         if ($result) { $successful++ } else { $failed++ }
                     }
                     
-                    Write-Log "Tweaks application completed. Success: $successful, Failed: $failed" -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Tweaks application completed. Success: $successful, Failed: $failed" -Level "INFO"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $true
                 }
                 catch {
-                    Write-Log "Exception applying tweaks: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception applying tweaks: $($_.Exception.Message)" -Level "ERROR"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $true
                 }
             })
@@ -366,11 +366,11 @@ function Register-ActionHandlers {
                 try {
                     $selectedTweaks = Get-SelectedTweaks -Sync $Sync -Window $Window
                     if ($selectedTweaks.Count -eq 0) {
-                        Write-Log "No tweaks selected for undo" -Level "WARN" -UITextBox $LogTextBox
+                        Write-Log "No tweaks selected for undo" -Level "WARN"
                         return
                     }
                     
-                    Write-Log "Undoing $($selectedTweaks.Count) tweaks..." -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Undoing $($selectedTweaks.Count) tweaks..." -Level "INFO"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $false
                     
                     $successful = 0
@@ -381,11 +381,11 @@ function Register-ActionHandlers {
                         if ($result) { $successful++ } else { $failed++ }
                     }
                     
-                    Write-Log "Tweaks undo completed. Success: $successful, Failed: $failed" -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Tweaks undo completed. Success: $successful, Failed: $failed" -Level "INFO"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $true
                 }
                 catch {
-                    Write-Log "Exception undoing tweaks: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception undoing tweaks: $($_.Exception.Message)" -Level "ERROR"
                     Set-UIEnabled -Sync $Sync -Window $Window -Enabled $true
                 }
             })
@@ -399,59 +399,122 @@ function Register-ActionHandlers {
 function Register-GeneralHandlers {
     <#
     .SYNOPSIS
-    Registers event handlers for general UI controls
+    Registers event handlers for general UI controls including tab switching
     #>
     param(
         [Parameter(Mandatory=$false)]
         [System.Windows.Window]$Window,
-        
-        [Parameter(Mandatory=$true)]
-        [System.Windows.Controls.TextBox]$LogTextBox,
         
         [Parameter(Mandatory=$false)]
         [hashtable]$Sync
     )
     
     try {
-        # Get general buttons
+        # Get tab buttons and content areas
         if ($Sync) {
-            $btnCreateRestorePoint = Get-UIControl -Sync $Sync -ControlName "btnCreateRestorePoint"
-            $btnClearLog = Get-UIControl -Sync $Sync -ControlName "btnClearLog"
+            $btnApplicationsTab = Get-UIControl -Sync $Sync -ControlName "btnApplicationsTab"
+            $btnTweaksTab = Get-UIControl -Sync $Sync -ControlName "btnTweaksTab"
+            $applicationsContent = Get-UIControl -Sync $Sync -ControlName "ApplicationsContent"
+            $tweaksContent = Get-UIControl -Sync $Sync -ControlName "TweaksContent"
         } else {
-            $btnCreateRestorePoint = $Window.FindName("btnCreateRestorePoint")
-            $btnClearLog = $Window.FindName("btnClearLog")
+            $btnApplicationsTab = $Window.FindName("btnApplicationsTab")
+            $btnTweaksTab = $Window.FindName("btnTweaksTab")
+            $applicationsContent = $Window.FindName("ApplicationsContent")
+            $tweaksContent = $Window.FindName("TweaksContent")
         }
         
-        # Create Restore Point
-        if ($btnCreateRestorePoint) {
-            $btnCreateRestorePoint.Add_Click({
+        # Tab appearance logic with improved styling (inline to avoid scoping issues)
+        
+        # Applications tab button click handler
+        if ($btnApplicationsTab -and $applicationsContent -and $tweaksContent) {
+            $btnApplicationsTab.Add_Click({
                 try {
-                    Write-Log "Creating system restore point..." -Level "INFO" -UITextBox $LogTextBox
+                    Write-Log "Switching to Applications tab" -Level "DEBUG"
                     
-                    $result = Checkpoint-Computer -Description "WinUtil - Before Changes" -RestorePointType "MODIFY_SETTINGS" -ErrorAction SilentlyContinue
-                    if ($result) {
-                        Write-Log "System restore point created successfully" -Level "INFO" -UITextBox $LogTextBox
+                    # Get fresh references to all controls
+                    if ($Sync) {
+                        $appContent = Get-UIControl -Sync $Sync -ControlName "ApplicationsContent"
+                        $tweakContent = Get-UIControl -Sync $Sync -ControlName "TweaksContent"
+                        $btnApps = Get-UIControl -Sync $Sync -ControlName "btnApplicationsTab"
+                        $btnTweaks = Get-UIControl -Sync $Sync -ControlName "btnTweaksTab"
                     } else {
-                        Write-Log "Failed to create system restore point" -Level "WARN" -UITextBox $LogTextBox
+                        $appContent = $Window.FindName("ApplicationsContent")
+                        $tweakContent = $Window.FindName("TweaksContent")
+                        $btnApps = $Window.FindName("btnApplicationsTab")
+                        $btnTweaks = $Window.FindName("btnTweaksTab")
+                    }
+                    
+                    # Switch content visibility
+                    if ($appContent) { $appContent.Visibility = "Visible" }
+                    if ($tweakContent) { $tweakContent.Visibility = "Collapsed" }
+                    
+                    # Update tab button appearance - Applications active
+                    if ($btnApps) {
+                        $btnApps.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF1F2937")
+                        $btnApps.Foreground = [System.Windows.Media.Brushes]::White
+                    }
+                    if ($btnTweaks) {
+                        $btnTweaks.Background = [System.Windows.Media.Brushes]::Transparent
+                        $btnTweaks.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF9CA3AF")
                     }
                 }
                 catch {
-                    Write-Log "Exception creating restore point: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception switching to Applications tab: $($_.Exception.Message)" -Level "ERROR"
                 }
             })
         }
         
-        # Clear Log
-        if ($btnClearLog) {
-            $btnClearLog.Add_Click({
+        # Tweaks tab button click handler
+        if ($btnTweaksTab -and $applicationsContent -and $tweaksContent) {
+            $btnTweaksTab.Add_Click({
                 try {
-                    $LogTextBox.Clear()
-                    # Log cleared - no message needed
+                    Write-Log "Switching to Tweaks tab" -Level "DEBUG"
+                    
+                    # Get fresh references to all controls
+                    if ($Sync) {
+                        $appContent = Get-UIControl -Sync $Sync -ControlName "ApplicationsContent"
+                        $tweakContent = Get-UIControl -Sync $Sync -ControlName "TweaksContent"
+                        $btnApps = Get-UIControl -Sync $Sync -ControlName "btnApplicationsTab"
+                        $btnTweaks = Get-UIControl -Sync $Sync -ControlName "btnTweaksTab"
+                    } else {
+                        $appContent = $Window.FindName("ApplicationsContent")
+                        $tweakContent = $Window.FindName("TweaksContent")
+                        $btnApps = $Window.FindName("btnApplicationsTab")
+                        $btnTweaks = $Window.FindName("btnTweaksTab")
+                    }
+                    
+                    # Switch content visibility
+                    if ($appContent) { $appContent.Visibility = "Collapsed" }
+                    if ($tweakContent) { $tweakContent.Visibility = "Visible" }
+                    
+                    # Update tab button appearance - Tweaks active
+                    if ($btnTweaks) {
+                        $btnTweaks.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF1F2937")
+                        $btnTweaks.Foreground = [System.Windows.Media.Brushes]::White
+                    }
+                    if ($btnApps) {
+                        $btnApps.Background = [System.Windows.Media.Brushes]::Transparent
+                        $btnApps.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF9CA3AF")
+                    }
                 }
                 catch {
-                    Write-Log "Exception clearing log: $($_.Exception.Message)" -Level "ERROR" -UITextBox $LogTextBox
+                    Write-Log "Exception switching to Tweaks tab: $($_.Exception.Message)" -Level "ERROR"
                 }
             })
+        }
+        
+        # Set default active tab appearance (Applications)
+        try {
+            if ($btnApplicationsTab) {
+                $btnApplicationsTab.Background = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF1F2937")
+                $btnApplicationsTab.Foreground = [System.Windows.Media.Brushes]::White
+            }
+            if ($btnTweaksTab) {
+                $btnTweaksTab.Background = [System.Windows.Media.Brushes]::Transparent
+                $btnTweaksTab.Foreground = [System.Windows.Media.BrushConverter]::new().ConvertFrom("#FF9CA3AF")
+            }
+        } catch {
+            Write-Log "Exception setting default tab appearance: $($_.Exception.Message)" -Level "ERROR"
         }
     }
     catch {
