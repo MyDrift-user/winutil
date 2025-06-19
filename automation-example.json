@@ -1,0 +1,19 @@
+{
+  "Apps": [
+    "7zip",
+    "brave", 
+    "vscode",
+    "git",
+    "powershell"
+  ],
+  "Tweaks": [
+    "WPFTweaksAH",
+    "WPFTweaksHiber",
+    "WPFTweaksLoc",
+    "WPFTweaksTele",
+    "WPFTweaksServices"
+  ],
+  "Presets": [
+    "Standard"
+  ]
+} 

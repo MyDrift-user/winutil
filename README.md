@@ -1,91 +1,278 @@
-# Chris Titus Tech's Windows Utility
+# WinUtil - Modular Windows Utility Tool
 
-[![Version](https://img.shields.io/github/v/release/ChrisTitusTech/winutil?color=%230567ff&label=Latest%20Release&style=for-the-badge)](https://github.com/ChrisTitusTech/winutil/releases/latest)
-![GitHub Downloads (specific asset, all releases)](https://img.shields.io/github/downloads/ChrisTitusTech/winutil/winutil.ps1?label=Total%20Downloads&style=for-the-badge)
-[![](https://dcbadge.limes.pink/api/server/https://discord.gg/RUbZUZyByQ?theme=default-inverted&style=for-the-badge)](https://discord.gg/RUbZUZyByQ)
-[![Static Badge](https://img.shields.io/badge/Documentation-_?style=for-the-badge&logo=bookstack&color=grey)](https://winutil.christitus.com/)
+A comprehensive Windows utility tool with a modern, modular architecture for application management, system tweaking, and automation.
 
-This utility is a compilation of Windows tasks I perform on each Windows system I use. It is meant to streamline *installs*, debloat with *tweaks*, troubleshoot with *config*, and fix Windows *updates*. I am extremely picky about any contributions to keep this project clean and efficient.
+## 📁 Project Structure
 
-![screen-install](https://raw.githubusercontent.com/Chris-Titus-Docs/winutil-docs/refs/heads/main/assets/images/Title-Screen.png)
-
-## 💡 Usage
-
-Winutil must be run in Admin mode because it performs system-wide tweaks. To achieve this, run PowerShell as an administrator. Here are a few ways to do it:
-
-1. **Start menu Method:**
-   - Right-click on the start menu.
-   - Choose "Windows PowerShell (Admin)" (for Windows 10) or "Terminal (Admin)" (for Windows 11).
-
-2. **Search and Launch Method:**
-   - Press the Windows key.
-   - Type "PowerShell" or "Terminal" (for Windows 11).
-   - Press `Ctrl + Shift + Enter` or Right-click and choose "Run as administrator" to launch it with administrator privileges.
-
-### Launch Command
-
-#### Stable Branch (Recommended)
-
-```ps1
-irm "https://christitus.com/win" | iex
 ```
-#### Dev Branch
-
-```ps1
-irm "https://christitus.com/windev" | iex
-```
-
-If you have Issues, refer to [Known Issues](https://winutil.christitus.com/knownissues/)
-
-## 🎓 Documentation
-
-> [!NOTE]
-> To contribute to the documentation, please visit [WinUtil Docs Repo](https://github.com/Chris-Titus-Docs/winutil-docs) for more info.
-
-### [WinUtil Official Documentation](https://winutil.christitus.com/)
-
-### [YouTube Tutorial](https://www.youtube.com/watch?v=6UQZ5oQg8XA)
-
-### [ChrisTitus.com Article](https://christitus.com/windows-tool/)
-
-## 🛠️ Build & Develop
-
-> [!NOTE]
-> Winutil is a relatively large script, so it's split into multiple files which're combined into a single `.ps1` file using a custom compiler. This makes maintaining the project a lot easiler.
-
-Get a copy of the source code, this can be done using GitHub UI (`Code -> Download ZIP`), or by cloning (downloading) the repo using git.
-
-If git is installed, run the following commands under a PowerShell window to clone and move into project's directory:
-```ps1
-git clone --depth 1 "https://github.com/ChrisTitusTech/winutil.git"
-cd winutil
+WinUtil/
+├── Config/                          # Static JSON configurations
+│   ├── applications.json            # App definitions (winget/choco IDs)
+│   ├── tweaks.json                  # Tweak definitions (registry, services, scripts)
+│   ├── preset.json                  # Preset groupings (app/tweak IDs)
+│   └── feature.json                 # Feature definitions (legacy support)
+├── Modules/                         # Code organized by domain
+│   ├── Applications/                # App management
+│   │   ├── Install.ps1              # Function: Install-App
+│   │   ├── Uninstall.ps1            # Function: Uninstall-App
+│   │   └── General.ps1              # Function: Invoke-AppAction (dispatcher)
+│   ├── Tweaks/                      # Tweak subsystems
+│   │   ├── Registry.ps1             # Function: Invoke-RegistryTweak
+│   │   ├── Services.ps1             # Function: Invoke-ServiceTweak
+│   │   ├── Scripts.ps1              # Function: Invoke-ScriptTweak
+│   │   └── General.ps1              # Function: Invoke-TweakAction (dispatcher)
+│   ├── UI/                          # UI components
+│   │   ├── XAML/                    # XAML files
+│   │   │   └── MainWindow.xaml      # WPF UI definition
+│   │   ├── Binding.ps1              # Function: Populate-UI
+│   │   └── Events.ps1               # Function: Register-ButtonHandlers
+│   ├── Process/                     # Threading (runspaces)
+│   │   ├── Runner.ps1               # Function: Start-Runspace
+│   │   └── Tracker.ps1              # Function: Track-Runspaces
+│   ├── Presets/                     # Preset logic
+│   │   ├── Loader.ps1               # Function: Load-Presets
+│   │   └── Validator.ps1            # Function: Test-Presets
+│   └── Logger/                      # Logging
+│       └── Core.ps1                 # Function: Write-Log
+├── Scripts/                         # Entry points
+│   ├── Main.ps1                     # Function: Invoke-Automation | Start-GUI
+│   └── Build.ps1                    # Function: Compile-ToSingleFile
+├── LICENSE
+└── README.md
 ```
 
-To build the project, run the Compile Script under a PowerShell window (admin permissions IS NOT required):
-```ps1
-.\Compile.ps1
+## 🚀 Quick Start
+
+### GUI Mode (Default)
+```powershell
+.\Scripts\Main.ps1
+# or
+.\Scripts\Main.ps1 -GUI
 ```
 
-You'll see a new file named `winutil.ps1`, which's created by `Compile.ps1` script, now you can run it as admin and a new window will popup, enjoy your own compiled version of WinUtil :)
+### Automation Mode
+```powershell
+.\Scripts\Main.ps1 -ConfigPath "automation.json" -Run
+```
 
-> [!TIP]
-> For more info on using WinUtil and how to develop for it, please consider reading [the Contribution Guidelines](https://winutil.christitus.com/contributing/), if you don't know where to start, or have questions, you can ask over on our [Discord Community Server](https://discord.gg/RUbZUZyByQ) and active project members will answer when they can.
+### Validation Mode
+```powershell
+.\Scripts\Main.ps1 -Validate
+```
 
-## 💖 Support
-- To morally and mentally support the project, make sure to leave a ⭐️!
-- EXE Wrapper for $10 @ https://www.cttstore.com/windows-toolbox
+## Usage
 
-## 💖 Sponsors
+### Main Usage
+Run the compiled WinUtil application:
 
-These are the sponsors that help keep this project alive with monthly contributions.
+```powershell
+# Run GUI mode (default)
+.\winutil.ps1
 
-<!-- sponsors --><a href="https://github.com/TriHydera"><img src="https:&#x2F;&#x2F;github.com&#x2F;TriHydera.png" width="60px" alt="User avatar: TriHydera" /></a><a href="https://github.com/DelDongo"><img src="https:&#x2F;&#x2F;github.com&#x2F;DelDongo.png" width="60px" alt="User avatar: " /></a><a href="https://github.com/markamos"><img src="https:&#x2F;&#x2F;github.com&#x2F;markamos.png" width="60px" alt="User avatar: Mark Amos" /></a><a href="https://github.com/dwelfusius"><img src="https:&#x2F;&#x2F;github.com&#x2F;dwelfusius.png" width="60px" alt="User avatar: " /></a><a href="https://github.com/mews-se"><img src="https:&#x2F;&#x2F;github.com&#x2F;mews-se.png" width="60px" alt="User avatar: Martin Stockzell" /></a><a href="https://github.com/jdiegmueller"><img src="https:&#x2F;&#x2F;github.com&#x2F;jdiegmueller.png" width="60px" alt="User avatar: Jason A. Diegmueller" /></a><a href="https://github.com/robertsandrock"><img src="https:&#x2F;&#x2F;github.com&#x2F;robertsandrock.png" width="60px" alt="User avatar: RMS" /></a><a href="https://github.com/KenichiQaz"><img src="https:&#x2F;&#x2F;github.com&#x2F;KenichiQaz.png" width="60px" alt="User avatar: Stefan" /></a><a href="https://github.com/paulsheets"><img src="https:&#x2F;&#x2F;github.com&#x2F;paulsheets.png" width="60px" alt="User avatar: Paul" /></a><a href="https://github.com/djones369"><img src="https:&#x2F;&#x2F;github.com&#x2F;djones369.png" width="60px" alt="User avatar: Dave J. - WhamGeek" /></a><a href="https://github.com/anthonymendez"><img src="https:&#x2F;&#x2F;github.com&#x2F;anthonymendez.png" width="60px" alt="User avatar: Anthony Mendez" /></a><a href="https://github.com/FatBastard0"><img src="https:&#x2F;&#x2F;github.com&#x2F;FatBastard0.png" width="60px" alt="User avatar: " /></a><a href="https://github.com/DursleyGuy"><img src="https:&#x2F;&#x2F;github.com&#x2F;DursleyGuy.png" width="60px" alt="User avatar: DursleyGuy" /></a><a href="https://github.com/realmuddy"><img src="https:&#x2F;&#x2F;github.com&#x2F;realmuddy.png" width="60px" alt="User avatar: Phillip Waters" /></a><a href="https://github.com/quaszi"><img src="https:&#x2F;&#x2F;github.com&#x2F;quaszi.png" width="60px" alt="User avatar: " /></a><a href="https://github.com/DwayneTheRockLobster1"><img src="https:&#x2F;&#x2F;github.com&#x2F;DwayneTheRockLobster1.png" width="60px" alt="User avatar: " /></a><a href="https://github.com/KieraKujisawa"><img src="https:&#x2F;&#x2F;github.com&#x2F;KieraKujisawa.png" width="60px" alt="User avatar: Kiera Meredith" /></a><a href="https://github.com/craigccfl"><img src="https:&#x2F;&#x2F;github.com&#x2F;craigccfl.png" width="60px" alt="User avatar: CraigW" /></a><a href="https://github.com/RoelCrabbe"><img src="https:&#x2F;&#x2F;github.com&#x2F;RoelCrabbe.png" width="60px" alt="User avatar: Roel Crabbé" /></a><a href="https://github.com/Data-Syd"><img src="https:&#x2F;&#x2F;github.com&#x2F;Data-Syd.png" width="60px" alt="User avatar: Data Syd" /></a><!-- sponsors -->
+# Validate configuration
+.\winutil.ps1 -Validate
+```
 
-## 🏅 Thanks to all Contributors
-Thanks a lot for spending your time helping Winutil grow. Thanks a lot! Keep rocking 🍻.
+### Build System
+To rebuild the compiled version from source modules:
 
-[![Contributors](https://contrib.rocks/image?repo=ChrisTitusTech/winutil)](https://github.com/ChrisTitusTech/winutil/graphs/contributors)
+```powershell
+.\Scripts\Build.ps1
+```
 
-## 📊 GitHub Stats
+This compiles all modules and configurations into a single `winutil.ps1` file.
 
-![Alt](https://repobeats.axiom.co/api/embed/aad37eec9114c507f109d34ff8d38a59adc9503f.svg "Repobeats analytics image")
+## 🏗️ Architecture Overview
+
+### Modular Design Principles
+
+1. **Modularity**: Apps and tweaks are isolated in separate modules. Adding new functionality only requires creating new module files.
+
+2. **Config-Driven**: All app/tweak logic is derived from JSON configuration files—no hardcoded IDs or definitions.
+
+3. **Concurrency**: Uses PowerShell runspaces (not jobs) for lightweight threading with proper tracking and cleanup.
+
+4. **UI/Logic Decoupling**: XAML is stored externally; UI logic is separated into binding and event modules.
+
+5. **Scalability**: The structure supports easy addition of new tweak types, applications, and UI components.
+
+## 📋 Module Responsibilities
+
+### Applications Module (`Modules/Applications/`)
+- **Install.ps1**: Handles direct app installation via winget/chocolatey
+- **Uninstall.ps1**: Handles app removal
+- **General.ps1**: Dispatches actions and determines installation method
+
+### Tweaks Module (`Modules/Tweaks/`)
+- **Registry.ps1**: Processes registry modifications with undo support
+- **Services.ps1**: Manages Windows service startup types
+- **Scripts.ps1**: Executes PowerShell scripts for complex tweaks
+- **General.ps1**: Dispatches tweak actions based on type
+
+### UI Module (`Modules/UI/`)
+- **XAML/MainWindow.xaml**: Modern dark-themed WPF interface
+- **Binding.ps1**: Populates UI controls with configuration data
+- **Events.ps1**: Handles button clicks and user interactions
+
+### Process Module (`Modules/Process/`)
+- **Runner.ps1**: Creates and manages PowerShell runspaces
+- **Tracker.ps1**: Tracks active operations and prevents conflicts
+
+### Presets Module (`Modules/Presets/`)
+- **Loader.ps1**: Loads and processes preset configurations
+- **Validator.ps1**: Validates preset integrity and generates statistics
+
+### Logger Module (`Modules/Logger/`)
+- **Core.ps1**: Centralized logging with console and UI output
+
+## 🔧 Configuration Files
+
+### applications.json
+Defines available applications with winget/chocolatey package IDs:
+```json
+{
+  "7zip": {
+    "category": "Utilities", 
+    "content": "7-Zip",
+    "description": "File archiver with high compression ratio",
+    "winget": "7zip.7zip",
+    "choco": "7zip"
+  }
+}
+```
+
+### tweaks.json
+Defines system modifications:
+```json
+{
+  "WPFTweaksAH": {
+    "Content": "Disable Activity History",
+    "Description": "Erases recent docs, clipboard, and run history",
+    "category": "Essential Tweaks",
+    "registry": [
+      {
+        "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "Name": "EnableActivityFeed", 
+        "Type": "DWord",
+        "Value": "0",
+        "OriginalValue": "<RemoveEntry>"
+      }
+    ]
+  }
+}
+```
+
+### preset.json
+Groups apps and tweaks for bulk operations:
+```json
+{
+  "Standard": [
+    "WPFTweaksAH",
+    "WPFTweaksTele", 
+    "WPFTweaksServices"
+  ],
+  "Minimal": [
+    "WPFTweaksHome",
+    "WPFTweaksTele"
+  ]
+}
+```
+
+## 🔄 Key Workflows
+
+### App Installation (GUI)
+1. User selects apps from ListView
+2. Click "Install" → Events.ps1 triggers
+3. Process/Runner.ps1 creates parallel runspaces:
+   ```powershell
+   Invoke-AppAction -AppID "7zip" -Action Install
+   ```
+4. Logger.ps1 updates UI with progress
+
+### Tweak Application (CLI)
+```powershell
+.\Scripts\Main.ps1 -ConfigPath .\automation.json -Run
+```
+
+Example automation.json:
+```json
+{
+  "Tweaks": ["WPFTweaksTele", "WPFTweaksAH"],
+  "Apps": ["7zip", "brave"],
+  "Presets": ["Standard"]
+}
+```
+
+### Threading with Runspaces
+- **Process/Runner.ps1**: Creates lightweight PowerShell runspaces
+- **Process/Tracker.ps1**: Maintains thread safety and prevents conflicts
+- All operations are tracked and can be monitored/cancelled
+
+## 🛠️ Development
+
+### Adding New Applications
+1. Add entry to `Config/applications.json`
+2. No code changes required—handled automatically
+
+### Adding New Tweak Types
+1. Create new module file: `Modules/Tweaks/NewType.ps1`
+2. Implement `Invoke-NewTypeTweak` function
+3. Update `Modules/Tweaks/General.ps1` dispatcher
+
+### Adding UI Components
+1. Modify `Modules/UI/XAML/MainWindow.xaml`
+2. Update `Modules/UI/Binding.ps1` for data binding
+3. Add event handlers in `Modules/UI/Events.ps1`
+
+## 📦 Build System
+
+The build system can compile everything into a single PowerShell file:
+
+```powershell
+# Basic compilation
+.\Scripts\Build.ps1
+
+# Include configuration files
+.\Scripts\Build.ps1 -IncludeConfig
+
+# Minified output
+.\Scripts\Build.ps1 -Minify -OutputPath "winutil-min.ps1"
+```
+
+## 🔍 Validation & Testing
+
+Validate configuration integrity:
+```powershell
+.\Scripts\Main.ps1 -Validate
+```
+
+This will:
+- Check all preset references exist in apps/tweaks configs
+- Generate statistics about the configuration
+- Report any missing or invalid references
+
+## 📝 Logging
+
+All operations are logged with timestamps and severity levels:
+- **INFO**: Normal operations
+- **WARN**: Non-critical issues  
+- **ERROR**: Operation failures
+- **DEBUG**: Detailed diagnostic information
+
+Logs appear in both console and GUI (if running in GUI mode).
+
+## 🤝 Contributing
+
+1. Follow the modular architecture principles
+2. Add new functionality as separate modules
+3. Update configuration files rather than hardcoding values
+4. Include proper error handling and logging
+5. Test with the validation system
+
+## 📄 License
+
+This project maintains the same license as the original WinUtil project.
+
+---
+
+**Note**: This modular architecture provides a scalable foundation for Windows system management while maintaining the functionality and user experience of the original WinUtil tool. 

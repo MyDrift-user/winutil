@@ -1,0 +1,607 @@
+function Populate-UI {
+    <#
+    .SYNOPSIS
+    Populates the UI with data from configuration files
+    
+    .PARAMETER Window
+    The WPF window object (deprecated - use Sync instead)
+    
+    .PARAMETER AppsConfig
+    The applications configuration object
+    
+    .PARAMETER TweaksConfig
+    The tweaks configuration object
+    
+    .PARAMETER PresetsConfig
+    The presets configuration object
+    
+    .PARAMETER Sync
+    The sync hashtable containing UI control references
+    #>
+    param(
+        [Parameter(Mandatory=$false)]
+        [System.Windows.Window]$Window,
+        
+        [Parameter(Mandatory=$true)]
+        [PSCustomObject]$AppsConfig,
+        
+        [Parameter(Mandatory=$true)]
+        [PSCustomObject]$TweaksConfig,
+        
+        [Parameter(Mandatory=$true)]
+        [PSCustomObject]$PresetsConfig,
+        
+        [Parameter(Mandatory=$false)]
+        [hashtable]$Sync
+    )
+    
+    try {
+        Write-Log "Populating UI with configuration data..." -Level "DEBUG"
+        
+        # Populate applications
+        if ($Sync) {
+            Populate-Applications -AppsConfig $AppsConfig -Sync $Sync
+            Populate-Tweaks -TweaksConfig $TweaksConfig -Sync $Sync
+            Populate-Presets -PresetsConfig $PresetsConfig -Sync $Sync
+        } else {
+            # Fallback to old method
+            Populate-Applications -Window $Window -AppsConfig $AppsConfig
+            Populate-Tweaks -Window $Window -TweaksConfig $TweaksConfig
+            Populate-Presets -Window $Window -PresetsConfig $PresetsConfig
+        }
+        
+        Write-Log "UI population completed successfully" -Level "DEBUG"
+    }
+    catch {
+        Write-Log "Exception during UI population: $($_.Exception.Message)" -Level "ERROR"
+        throw
+    }
+}
+
+function Populate-Applications {
+    <#
+    .SYNOPSIS
+    Populates the applications list and categories
+    
+    .PARAMETER Window
+    The WPF window object (deprecated - use Sync instead)
+    
+    .PARAMETER AppsConfig
+    The applications configuration object
+    
+    .PARAMETER Sync
+    The sync hashtable containing UI control references
+    #>
+    param(
+        [Parameter(Mandatory=$false)]
+        [System.Windows.Window]$Window,
+        
+        [Parameter(Mandatory=$true)]
+        [PSCustomObject]$AppsConfig,
+        
+        [Parameter(Mandatory=$false)]
+        [hashtable]$Sync
+    )
+    
+    try {
+        Write-Log "Populating applications list..." -Level "DEBUG"
+        
+        # Get UI controls - use Sync if available, otherwise fallback to Window
+        if ($Sync) {
+            $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
+        } else {
+            $lstApplications = $Window.FindName("lstApplications")
+        }
+        
+        if (-not $lstApplications) {
+            Write-Log "Could not find applications list control" -Level "ERROR"
+            return
+        }
+        
+        # Convert apps to collection and add ID property
+        $appsCollection = @()
+        
+        foreach ($appProperty in $AppsConfig.PSObject.Properties) {
+            $app = $appProperty.Value | Add-Member -MemberType NoteProperty -Name "ID" -Value $appProperty.Name -PassThru
+            $appsCollection += $app
+        }
+        
+        # Bind to ListBox
+        $lstApplications.ItemsSource = $appsCollection
+        
+        Write-Log "Populated $($appsCollection.Count) applications" -Level "DEBUG"
+    }
+    catch {
+        Write-Log "Exception populating applications: $($_.Exception.Message)" -Level "ERROR"
+    }
+}
+
+function Populate-Tweaks {
+    <#
+    .SYNOPSIS
+    Populates the tweaks tree view and categories
+    
+    .PARAMETER Window
+    The WPF window object (deprecated - use Sync instead)
+    
+    .PARAMETER TweaksConfig
+    The tweaks configuration object
+    
+    .PARAMETER Sync
+    The sync hashtable containing UI control references
+    #>
+    param(
+        [Parameter(Mandatory=$false)]
+        [System.Windows.Window]$Window,
+        
+        [Parameter(Mandatory=$true)]
+        [PSCustomObject]$TweaksConfig,
+        
+        [Parameter(Mandatory=$false)]
+        [hashtable]$Sync
+    )
+    
+    try {
+        Write-Log "Populating tweaks tree..." -Level "DEBUG"
+        
+        # Get UI controls - use Sync if available, otherwise fallback to Window
+        if ($Sync) {
+            $trvTweaks = Get-UIControl -Sync $Sync -ControlName "trvTweaks"
+        } else {
+            $trvTweaks = $Window.FindName("trvTweaks")
+        }
+        
+        if (-not $trvTweaks) {
+            Write-Log "Could not find tweaks tree control" -Level "ERROR"
+            return
+        }
+        
+        # Group tweaks by category
+        $tweaksByCategory = @{}
+        $categories = @()
+        
+        foreach ($tweakProperty in $TweaksConfig.PSObject.Properties) {
+            $tweak = $tweakProperty.Value | Add-Member -MemberType NoteProperty -Name "ID" -Value $tweakProperty.Name -PassThru
+            $category = if ($tweak.category) { $tweak.category } else { "Other" }
+            
+            if (-not $tweaksByCategory.ContainsKey($category)) {
+                $tweaksByCategory[$category] = @()
+                $categories += $category
+            }
+            
+            $tweaksByCategory[$category] += $tweak
+        }
+        
+        # Clear and populate tree
+        $trvTweaks.Items.Clear()
+        
+        foreach ($category in $categories | Sort-Object) {
+            # Create category node
+            $categoryNode = New-Object System.Windows.Controls.TreeViewItem
+            $categoryNode.Header = $category
+            $categoryNode.IsExpanded = $true
+            
+            # Add tweaks to category
+            foreach ($tweak in $tweaksByCategory[$category] | Sort-Object Content) {
+                $tweakNode = New-Object System.Windows.Controls.TreeViewItem
+                
+                # Create a StackPanel for better layout
+                $stackPanel = New-Object System.Windows.Controls.StackPanel
+                $stackPanel.Orientation = [System.Windows.Controls.Orientation]::Vertical
+                
+                # Create checkbox and text
+                $checkBox = New-Object System.Windows.Controls.CheckBox
+                $checkBox.Content = $tweak.Content
+                $checkBox.Tag = $tweak.ID
+                $checkBox.Foreground = [System.Windows.Media.Brushes]::White
+                
+                # Add description if available
+                if ($tweak.Description) {
+                    $description = New-Object System.Windows.Controls.TextBlock
+                    $description.Text = $tweak.Description
+                    $description.Foreground = [System.Windows.Media.Brushes]::Gray
+                    $description.FontSize = 10
+                    $description.TextWrapping = [System.Windows.TextWrapping]::Wrap
+                    $description.Margin = "20,2,0,0"
+                    
+                    $stackPanel.Children.Add($checkBox)
+                    $stackPanel.Children.Add($description)
+                } else {
+                    $stackPanel.Children.Add($checkBox)
+                }
+                
+                $tweakNode.Header = $stackPanel
+                $categoryNode.Items.Add($tweakNode)
+            }
+            
+            $trvTweaks.Items.Add($categoryNode)
+        }
+        
+        $totalTweaks = ($tweaksByCategory.Values | ForEach-Object { $_.Count } | Measure-Object -Sum).Sum
+        Write-Log "Populated $totalTweaks tweaks in $($categories.Count) categories" -Level "DEBUG"
+    }
+    catch {
+        Write-Log "Exception populating tweaks: $($_.Exception.Message)" -Level "ERROR"
+    }
+}
+
+function Populate-Presets {
+    <#
+    .SYNOPSIS
+    Populates the preset dropdown menus
+    
+    .PARAMETER Window
+    The WPF window object (deprecated - use Sync instead)
+    
+    .PARAMETER PresetsConfig
+    The presets configuration object
+    
+    .PARAMETER Sync
+    The sync hashtable containing UI control references
+    #>
+    param(
+        [Parameter(Mandatory=$false)]
+        [System.Windows.Window]$Window,
+        
+        [Parameter(Mandatory=$true)]
+        [PSCustomObject]$PresetsConfig,
+        
+        [Parameter(Mandatory=$false)]
+        [hashtable]$Sync
+    )
+    
+    try {
+        Write-Log "Populating presets..." -Level "DEBUG"
+        
+        # Presets are now handled by buttons, so this function doesn't need to do anything
+        Write-Log "Preset buttons will be handled by event handlers" -Level "DEBUG"
+    }
+    catch {
+        Write-Log "Exception populating presets: $($_.Exception.Message)" -Level "ERROR"
+    }
+}
+
+function Filter-Content {
+    <#
+    .SYNOPSIS
+    Filters both applications and tweaks based on search text
+    
+    .PARAMETER Sync
+    The sync hashtable containing UI control references
+    
+    .PARAMETER AppsConfig
+    The applications configuration object
+    
+    .PARAMETER TweaksConfig
+    The tweaks configuration object
+    
+    .PARAMETER SearchText
+    Text to search for
+    #>
+    param(
+        [Parameter(Mandatory=$true)]
+        [hashtable]$Sync,
+        
+        [Parameter(Mandatory=$true)]
+        [PSCustomObject]$AppsConfig,
+        
+        [Parameter(Mandatory=$true)]
+        [PSCustomObject]$TweaksConfig,
+        
+        [Parameter(Mandatory=$false)]
+        [string]$SearchText = ""
+    )
+    
+    try {
+        # Filter applications
+        $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
+        if ($lstApplications) {
+            $appsCollection = @()
+            
+            foreach ($appProperty in $AppsConfig.PSObject.Properties) {
+                $app = $appProperty.Value | Add-Member -MemberType NoteProperty -Name "ID" -Value $appProperty.Name -PassThru
+                
+                if (-not $SearchText -or 
+                    $app.content.ToLower().Contains($SearchText.ToLower()) -or 
+                    $app.description.ToLower().Contains($SearchText.ToLower()) -or
+                    $app.category.ToLower().Contains($SearchText.ToLower())) {
+                    $appsCollection += $app
+                }
+            }
+            
+            $lstApplications.ItemsSource = $appsCollection
+        }
+        
+        # Filter tweaks (collapse/expand categories based on search)
+        $trvTweaks = Get-UIControl -Sync $Sync -ControlName "trvTweaks"
+        if ($trvTweaks) {
+            foreach ($categoryNode in $trvTweaks.Items) {
+                $hasVisibleTweaks = $false
+                
+                foreach ($tweakNode in $categoryNode.Items) {
+                    $stackPanel = $tweakNode.Header
+                    if ($stackPanel -is [System.Windows.Controls.StackPanel]) {
+                        $checkBox = $stackPanel.Children | Where-Object { $_ -is [System.Windows.Controls.CheckBox] } | Select-Object -First 1
+                        if ($checkBox) {
+                            $tweakVisible = -not $SearchText -or 
+                                           $checkBox.Content.ToString().ToLower().Contains($SearchText.ToLower())
+                            
+                            $tweakNode.Visibility = if ($tweakVisible) { "Visible" } else { "Collapsed" }
+                            if ($tweakVisible) { $hasVisibleTweaks = $true }
+                        }
+                    }
+                }
+                
+                $categoryNode.Visibility = if ($hasVisibleTweaks) { "Visible" } else { "Collapsed" }
+                if ($hasVisibleTweaks -and $SearchText) {
+                    $categoryNode.IsExpanded = $true
+                }
+            }
+        }
+        
+        Write-Log "Content filtered for search: '$SearchText'" -Level "DEBUG"
+    }
+    catch {
+        Write-Log "Exception filtering content: $($_.Exception.Message)" -Level "ERROR"
+    }
+}
+
+function Get-SelectedApplications {
+    <#
+    .SYNOPSIS
+    Gets the currently selected applications from the UI
+    #>
+    param(
+        [Parameter(Mandatory=$false)]
+        [hashtable]$Sync,
+        
+        [Parameter(Mandatory=$false)]
+        [System.Windows.Window]$Window
+    )
+    
+    try {
+        if ($Sync) {
+            $lstApplications = Get-UIControl -Sync $Sync -ControlName "lstApplications"
+        } else {
+            $lstApplications = $Window.FindName("lstApplications")
+        }
+        
+        if (-not $lstApplications) { return @() }
+        
+        $selectedApps = @()
+        
+        foreach ($item in $lstApplications.Items) {
+            $container = $lstApplications.ItemContainerGenerator.ContainerFromItem($item)
+            if ($container) {
+                $checkBox = Find-VisualChild -Parent $container -Type ([System.Windows.Controls.CheckBox])
+                if ($checkBox -and $checkBox.IsChecked) {
+                    $selectedApps += $item
+                }
+            }
+        }
+        
+        return $selectedApps
+    }
+    catch {
+        Write-Log "Exception getting selected applications: $($_.Exception.Message)" -Level "ERROR"
+        return @()
+    }
+}
+
+function Get-SelectedTweaks {
+    <#
+    .SYNOPSIS
+    Gets the currently selected tweaks from the UI
+    #>
+    param(
+        [Parameter(Mandatory=$false)]
+        [hashtable]$Sync,
+        
+        [Parameter(Mandatory=$false)]
+        [System.Windows.Window]$Window
+    )
+    
+    try {
+        if ($Sync) {
+            $trvTweaks = Get-UIControl -Sync $Sync -ControlName "trvTweaks"
+        } else {
+            $trvTweaks = $Window.FindName("trvTweaks")
+        }
+        
+        if (-not $trvTweaks) { return @() }
+        
+        $selectedTweaks = @()
+        
+        # Recursively traverse tree and find checked items
+        foreach ($categoryNode in $trvTweaks.Items) {
+            foreach ($tweakNode in $categoryNode.Items) {
+                $stackPanel = $tweakNode.Header
+                if ($stackPanel -is [System.Windows.Controls.StackPanel]) {
+                    $checkBox = $stackPanel.Children | Where-Object { $_ -is [System.Windows.Controls.CheckBox] } | Select-Object -First 1
+                    if ($checkBox -and $checkBox.IsChecked -and $checkBox.Tag) {
+                        $selectedTweaks += $checkBox.Tag
+                    }
+                }
+            }
+        }
+        
+        return $selectedTweaks
+    }
+    catch {
+        Write-Log "Exception getting selected tweaks: $($_.Exception.Message)" -Level "ERROR"
+        return @()
+    }
+}
+
+function Set-UIEnabled {
+    <#
+    .SYNOPSIS
+    Enables or disables the UI during operations
+    #>
+    param(
+        [Parameter(Mandatory=$false)]
+        [hashtable]$Sync,
+        
+        [Parameter(Mandatory=$false)]
+        [System.Windows.Window]$Window,
+        
+        [Parameter(Mandatory=$true)]
+        [bool]$Enabled
+    )
+    
+    try {
+        # List of controls to enable/disable
+        $controlNames = @(
+            "btnInstallApps", "btnUninstallApps", "btnApplyTweaks", "btnUndoTweaks",
+            "btnCreateRestorePoint", "btnPresetStandard", "btnPresetMinimal", "btnClearSelection"
+        )
+        
+        foreach ($controlName in $controlNames) {
+            if ($Sync) {
+                $control = Get-UIControl -Sync $Sync -ControlName $controlName
+            } else {
+                $control = $Window.FindName($controlName)
+            }
+            
+            if ($control) {
+                $control.IsEnabled = $Enabled
+            }
+        }
+        
+        # Update cursor
+        if ($Sync -and $Sync["Form"]) {
+            $Sync["Form"].Cursor = if ($Enabled) { [System.Windows.Input.Cursors]::Arrow } else { [System.Windows.Input.Cursors]::Wait }
+        } elseif ($Window) {
+            $Window.Cursor = if ($Enabled) { [System.Windows.Input.Cursors]::Arrow } else { [System.Windows.Input.Cursors]::Wait }
+        }
+    }
+    catch {
+        Write-Log "Exception setting UI enabled state: $($_.Exception.Message)" -Level "ERROR"
+    }
+}
+
+function Find-VisualChild {
+    <#
+    .SYNOPSIS
+    Helper function to find visual children of a specific type
+    #>
+    param(
+        [Parameter(Mandatory=$true)]
+        [System.Windows.DependencyObject]$Parent,
+        
+        [Parameter(Mandatory=$true)]
+        [Type]$Type
+    )
+    
+    $childrenCount = [System.Windows.Media.VisualTreeHelper]::GetChildrenCount($Parent)
+    
+    for ($i = 0; $i -lt $childrenCount; $i++) {
+        $child = [System.Windows.Media.VisualTreeHelper]::GetChild($Parent, $i)
+        
+        if ($child -is $Type) {
+            return $child
+        }
+        
+        $foundChild = Find-VisualChild -Parent $child -Type $Type
+        if ($foundChild) {
+            return $foundChild
+        }
+    }
+    
+    return $null
+}
+
+function Initialize-UIControls {
+    <#
+    .SYNOPSIS
+    Automatically binds all named UI controls to a sync hashtable for easy access
+    
+    .PARAMETER Window
+    The WPF window object
+    
+    .PARAMETER Sync
+    The sync hashtable to store control references
+    
+    .PARAMETER XamlContent
+    The XAML content string to parse for named controls
+    #>
+    param(
+        [Parameter(Mandatory=$true)]
+        [System.Windows.Window]$Window,
+        
+        [Parameter(Mandatory=$true)]
+        [hashtable]$Sync,
+        
+        [Parameter(Mandatory=$true)]
+        [string]$XamlContent
+    )
+    
+    try {
+        Write-Log "Initializing UI control bindings..." -Level "DEBUG"
+        
+        # Store the window reference
+        $Sync["Form"] = $Window
+        
+        # Parse XAML and find all named elements
+        $xamlDoc = [System.Xml.XmlDocument]::new()
+        $xamlDoc.LoadXml($XamlContent)
+        
+        # Find all elements with Name attributes
+        $namedElements = $xamlDoc.SelectNodes("//*[@Name]")
+        
+        $boundControls = 0
+        foreach ($element in $namedElements) {
+            $controlName = $element.GetAttribute("Name")
+            if ($controlName) {
+                try {
+                    $control = $Window.FindName($controlName)
+                    if ($control) {
+                        $Sync[$controlName] = $control
+                        $boundControls++
+                        Write-Log "Bound control: $controlName" -Level "DEBUG"
+                    } else {
+                        Write-Log "Control not found: $controlName" -Level "WARN"
+                    }
+                } catch {
+                    Write-Log "Error binding control '$controlName': $($_.Exception.Message)" -Level "WARN"
+                }
+            }
+        }
+        
+        Write-Log "UI control binding completed: $boundControls controls bound" -Level "DEBUG"
+        return $boundControls
+    }
+    catch {
+        Write-Log "Exception during UI control initialization: $($_.Exception.Message)" -Level "ERROR"
+        throw
+    }
+}
+
+function Get-UIControl {
+    <#
+    .SYNOPSIS
+    Gets a UI control from the sync hashtable with error handling
+    
+    .PARAMETER Sync
+    The sync hashtable containing control references
+    
+    .PARAMETER ControlName
+    The name of the control to retrieve
+    #>
+    param(
+        [Parameter(Mandatory=$true)]
+        [hashtable]$Sync,
+        
+        [Parameter(Mandatory=$true)]
+        [string]$ControlName
+    )
+    
+    if ($Sync.ContainsKey($ControlName)) {
+        return $Sync[$ControlName]
+    } else {
+        Write-Log "UI control '$ControlName' not found in sync hashtable" -Level "WARN"
+        return $null
+    }
+}
+
+# Functions exported: Initialize-UIControls, Get-UIControl, Populate-UI, Populate-Applications, Populate-Tweaks, Populate-Presets, Filter-Applications 
