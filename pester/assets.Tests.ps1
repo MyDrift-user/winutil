@@ -13,7 +13,7 @@ Describe "Rendered asset caching" {
         $assetScript | Should -Match 'RenderedAssetCache'
         $assetScript | Should -Match '\$cacheKey = "\$\(\(\[string\]\$type\)\.ToLowerInvariant\(\)\)\|\$Size"'
         $assetScript | Should -Match 'return \$sync\.RenderedAssetCache\[\$cacheKey\]'
-        $assetScript | Should -Match '\$sync\.RenderedAssetCache\[\$cacheKey\] = \$bitmapImage'
+        $assetScript | Should -Match '\$sync\.RenderedAssetCache\[\$cacheKey\] = \$bitmap'
     }
 
     It "renders only the logo overlay before first paint and defers status overlays" {

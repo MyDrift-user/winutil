@@ -97,6 +97,9 @@ if (-NOT ($readerOperationSuccessful)) {
 $lastThemeChangeTime = [datetime]::MinValue
 $debounceInterval = [timespan]::FromSeconds(2)
 $sync.Form.Add_Loaded({
+    # Needs the handle, which only exists once the window is loaded
+    Set-WinUtilWindowIcon
+
     $interopHelper = New-Object System.Windows.Interop.WindowInteropHelper $sync.Form
     $hwndSource = [System.Windows.Interop.HwndSource]::FromHwnd($interopHelper.Handle)
     $hwndSource.AddHook({
