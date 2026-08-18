@@ -1,7 +1,7 @@
     function Initialize-InstallAppArea {
         <#
             .SYNOPSIS
-                Creates a [Windows.Controls.ScrollViewer] containing a [Windows.Controls.ItemsControl] which is setup to use Virtualization to only load the visible elements for performance reasons.
+                Creates a [Windows.Controls.ScrollViewer] containing a [Windows.Controls.ItemsControl] that holds every category and app entry on the install tab.
                 This is used as the parent object for all category and app entries on the install tab
                 Used to as part of the Install Tab UI generation
 
@@ -22,7 +22,10 @@
         $scrollViewer.VerticalScrollBarVisibility = 'Auto'
         $scrollViewer.HorizontalAlignment = 'Stretch'
         $scrollViewer.VerticalAlignment = 'Stretch'
+        # Smooth scrolling turns this off: a logical scroll moves a whole row at a time, which
+        # leaves nothing in between to animate
         $scrollViewer.CanContentScroll = $true
+        Enable-WinUtilSmoothScroll -ScrollViewer $scrollViewer
         $Border.Child = $scrollViewer
 
         ## Create the ItemsControl, which will be the parent of all the app entries
