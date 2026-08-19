@@ -56,8 +56,11 @@ function Invoke-WPFUnInstall {
                 $position = $completedPackages + 1
                 Step-WinUtilJob -Status "Uninstalling $program ($position/$totalPackages)" -Percent ([int](($completedPackages / $totalPackages) * 100))
 
+                $slice = [int](100 / $totalPackages)
                 $results += Measure-WinUtilStep -Scope "Uninstall" -Name "winget $program" -ScriptBlock {
-                    Install-WinUtilProgramWinget -Action Uninstall -Programs @($program)
+                    Install-WinUtilProgramWinget -Action Uninstall -Programs @($program) `
+                        -ProgressBase ([int](($completedPackages / $totalPackages) * 100)) -ProgressSpan $slice `
+                        -Label "$program ($position/$totalPackages)"
                 }
                 $completedPackages++
                 Step-WinUtilJob -Status "Uninstalled $program ($completedPackages/$totalPackages)" -Percent ([int](($completedPackages / $totalPackages) * 100))

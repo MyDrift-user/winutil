@@ -14,6 +14,9 @@ function Install-WinUtilWinget {
     # The repair action needs Repair-WinGetPackageManager to run even when winget is detected,
     # which is the case a broken installation presents
     if (-not $Force -and (Test-WinUtilPackageManager -winget) -eq "installed") {
+        # The client module is what reports install progress, so make it available while the
+        # user is already waiting rather than on the first package
+        Install-WinUtilWinGetClient | Out-Null
         return
     }
 

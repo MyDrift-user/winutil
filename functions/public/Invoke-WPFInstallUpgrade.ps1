@@ -48,10 +48,13 @@ function Invoke-WPFInstallUpgrade {
 
     foreach ($package in $upgradable) {
         $position = $completed + 1
-        Step-WinUtilJob -Status "Upgrading $package ($position/$total)" -Percent ([int](($completed / $total) * 100))
+        $base = [int](($completed / $total) * 100)
+        Step-WinUtilJob -Status "Upgrading $package ($position/$total)" -Percent $base
 
         $results += Measure-WinUtilStep -Scope "Install" -Name "winget upgrade $package" -ScriptBlock {
-            Install-WinUtilProgramWinget -Action Upgrade -Programs @($package)
+            Install-WinUtilProgramWinget -Action Upgrade -Programs @($package) `
+                -ProgressBase $base -ProgressSpan ([int](100 / $total)) `
+                -Label "$package ($position/$total)"
         }
 
         $completed++
@@ -67,10 +70,19 @@ function Get-WinUtilUpgradablePackage {
         Returns the package identifiers WinGet reports as having an update available
     #>
 
-    # The table is localised and its columns are truncated to the console width, so a shape
-    # matched out of it is not an identifier: a wrapped version, a translated header or a
-    # diagnostic line all match the same pattern. Every candidate is therefore confirmed against
-    # winget itself before it is upgraded, and stderr is kept out of the parse.
+    # The module returns identifiers as data, so nothing has to be parsed out of a table
+    if (Install-WinUtilWinGetClient) {
+        $packages = Invoke-WinUtilWinGetCommand -Command "Get-WinGetPackage" -Label "Checking for updates"
+        return @($packages |
+            Where-Object { $_.IsUpdateAvailable } |
+            ForEach-Object { $_.Id } |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    }
+
+    # Without it the table has to be read, and the table is localised and truncated to the
+    # console width, so a shape matched out of it is not an identifier: a wrapped version, a
+    # translated header or a diagnostic line all match the same pattern. Every candidate is
+    # therefore confirmed against winget itself, and stderr is kept out of the parse.
     $output = & winget upgrade --include-unknown --accept-source-agreements 2>$null | Out-String
 
     $candidates = New-Object System.Collections.Generic.List[string]
