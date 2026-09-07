@@ -2104,8 +2104,7 @@
                                     <!-- BitmapCache because this is text: without it WPF re-rasterises the
                                          glyph every frame on the interface thread and the spin stutters.
                                          Cached, the rotation is a transform on an image the GPU already has. -->
-                                    <!-- Tag carries the spin direction. Start Over runs it backwards, so
-                                         undoing the work reads differently from doing it. -->
+                                    <!-- Tag carries the spin direction; Start Over runs it backwards -->
                                     <TextBlock Name="WPFWin11ISOWorkingSpinner"
                                                Text="&#xE895;"
                                                Tag="Forward"
@@ -2118,9 +2117,7 @@
                                             <Style TargetType="TextBlock" BasedOn="{StaticResource Win11StepHero}">
                                                 <Style.Triggers>
                                                     <!-- Tied to visibility, not to Loaded: the working page stays loaded
-                                                         while collapsed, so a Loaded trigger left it spinning forever.
-                                                         The two directions are mutually exclusive on Tag, so whichever
-                                                         one stops hands straight over to the other. -->
+                                                         while collapsed, so a Loaded trigger left it spinning forever -->
                                                     <MultiDataTrigger>
                                                         <MultiDataTrigger.Conditions>
                                                             <Condition Binding="{Binding IsVisible, RelativeSource={RelativeSource Self}}" Value="True"/>
@@ -2197,13 +2194,10 @@
                                     BorderBrush="{DynamicResource BorderColor}"
                                     BorderThickness="0,1,0,0"
                                     Padding="0,10,0,0">
-                                <!-- TextAlignment, because the shared TextBox style stretches its content
-                                     alignment and WPF reads that as justified. Every other box in WinUtil
-                                     is single line, so this is the only one where it shows.
-                                     Monospace so the timestamps form a column and a wrapped line is
-                                     visibly not a new entry. No effect, because the shared style's drop
-                                     shadow has no border or background to sit under here and smears the
-                                     glyphs instead. -->
+                                <!-- TextAlignment and Effect look redundant but are not: the shared TextBox
+                                     style stretches content alignment, which WPF renders as justified once
+                                     text wraps, and its drop shadow lands on the glyphs with no background
+                                     here to sit under. -->
                                 <TextBox Name="WPFWin11ISOStatusLog"
                                          IsReadOnly="True"
                                          TextWrapping="Wrap"

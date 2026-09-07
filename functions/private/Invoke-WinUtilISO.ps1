@@ -69,10 +69,6 @@ function Set-WinUtilISOStep {
         .SYNOPSIS
             Selects a page of the Win11 Creator wizard and sets which pages can be navigated back to
 
-        .DESCRIPTION
-            Safe to call from a job body - it marshals to the interface thread itself, and is a
-            no-op without a window.
-
         .PARAMETER Step
             Select, Modify, Working or Output
 
@@ -80,7 +76,7 @@ function Set-WinUtilISOStep {
             Headline shown on the working page while a long operation runs
 
         .PARAMETER Reverse
-            Spins the working page icon backwards, for work that undoes rather than produces
+            Spins the working page icon backwards
     #>
     param(
         [Parameter(Mandatory)]
@@ -97,8 +93,7 @@ function Set-WinUtilISOStep {
 
         if ($Label) { $sync["WPFWin11ISOWorkingLabel"].Text = $Label }
 
-        # Set before the page is shown, so it starts in the right direction rather than
-        # switching once it is already on screen
+        # Before the page is shown, or it starts spinning the wrong way and flips
         $sync["WPFWin11ISOWorkingSpinner"].Tag = if ($Reverse) { "Reverse" } else { "Forward" }
 
         # Earlier pages stay reachable until the image has been modified, after that only output applies
@@ -454,8 +449,8 @@ function Invoke-WinUtilISOModify {
 
                 $sync["WPFWin11ISOModifyButton"].IsEnabled = [bool]$Modified
 
-                # Still on the working page means the modification failed. The mount was rolled
-                # back with it, so the ISO has to be picked and verified again rather than retried.
+                # Select, not Modify: the failure rolled the mount back with it, so there is
+                # nothing left to retry
                 if ($sync["WPFWin11ISOWorkingSection"].IsSelected) {
                     Set-WinUtilISOStep -Step "Select"
                 }
@@ -606,9 +601,6 @@ function Invoke-WinUtilISOCleanAndReset {
             Invoke-WPFUIThread -ScriptBlock {
                 $sync["WPFWin11ISOCleanResetButton"].IsEnabled = $true
 
-                # Still on the working page means the cleanup did not reach its own reset. The
-                # working directory is gone or half gone either way, so the ISO picker is where
-                # this has to end up.
                 if ($sync["WPFWin11ISOWorkingSection"].IsSelected) {
                     Set-WinUtilISOStep -Step "Select"
                 }
@@ -645,8 +637,6 @@ function Invoke-WinUtilISOExport {
         Set-WinUtilISOStep -Step "Working" -Label "Building the ISO file"
 
         try {
-            # Before the prompt, not after: looking oscdimg up can install it through winget,
-            # which is exactly the wait the working page is there for
             $oscdimg = Get-WinUtilOscdimgPath
             if (-not $oscdimg) {
                 Set-WinUtilISOStep -Step "Output"
