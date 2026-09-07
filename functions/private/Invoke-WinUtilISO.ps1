@@ -449,8 +449,6 @@ function Invoke-WinUtilISOModify {
 
                 $sync["WPFWin11ISOModifyButton"].IsEnabled = [bool]$Modified
 
-                # Select, not Modify: the failure rolled the mount back with it, so there is
-                # nothing left to retry
                 if ($sync["WPFWin11ISOWorkingSection"].IsSelected) {
                     Set-WinUtilISOStep -Step "Select"
                 }
@@ -493,9 +491,9 @@ function Invoke-WinUtilISOCheckExistingWork {
     $modified = $existingWorkDir.LastWriteTime.ToString("yyyy-MM-dd HH:mm")
     Write-WinUtilISOLog "Existing working directory found: $($existingWorkDir.FullName)"
     Write-WinUtilISOLog "Last modified: $modified - Skipping the earlier steps and resuming at the output step."
-    Write-WinUtilISOLog "Click 'Start Over' if you want to begin again with a new ISO."
+    Write-WinUtilISOLog "Click 'Start Over' if you want to start over with a new ISO."
 
-    Show-WinUtilMessage -Message "A previous WinUtil ISO working directory was found:`n`n$($existingWorkDir.FullName)`n`n(Last modified: $modified)`n`nThe output step has been restored so you can save the already-modified image.`n`nClick 'Start Over' there if you want to begin again." -Title "Existing Work Found" -Button "OK" -Icon "Info" | Out-Null
+    Show-WinUtilMessage -Message "A previous WinUtil ISO working directory was found:`n`n$($existingWorkDir.FullName)`n`n(Last modified: $modified)`n`nThe output step has been restored so you can save the already-modified image.`n`nClick 'Start Over' there if you want to start over." -Title "Existing Work Found" -Button "OK" -Icon "Info" | Out-Null
 }
 
 function Invoke-WinUtilISOCleanAndReset {
