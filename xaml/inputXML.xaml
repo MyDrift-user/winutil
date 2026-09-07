@@ -2169,15 +2169,25 @@
                                     BorderBrush="{DynamicResource BorderColor}"
                                     BorderThickness="0,1,0,0"
                                     Padding="0,10,0,0">
+                                <!-- TextAlignment, because the shared TextBox style stretches its content
+                                     alignment and WPF reads that as justified. Every other box in WinUtil
+                                     is single line, so this is the only one where it shows.
+                                     Monospace so the timestamps form a column and a wrapped line is
+                                     visibly not a new entry. No effect, because the shared style's drop
+                                     shadow has no border or background to sit under here and smears the
+                                     glyphs instead. -->
                                 <TextBox Name="WPFWin11ISOStatusLog"
                                          IsReadOnly="True"
                                          TextWrapping="Wrap"
+                                         TextAlignment="Left"
+                                         FontFamily="{DynamicResource Win11LogFontFamily}"
                                          VerticalScrollBarVisibility="Auto"
                                          VerticalAlignment="Stretch"
                                          Padding="0"
                                          Background="Transparent"
                                          Foreground="{DynamicResource MainForegroundColor}"
                                          BorderThickness="0"
+                                         Effect="{x:Null}"
                                          Text="Ready. Please select a Windows 11 ISO to begin."/>
                             </Border>
                         </Grid>
