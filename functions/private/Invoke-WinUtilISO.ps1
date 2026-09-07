@@ -78,19 +78,28 @@ function Set-WinUtilISOStep {
 
         .PARAMETER Label
             Headline shown on the working page while a long operation runs
+
+        .PARAMETER Reverse
+            Spins the working page icon backwards, for work that undoes rather than produces
     #>
     param(
         [Parameter(Mandatory)]
         [ValidateSet("Select", "Modify", "Working", "Output")]
         [string]$Step,
 
-        [string]$Label
+        [string]$Label,
+
+        [switch]$Reverse
     )
 
-    Invoke-WPFUIThread -Parameters @{ Step = $Step; Label = $Label } -ScriptBlock {
-        param($Step, $Label)
+    Invoke-WPFUIThread -Parameters @{ Step = $Step; Label = $Label; Reverse = [bool]$Reverse } -ScriptBlock {
+        param($Step, $Label, $Reverse)
 
         if ($Label) { $sync["WPFWin11ISOWorkingLabel"].Text = $Label }
+
+        # Set before the page is shown, so it starts in the right direction rather than
+        # switching once it is already on screen
+        $sync["WPFWin11ISOWorkingSpinner"].Tag = if ($Reverse) { "Reverse" } else { "Forward" }
 
         # Earlier pages stay reachable until the image has been modified, after that only output applies
         $sync["WPFWin11ISOSelectSection"].IsEnabled = $Step -in @("Select", "Modify")
@@ -508,6 +517,7 @@ function Invoke-WinUtilISOCleanAndReset {
         param($workDir)
 
         Invoke-WPFUIThread -ScriptBlock { $sync["WPFWin11ISOCleanResetButton"].IsEnabled = $false }
+        Set-WinUtilISOStep -Step "Working" -Label "Starting over" -Reverse
 
         try {
             if ($workDir) {
@@ -593,7 +603,16 @@ function Invoke-WinUtilISOCleanAndReset {
             }
             Step-WinUtilJob -Hide
         } finally {
-            Invoke-WPFUIThread -ScriptBlock { $sync["WPFWin11ISOCleanResetButton"].IsEnabled = $true }
+            Invoke-WPFUIThread -ScriptBlock {
+                $sync["WPFWin11ISOCleanResetButton"].IsEnabled = $true
+
+                # Still on the working page means the cleanup did not reach its own reset. The
+                # working directory is gone or half gone either way, so the ISO picker is where
+                # this has to end up.
+                if ($sync["WPFWin11ISOWorkingSection"].IsSelected) {
+                    Set-WinUtilISOStep -Step "Select"
+                }
+            }
         }
     }
 }
@@ -623,10 +642,14 @@ function Invoke-WinUtilISOExport {
         param($contentsDir, $outputISO)
 
         Invoke-WPFUIThread -ScriptBlock { $sync["WPFWin11ISOChooseISOButton"].IsEnabled = $false }
+        Set-WinUtilISOStep -Step "Working" -Label "Building the ISO file"
 
         try {
+            # Before the prompt, not after: looking oscdimg up can install it through winget,
+            # which is exactly the wait the working page is there for
             $oscdimg = Get-WinUtilOscdimgPath
             if (-not $oscdimg) {
+                Set-WinUtilISOStep -Step "Output"
                 Show-WinUtilMessage -Message "oscdimg.exe could not be found or installed automatically.`n`nPlease install it manually:`n  winget install -e --id Microsoft.OSCDIMG`n`nOr install the Windows ADK from:`nhttps://learn.microsoft.com/windows-hardware/get-started/adk-install" -Title "oscdimg Not Found" -Button "OK" -Icon "Warning" | Out-Null
                 throw "oscdimg.exe could not be found or installed automatically."
             }
@@ -691,14 +714,23 @@ function Invoke-WinUtilISOExport {
                 $sync["WPFWin11ISODoneLabel"].Text        = "ISO saved to $OutputISO"
                 $sync["WPFWin11ISODonePanel"].Visibility  = "Visible"
             }
+            Set-WinUtilISOStep -Step "Output"
             Show-WinUtilMessage -Message "ISO exported successfully!`n`n$outputISO" -Title "Export Complete" -Button "OK" -Icon "Info" | Out-Null
         } catch {
             Write-WinUtilISOLog -Level "ERROR" -Message "ISO export failed: $_"
             $_.Exception.Data["WinUtilErrorReported"] = $true
+            Set-WinUtilISOStep -Step "Output"
             Show-WinUtilMessage -Message "ISO export failed:`n`n$_" -Title "Error" -Button "OK" -Icon "Error" | Out-Null
             throw
         } finally {
-            Invoke-WPFUIThread -ScriptBlock { $sync["WPFWin11ISOChooseISOButton"].IsEnabled = $true }
+            Invoke-WPFUIThread -ScriptBlock {
+                $sync["WPFWin11ISOChooseISOButton"].IsEnabled = $true
+
+                # Cancellation skips catch, so the working page can still be up here
+                if ($sync["WPFWin11ISOWorkingSection"].IsSelected) {
+                    Set-WinUtilISOStep -Step "Output"
+                }
+            }
         }
     }
 }

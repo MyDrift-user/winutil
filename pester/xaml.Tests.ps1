@@ -246,6 +246,7 @@ Describe "XAML document" {
             "WPFWin11ISOForwardButton",
             "WPFWin11ISOWorkingSection",
             "WPFWin11ISOWorkingLabel",
+            "WPFWin11ISOWorkingSpinner",
             "WPFWin11ISODonePanel",
             "WPFWin11ISODoneLabel",
             "WPFWin11ISOMountButton",

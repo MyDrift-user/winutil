@@ -87,6 +87,7 @@ function Invoke-WinUtilISOWriteUSB {
         param($DiskNumber, $contentsDir)
 
         Invoke-WPFUIThread -ScriptBlock { $sync["WPFWin11ISOWriteUSBButton"].IsEnabled = $false }
+        Set-WinUtilISOStep -Step "Working" -Label "Writing the USB drive"
 
         try {
             Write-WinUtilISOLog "Starting USB write to Disk $DiskNumber..."
@@ -237,14 +238,23 @@ function Invoke-WinUtilISOWriteUSB {
                 $sync["WPFWin11ISODoneLabel"].Text = "The USB drive is ready to boot from."
                 $sync["WPFWin11ISODonePanel"].Visibility = "Visible"
             }
+            Set-WinUtilISOStep -Step "Output"
             Show-WinUtilMessage -Message "USB drive created successfully!`n`nYou can now boot from this drive to install Windows 11." -Title "USB Ready" -Button "OK" -Icon "Info" | Out-Null
         } catch {
             Write-WinUtilISOLog -Level "ERROR" -Message "USB write failed: $_"
             $_.Exception.Data["WinUtilErrorReported"] = $true
+            Set-WinUtilISOStep -Step "Output"
             Show-WinUtilMessage -Message "USB write failed:`n`n$_" -Title "USB Write Error" -Button "OK" -Icon "Error" | Out-Null
             throw
         } finally {
-            Invoke-WPFUIThread -ScriptBlock { $sync["WPFWin11ISOWriteUSBButton"].IsEnabled = $true }
+            Invoke-WPFUIThread -ScriptBlock {
+                $sync["WPFWin11ISOWriteUSBButton"].IsEnabled = $true
+
+                # Cancellation skips catch, so the working page can still be up here
+                if ($sync["WPFWin11ISOWorkingSection"].IsSelected) {
+                    Set-WinUtilISOStep -Step "Output"
+                }
+            }
         }
     }
 }
