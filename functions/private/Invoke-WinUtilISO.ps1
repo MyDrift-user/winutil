@@ -178,26 +178,31 @@ function Invoke-WinUtilISOMountAndVerify {
         $verified = $false
         $mountedByThisRun = $false
 
-        # Clearing the path below is what loses the handle to a previous selection that is
-        # still attached, so let go of it here rather than leaving an orphaned volume
-        $previous = $sync["Win11ISOImagePath"]
-        if ($previous -and $previous -ne $isoPath) {
-            try {
-                if ((Get-DiskImage -ImagePath $previous -ErrorAction Stop).Attached) {
+        try {
+            # Inside the try so a failure here still restores the controls disabled above.
+            # The stored path is the only handle to a previous selection that is still
+            # attached, so it has to go before the reset below clears it.
+            $previous = $sync["Win11ISOImagePath"]
+            if ($previous -and $previous -ne $isoPath -and (Get-DiskImage -ImagePath $previous -ErrorAction SilentlyContinue).Attached) {
+                try {
                     Dismount-DiskImage -ImagePath $previous -ErrorAction Stop
                     Write-WinUtilISOLog "Dismounted the previously verified ISO: $previous"
+                } catch {
+                    Write-WinUtilISOLog -Level "ERROR" -Message "Could not dismount the previously verified ISO ${previous}: $_"
+                    Show-WinUtilMessage -Message "The previously verified ISO is still mounted and could not be dismounted:`n`n$previous`n`nDismount it yourself, then select an ISO again." -Title "Previous ISO Still Mounted" -Button "OK" -Icon "Error" | Out-Null
+                    # Keeping the stored path is the point: dropping it here is what would
+                    # strand the mount for the rest of the session
+                    $stillMounted = [System.InvalidOperationException]::new("Could not dismount the previously verified ISO $previous.")
+                    $stillMounted.Data["WinUtilErrorReported"] = $true
+                    throw $stillMounted
                 }
-            } catch {
-                Write-WinUtilISOLog -Level "WARN" -Message "Could not dismount the previously verified ISO ${previous}: $_"
             }
-        }
 
-        $sync["Win11ISOImageInfo"] = $null
-        $sync["Win11ISODriveLetter"] = $null
-        $sync["Win11ISOWimPath"] = $null
-        $sync["Win11ISOImagePath"] = $null
+            $sync["Win11ISOImageInfo"] = $null
+            $sync["Win11ISODriveLetter"] = $null
+            $sync["Win11ISOWimPath"] = $null
+            $sync["Win11ISOImagePath"] = $null
 
-        try {
             Write-WinUtilISOLog "Mounting ISO: $isoPath"
             Step-WinUtilJob -Status "Mounting ISO..." -Percent 10
 

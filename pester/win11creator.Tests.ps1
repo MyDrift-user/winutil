@@ -318,6 +318,19 @@ Describe "Win11 Creator setup media" {
             Should -BeLessThan $script:mountAndVerifyFunction.IndexOf('$sync["Win11ISOImagePath"] = $null')
     }
 
+    It "keeps the stored path and restores the interface when the previous ISO will not dismount" {
+        $dismountIndex = $script:mountAndVerifyFunction.IndexOf('Dismount-DiskImage -ImagePath $previous')
+        $resetIndex    = $script:mountAndVerifyFunction.IndexOf('$sync["Win11ISOImagePath"] = $null')
+
+        # Throws between the failed dismount and the reset, so the path survives
+        $throwIndex = $script:mountAndVerifyFunction.IndexOf('throw $stillMounted')
+        $throwIndex | Should -BeGreaterThan $dismountIndex
+        $throwIndex | Should -BeLessThan $resetIndex
+
+        # ...and from inside the try, so the finally re-enables the browse and mount buttons
+        $script:mountAndVerifyFunction.IndexOf('try {') | Should -BeLessThan $dismountIndex
+    }
+
     It "keeps ISO cleanup in finally so stopping modification cannot bypass it" {
         $finallyIndex = $script:modifyFunction.IndexOf('finally')
 
