@@ -254,7 +254,6 @@ Describe "XAML document" {
             "WPFWin11ISOVerifyResultPanel",
             "WPFWin11ISOMountDriveLetter",
             "WPFWin11ISOImageFile",
-            "WPFWin11ISOArchLabel",
             "WPFWin11ISOEditionComboBox",
             "WPFWin11ISOModifySection",
             "WPFWin11ISOModifyButton",

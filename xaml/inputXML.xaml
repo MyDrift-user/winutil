@@ -1612,11 +1612,12 @@
 
                     <Border Grid.Column="0" Style="{StaticResource BorderStyle}" Padding="20,16">
                         <Grid>
-                        <!-- The middle column matches the content column and has no background, so the
-                             chevrons sit beside the page and clicks between them fall through to it -->
+                        <!-- Lopsided star weight so the middle column is min(available, 620) and keeps
+                             tracking the content column; a fixed 620 overflowed the card below ~1000px,
+                             and the pages do not scroll sideways -->
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="620"/>
+                            <ColumnDefinition Width="1000*" MaxWidth="620"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Button Name="WPFWin11ISOBackButton"
@@ -1760,8 +1761,8 @@
                                 </Style>
 
                                 <Style x:Key="Win11StepColumn" TargetType="StackPanel">
-                                    <Setter Property="Width" Value="620"/>
-                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="MaxWidth" Value="620"/>
+                                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                 </Style>
                                 <Style x:Key="Win11StepHero" TargetType="TextBlock">
@@ -1946,7 +1947,6 @@
                                                 <TextBlock Text="&#xE8A5;" Style="{StaticResource Win11StepIcon}" Margin="22,0,8,0"/>
                                                 <TextBlock Style="{StaticResource Win11StepCaption}" Text="Image file"/>
                                                 <TextBlock Name="WPFWin11ISOImageFile" Style="{StaticResource Win11StepValue}"/>
-                                                <TextBlock Name="WPFWin11ISOArchLabel" Style="{StaticResource Win11StepValue}" Margin="8,0,0,0"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
