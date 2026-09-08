@@ -313,7 +313,6 @@ Describe "Win11 Creator setup media" {
         $script:mountAndVerifyFunction | Should -Match ([regex]::Escape('$previous = $sync["Win11ISOImagePath"]'))
         $script:mountAndVerifyFunction | Should -Match ([regex]::Escape('Dismount-DiskImage -ImagePath $previous -ErrorAction Stop'))
 
-        # Ahead of the reset, which is what drops the handle to the old image
         $script:mountAndVerifyFunction.IndexOf('Dismount-DiskImage -ImagePath $previous') |
             Should -BeLessThan $script:mountAndVerifyFunction.IndexOf('$sync["Win11ISOImagePath"] = $null')
     }
@@ -322,12 +321,10 @@ Describe "Win11 Creator setup media" {
         $dismountIndex = $script:mountAndVerifyFunction.IndexOf('Dismount-DiskImage -ImagePath $previous')
         $resetIndex    = $script:mountAndVerifyFunction.IndexOf('$sync["Win11ISOImagePath"] = $null')
 
-        # Throws between the failed dismount and the reset, so the path survives
         $throwIndex = $script:mountAndVerifyFunction.IndexOf('throw $stillMounted')
         $throwIndex | Should -BeGreaterThan $dismountIndex
         $throwIndex | Should -BeLessThan $resetIndex
 
-        # ...and from inside the try, so the finally re-enables the browse and mount buttons
         $script:mountAndVerifyFunction.IndexOf('try {') | Should -BeLessThan $dismountIndex
     }
 

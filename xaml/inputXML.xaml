@@ -1612,9 +1612,8 @@
 
                     <Border Grid.Column="0" Style="{StaticResource BorderStyle}" Padding="20,16">
                         <Grid>
-                        <!-- Lopsided star weight so the middle column is min(available, 620) and keeps
-                             tracking the content column; a fixed 620 overflowed the card below ~1000px,
-                             and the pages do not scroll sideways -->
+                        <!-- The lopsided weight is what makes the middle column min(available, 620)
+                             rather than a third of the card -->
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="1000*" MaxWidth="620"/>

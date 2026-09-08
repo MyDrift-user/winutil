@@ -179,9 +179,6 @@ function Invoke-WinUtilISOMountAndVerify {
         $mountedByThisRun = $false
 
         try {
-            # Inside the try so a failure here still restores the controls disabled above.
-            # The stored path is the only handle to a previous selection that is still
-            # attached, so it has to go before the reset below clears it.
             $previous = $sync["Win11ISOImagePath"]
             if ($previous -and $previous -ne $isoPath -and (Get-DiskImage -ImagePath $previous -ErrorAction SilentlyContinue).Attached) {
                 try {
@@ -190,8 +187,6 @@ function Invoke-WinUtilISOMountAndVerify {
                 } catch {
                     Write-WinUtilISOLog -Level "ERROR" -Message "Could not dismount the previously verified ISO ${previous}: $_"
                     Show-WinUtilMessage -Message "The previously verified ISO is still mounted and could not be dismounted:`n`n$previous`n`nDismount it yourself, then select an ISO again." -Title "Previous ISO Still Mounted" -Button "OK" -Icon "Error" | Out-Null
-                    # Keeping the stored path is the point: dropping it here is what would
-                    # strand the mount for the rest of the session
                     $stillMounted = [System.InvalidOperationException]::new("Could not dismount the previously verified ISO $previous.")
                     $stillMounted.Data["WinUtilErrorReported"] = $true
                     throw $stillMounted
