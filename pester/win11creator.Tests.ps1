@@ -306,7 +306,16 @@ Describe "Win11 Creator setup media" {
         $script:mountAndVerifyFunction | Should -Match ([regex]::Escape('$verified = $true'))
         $script:mountAndVerifyFunction | Should -Match ([regex]::Escape('Dismount-DiskImage -ImagePath $isoPath -ErrorAction Stop'))
         $script:mountAndVerifyFunction | Should -Match ([regex]::Escape('$sync["Win11ISOImagePath"] = $null'))
-        $script:mountAndVerifyFunction.IndexOf('Dismount-DiskImage') | Should -BeGreaterThan $script:mountAndVerifyFunction.IndexOf('finally')
+        $script:mountAndVerifyFunction.IndexOf('Dismount-DiskImage -ImagePath $isoPath') | Should -BeGreaterThan $script:mountAndVerifyFunction.IndexOf('finally')
+    }
+
+    It "dismounts a previously verified ISO before mounting a replacement" {
+        $script:mountAndVerifyFunction | Should -Match ([regex]::Escape('$previous = $sync["Win11ISOImagePath"]'))
+        $script:mountAndVerifyFunction | Should -Match ([regex]::Escape('Dismount-DiskImage -ImagePath $previous -ErrorAction Stop'))
+
+        # Ahead of the reset, which is what drops the handle to the old image
+        $script:mountAndVerifyFunction.IndexOf('Dismount-DiskImage -ImagePath $previous') |
+            Should -BeLessThan $script:mountAndVerifyFunction.IndexOf('$sync["Win11ISOImagePath"] = $null')
     }
 
     It "keeps ISO cleanup in finally so stopping modification cannot bypass it" {

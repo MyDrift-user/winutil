@@ -234,8 +234,10 @@ function Invoke-WinUtilISOWriteUSB {
             Step-WinUtilJob -Status "USB write complete" -Percent 100
             Write-WinUtilISOLog "USB drive is ready for use."
 
-            Invoke-WPFUIThread -ScriptBlock {
-                $sync["WPFWin11ISODoneLabel"].Text = "The USB drive is ready to boot from."
+            Invoke-WPFUIThread -Parameters @{ DiskNumber = $DiskNumber } -ScriptBlock {
+                param($DiskNumber)
+
+                $sync["WPFWin11ISODoneLabel"].Text = "Disk $DiskNumber is ready to boot from."
                 $sync["WPFWin11ISODonePanel"].Visibility = "Visible"
             }
             Set-WinUtilISOStep -Step "Output"

@@ -177,6 +177,21 @@ function Invoke-WinUtilISOMountAndVerify {
 
         $verified = $false
         $mountedByThisRun = $false
+
+        # Clearing the path below is what loses the handle to a previous selection that is
+        # still attached, so let go of it here rather than leaving an orphaned volume
+        $previous = $sync["Win11ISOImagePath"]
+        if ($previous -and $previous -ne $isoPath) {
+            try {
+                if ((Get-DiskImage -ImagePath $previous -ErrorAction Stop).Attached) {
+                    Dismount-DiskImage -ImagePath $previous -ErrorAction Stop
+                    Write-WinUtilISOLog "Dismounted the previously verified ISO: $previous"
+                }
+            } catch {
+                Write-WinUtilISOLog -Level "WARN" -Message "Could not dismount the previously verified ISO ${previous}: $_"
+            }
+        }
+
         $sync["Win11ISOImageInfo"] = $null
         $sync["Win11ISODriveLetter"] = $null
         $sync["Win11ISOWimPath"] = $null
