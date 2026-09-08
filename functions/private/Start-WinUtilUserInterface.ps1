@@ -512,7 +512,6 @@ Version  : <a href="https://github.com/ChrisTitusTech/winutil/releases/tag/$($sy
         Invoke-WinUtilISOCleanAndReset
     })
 
-    # The chevrons only show where the neighbouring step is reachable, so each has a single destination
     $sync["WPFWin11ISOBackButton"].Add_Click({
         $sync["WPFWin11ISOSelectSection"].IsSelected = $true
     })

@@ -93,10 +93,8 @@ function Set-WinUtilISOStep {
 
         if ($Label) { $sync["WPFWin11ISOWorkingLabel"].Text = $Label }
 
-        # Before the page is shown, or it starts spinning the wrong way and flips
         $sync["WPFWin11ISOWorkingSpinner"].Tag = if ($Reverse) { "Reverse" } else { "Forward" }
 
-        # Earlier pages stay reachable until the image has been modified, after that only output applies
         $sync["WPFWin11ISOSelectSection"].IsEnabled = $Step -in @("Select", "Modify")
         $sync["WPFWin11ISOModifySection"].IsEnabled = $Step -eq "Modify"
         $sync["WPFWin11ISOOutputSection"].IsEnabled = $Step -eq "Output"
@@ -151,7 +149,6 @@ function Invoke-WinUtilISOBrowse {
     $sync["WPFWin11ISOFileInfo"].Visibility = "Visible"
     $sync["WPFWin11ISOVerifyResultPanel"].Visibility  = "Collapsed"
 
-    # A different ISO invalidates anything already mounted, so lock the later steps again
     Set-WinUtilISOStep -Step "Select"
 
     Write-WinUtilISOLog "ISO selected: $isoPath  ($fileSizeGB GB)"
@@ -248,7 +245,6 @@ function Invoke-WinUtilISOMountAndVerify {
             } -ScriptBlock {
                 param($DriveLetter, $ImageFileName, $imageInfo)
 
-                # Each value sits behind its own icon in the verified panel, so no labels or separators here
                 $sync["WPFWin11ISOMountDriveLetter"].Text = $DriveLetter
                 $sync["WPFWin11ISOImageFile"].Text        = $ImageFileName
                 $sync["WPFWin11ISOEditionComboBox"].Items.Clear()
@@ -290,7 +286,6 @@ function Invoke-WinUtilISOMountAndVerify {
                 $sync["WPFWin11ISOMountButton"].IsEnabled = $true
                 $sync["WPFWin11ISOModifyButton"].IsEnabled = [bool]$Verified
 
-                # Still on the working page means mount or verification failed - go back to the ISO picker
                 if ($sync["WPFWin11ISOWorkingSection"].IsSelected) {
                     Set-WinUtilISOStep -Step "Select"
                 }
@@ -585,7 +580,6 @@ function Invoke-WinUtilISOCleanAndReset {
 
             Invoke-WPFUIThread -ScriptBlock {
                 $sync["WPFWin11ISOPath"].Text                    = "No ISO selected..."
-                # Hidden, not collapsed, so the page does not shift when an ISO is picked again
                 $sync["WPFWin11ISOFileInfo"].Visibility          = "Hidden"
                 $sync["WPFWin11ISOVerifyResultPanel"].Visibility = "Collapsed"
                 $sync["WPFWin11ISOOptionUSB"].Visibility         = "Collapsed"

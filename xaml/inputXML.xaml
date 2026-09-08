@@ -1606,17 +1606,14 @@
             <TabItem Header="Win11ISO" Visibility="Collapsed" Name="WPFTab5">
                 <Grid Name="Win11ISOPanel" Margin="{DynamicResource TabContentMargin}" Background="Transparent">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*"/>  <!-- Wizard pages -->
-                        <ColumnDefinition Width="*"/>   <!-- Status log -->
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Left card: same frame as the log, with the steps as its header row -->
                     <Border Grid.Column="0" Style="{StaticResource BorderStyle}" Padding="20,16">
                         <Grid>
-                        <!-- Step navigation, only where the neighbouring step is actually reachable.
-                             The empty middle column matches the content column, so the chevrons sit
-                             beside it rather than out on the card edges. No background, so clicks
-                             in the middle fall through to the page underneath. -->
+                        <!-- The middle column matches the content column and has no background, so the
+                             chevrons sit beside the page and clicks between them fall through to it -->
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="620"/>
@@ -1659,7 +1656,6 @@
                                 <Style TargetType="Button" BasedOn="{StaticResource HoverButtonStyle}">
                                     <Setter Property="Visibility" Value="Hidden"/>
                                     <Style.Triggers>
-                                        <!-- Only once the ISO has been verified, so the step is reachable again -->
                                         <MultiDataTrigger>
                                             <MultiDataTrigger.Conditions>
                                                 <Condition Binding="{Binding IsSelected, ElementName=WPFWin11ISOSelectSection}" Value="True"/>
@@ -1700,7 +1696,6 @@
                                     <Setter Property="Margin" Value="0,0,10,0"/>
                                 </Style>
 
-                                <!-- Numbered wizard header. Tag carries the glyph, Header the text. -->
                                 <Style TargetType="TabItem">
                                     <Setter Property="FontSize" Value="{DynamicResource FontSize}"/>
                                     <Setter Property="FontWeight" Value="Bold"/>
@@ -1734,9 +1729,6 @@
                                         </Trigger>
                                     </Style.Triggers>
                                 </Style>
-
-                                <!-- Steps row, hairline, page. Every page scrolls when the window is short
-                                     and stays centred when it is not, so no page repeats that plumbing. -->
                                 <Style TargetType="TabControl">
                                     <Setter Property="Template">
                                         <Setter.Value>
@@ -1767,7 +1759,6 @@
                                     </Setter>
                                 </Style>
 
-                                <!-- One block, centred: controls stay close together instead of drifting apart -->
                                 <Style x:Key="Win11StepColumn" TargetType="StackPanel">
                                     <Setter Property="Width" Value="620"/>
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -1781,7 +1772,6 @@
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                     <Setter Property="Margin" Value="0,0,0,14"/>
                                 </Style>
-                                <!-- Headings use the same accent the rest of the app uses for category labels -->
                                 <Style x:Key="Win11StepTitle" TargetType="TextBlock">
                                     <Setter Property="FontSize" Value="{DynamicResource Win11StepTitleFontSize}"/>
                                     <Setter Property="Foreground" Value="{DynamicResource LabelboxForegroundColor}"/>
@@ -1821,7 +1811,6 @@
                                     <Setter Property="Margin" Value="0,0,6,0"/>
                                 </Style>
 
-                                <!-- Buttons carry the glyph in Tag and the label in Content -->
                                 <Style x:Key="Win11StepButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                                     <Setter Property="Height" Value="34"/>
                                     <Setter Property="Padding" Value="16,0"/>
@@ -1842,7 +1831,6 @@
                                     </Setter>
                                 </Style>
 
-                                <!-- Read-only information -->
                                 <Style x:Key="Win11InfoPanel" TargetType="Border">
                                     <Setter Property="Background" Value="{DynamicResource MainBackgroundColor}"/>
                                     <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
@@ -1850,7 +1838,6 @@
                                     <Setter Property="CornerRadius" Value="5"/>
                                     <Setter Property="Padding" Value="16"/>
                                 </Style>
-                                <!-- Things you can change: same frame, accented edge so it reads as a form -->
                                 <Style x:Key="Win11FormPanel" TargetType="Border" BasedOn="{StaticResource Win11InfoPanel}">
                                     <Setter Property="BorderBrush" Value="{DynamicResource LabelboxForegroundColor}"/>
                                 </Style>
@@ -1940,7 +1927,6 @@
                                         depending on your hardware.
                                     </TextBlock>
 
-                                    <!-- One compact line: it is a confirmation, not a section -->
                                     <Border Name="WPFWin11ISOVerifyResultPanel"
                                             Style="{StaticResource Win11InfoPanel}"
                                             Padding="14,10"
@@ -1951,7 +1937,6 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <!-- Status check sits on the right, away from the field icons -->
                                             <TextBlock Grid.Column="1" Text="&#xE8FB;" Style="{StaticResource Win11SummaryIcon}"
                                                        VerticalAlignment="Center" Margin="12,0,0,0"/>
                                             <StackPanel Grid.Column="0" Orientation="Horizontal">
@@ -1990,7 +1975,6 @@
                                             Style="{StaticResource Win11StepButton}" Tag="&#xE768;"
                                             Content="Run Windows ISO Modification and Creator"/>
 
-                                    <!-- What the run actually changes, so the wait is not a black box -->
                                     <Border Style="{StaticResource Win11InfoPanel}">
                                         <StackPanel>
                                             <TextBlock Style="{StaticResource Win11StepLabel}" Margin="0,0,0,12" Text="What this does to the image"/>
@@ -2034,7 +2018,6 @@
                                         drive you can boot from.
                                     </TextBlock>
 
-                                    <!-- Shown once an ISO or USB drive has been written -->
                                     <Border Name="WPFWin11ISODonePanel"
                                             Style="{StaticResource Win11InfoPanel}"
                                             Padding="14,10"
@@ -2053,7 +2036,6 @@
                                             Style="{StaticResource Win11StepButton}" Tag="&#xE88E;"
                                             Content="Write Directly to a USB Drive (ERASES DRIVE)"/>
 
-                                    <!-- USB write sub-panel (revealed on USB choice) -->
                                     <Border Name="WPFWin11ISOOptionUSB"
                                             Style="{StaticResource Win11FormPanel}"
                                             Visibility="Collapsed"
@@ -2083,7 +2065,6 @@
                                         </StackPanel>
                                     </Border>
 
-                                    <!-- Start again: the normal way to run another ISO once you are done here -->
                                     <Border BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,1,0,0"
                                             Margin="0,20,0,0" Padding="0,14,0,0">
                                         <StackPanel>
@@ -2104,7 +2085,6 @@
                                     <!-- BitmapCache because this is text: without it WPF re-rasterises the
                                          glyph every frame on the interface thread and the spin stutters.
                                          Cached, the rotation is a transform on an image the GPU already has. -->
-                                    <!-- Tag carries the spin direction; Start Over runs it backwards -->
                                     <TextBlock Name="WPFWin11ISOWorkingSpinner"
                                                Text="&#xE895;"
                                                Tag="Forward"
@@ -2170,7 +2150,7 @@
                         </Grid>
                     </Border>
 
-                    <!-- ─── Status log: same card, same header shape ─── -->
+                    <!-- ─── Status log ─── -->
                     <Border Grid.Column="1" Style="{StaticResource BorderStyle}" Padding="20,16">
                         <Grid>
                             <Grid.RowDefinitions>
