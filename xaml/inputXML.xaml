@@ -1995,7 +1995,7 @@
                                             <StackPanel Style="{StaticResource Win11SummaryRow}">
                                                 <TextBlock Text="&#xE7EE;" Style="{StaticResource Win11SummaryIcon}"/>
                                                 <TextBlock Style="{StaticResource Win11StepBody}" Margin="0"
-                                                           Text="Turns off telemetry, Copilot, the chat icon and OneDrive sync"/>
+                                                           Text="Turns off telemetry, Copilot, the chat icon and search box suggestions"/>
                                             </StackPanel>
                                             <StackPanel Style="{StaticResource Win11SummaryRow}" Margin="0">
                                                 <TextBlock Text="&#xE8EF;" Style="{StaticResource Win11SummaryIcon}"/>
